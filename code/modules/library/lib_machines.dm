@@ -99,7 +99,7 @@ var/libcomp_menu
 				<A href='?src=\ref[src];search=1'>\[Start Search\]</A><BR>"}
 			// END AUTOFIX
 		if(1)
-			establish_old_db_connection()
+//			establish_old_db_connection()
 			if(!dbcon_old.IsConnected())
 				dat += "<font color=red><b>ERROR</b>: Unable to contact External Archive. Please contact your system administrator for assistance.</font><BR>"
 			else if(!SQLquery)
@@ -449,7 +449,7 @@ var/libcomp_menu
 			if(scanner.cache)
 				var/choice = input("Are you certain you wish to upload this title to the Archive?") in list("Confirm", "Abort")
 				if(choice == "Confirm")
-					establish_old_db_connection()
+//					establish_old_db_connection()
 					if(!dbcon_old.IsConnected())
 						alert("Connection to Archive has been severed. Aborting.")
 					else
