@@ -607,7 +607,7 @@ var/list/obj/machinery/newscaster/allCasters = list() //Global list that will co
 				return
 			if(isnull(src.msg))
 				src.msg = ""
-			src.msg = strip_html(input(usr, "Write your Feed story", "Network Channel Handler", src.msg))
+			src.msg = sanitize(input(usr, "Write your Feed story", "Network Channel Handler", src.msg))
 			while (findtext(src.msg," ") == 1)
 				src.msg = copytext(src.msg,2,length(src.msg)+1)
 			src.updateUsrDialog()
@@ -705,7 +705,7 @@ var/list/obj/machinery/newscaster/allCasters = list() //Global list that will co
 			if(isobserver(usr) && !canGhostWrite(usr,src,"tried to set the name of a wanted person"))
 				usr << "\red You can't do that."
 				return
-			src.channel_name = strip_html(input(usr, "Provide the name of the Wanted person", "Network Security Handler", ""))
+			src.channel_name = sanitize(input(usr, "Provide the name of the Wanted person", "Network Security Handler", ""))
 			while (findtext(src.channel_name," ") == 1)
 				src.channel_name = copytext(src.channel_name,2,length(src.channel_name)+1)
 			src.updateUsrDialog()
@@ -714,7 +714,7 @@ var/list/obj/machinery/newscaster/allCasters = list() //Global list that will co
 			if(isobserver(usr) && !canGhostWrite(usr,src,"tried to set the description of a wanted person"))
 				usr << "\red You can't do that."
 				return
-			src.msg = strip_html(input(usr, "Provide the a description of the Wanted person and any other details you deem important", "Network Security Handler", ""))
+			src.msg = sanitize(input(usr, "Provide the a description of the Wanted person and any other details you deem important", "Network Security Handler", ""))
 			while (findtext(src.msg," ") == 1)
 				src.msg = copytext(src.msg,2,length(src.msg)+1)
 			src.updateUsrDialog()

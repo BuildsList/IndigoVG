@@ -37,6 +37,7 @@
 #define FILE_DIR "icons/mob/in-hand"
 #define FILE_DIR "icons/mob/in-hand/left"
 #define FILE_DIR "icons/mob/in-hand/right"
+#define FILE_DIR "icons/mob/lost_sprite"
 #define FILE_DIR "icons/mob/species"
 #define FILE_DIR "icons/mob/species/vox"
 #define FILE_DIR "icons/obj"
