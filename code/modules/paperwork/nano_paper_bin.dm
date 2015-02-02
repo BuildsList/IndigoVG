@@ -66,7 +66,7 @@
 	if(ressources)
 		user << "<span class='info'>There is [ressources] nano paper left in the dispenser!</span>"
 	else
-		user << "<span class='indigo'>The nano paper dispenser is empty! add more plasteel to refil!</span>"
+		user << "<span class='warning'>The nano paper dispenser is empty! add more plasteel to refil!</span>"
 
 
 /obj/item/weapon/paper_bin/nano/update_icon()

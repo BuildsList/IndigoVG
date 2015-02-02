@@ -42,7 +42,7 @@
 		ghost_volunteers.Remove(O)
 		return
 	if(!check_observer(O))
-		O << "<span class='indigo'>You cannot be \a [src] in your current condition.</span>"
+		O << "<span class='warning'>You cannot be \a [src] in your current condition.</span>"
 		return
 	O << "<span class='notice'>You have been added to the list of ghosts that may become this [src].  Click again to unvolunteer.</span>"
 	ghost_volunteers.Add(O)
@@ -87,20 +87,20 @@
 			if(prob(1))
 				affected_mob.emote("cough")
 			if(prob(1))
-				affected_mob << "<span class='indigo'>Your throat feels sore.</span>"
+				affected_mob << "<span class='warning'>Your throat feels sore.</span>"
 			if(prob(1))
-				affected_mob << "<span class='indigo'>Mucous runs down the back of your throat.</span>"
+				affected_mob << "<span class='warning'>Mucous runs down the back of your throat.</span>"
 		if(4)
 			if(prob(1))
 				affected_mob.emote("sneeze")
 			if(prob(1))
 				affected_mob.emote("cough")
 			if(prob(2))
-				affected_mob << "<span class='indigo'>Your muscles ache.</span>"
+				affected_mob << "<span class='warning'>Your muscles ache.</span>"
 				if(prob(20))
 					affected_mob.take_organ_damage(1)
 			if(prob(2))
-				affected_mob << "<span class='indigo'>Your stomach hurts.</span>"
+				affected_mob << "<span class='warning'>Your stomach hurts.</span>"
 				if(prob(20))
 					affected_mob.adjustToxLoss(1)
 					affected_mob.updatehealth()
@@ -191,4 +191,5 @@ Des: Removes the alien infection image from all aliens in the world located in p
 				for(var/image/I in alien.client.images)
 					if(I.loc == C)
 						if(dd_hasprefix_case(I.icon_state, "infected"))
-							del(I)
+							//del(I)
+							alien.client.images -= I

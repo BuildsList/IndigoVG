@@ -200,11 +200,11 @@
 			src.updateUsrDialog()
 		else
 			if(emagged)
-				user << "<span class='indigo'>ERROR</span>"
+				user << "<span class='warning'>ERROR</span>"
 			if(open)
-				user << "<span class='indigo'>Please close the access panel before locking it.</span>"
+				user << "<span class='warning'>Please close the access panel before locking it.</span>"
 			else
-				user << "<span class='indigo'>Access denied.</span>"
+				user << "<span class='warning'>Access denied.</span>"
 
 	else if (istype(W, /obj/item/weapon/reagent_containers/glass))
 		if(src.locked)
@@ -230,7 +230,7 @@
 	..()
 	if(open && !locked)
 		declare_crit = 0
-		if(user) user << "<span class='indigo'>You short out [src]'s reagent synthesis circuits.</span>"
+		if(user) user << "<span class='warning'>You short out [src]'s reagent synthesis circuits.</span>"
 		spawn(0)
 			for(var/mob/O in hearers(src, null))
 				O.show_message("\red <B>[src] buzzes oddly!</B>", 1)

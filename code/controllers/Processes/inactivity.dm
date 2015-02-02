@@ -8,7 +8,7 @@
 			if(C.is_afk(INACTIVITY_KICK))
 				if(!istype(C.mob, /mob/dead))
 					log_access("AFK: [key_name(C)]")
-					C << "<span class='indigo'>You have been inactive for more than 10 minutes and have been disconnected.</SPAN>"
+					C << "<SPAN CLASS='warning'>You have been inactive for more than 10 minutes and have been disconnected.</SPAN>"
 					del(C)
 
 			scheck()

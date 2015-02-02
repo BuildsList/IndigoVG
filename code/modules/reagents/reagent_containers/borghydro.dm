@@ -74,7 +74,7 @@
 		return
 
 	user << "<span class='info'>You inject [M] with the injector.<span>"
-	M << "<span class='indigo'>You feel a tiny prick!</span>"
+	M << "<span class='warning'>You feel a tiny prick!</span>"
 	reagents.reaction(M, INGEST)
 
 	if(M.reagents)

@@ -69,7 +69,7 @@
 		return
 	if(isrobot(user))
 		if(!istype(user:module, /obj/item/weapon/robot_module/medical))
-			user << "<span class='indigo'>You do not have the means to do this!</span>"
+			user << "<span class='warning'>You do not have the means to do this!</span>"
 			return
 	var/mob/living/L = O
 	if(!istype(L) || L.buckled)
@@ -246,7 +246,7 @@
 		user << "[src] is on."
 		return
 	if(occupant)
-		user << "<span class='indigo'>[occupant.name] is inside the [src]!</span>"
+		user << "<span class='warning'>[occupant.name] is inside the [src]!</span>"
 		return
 	if(beaker) //special check to avoid destroying this
 		beaker.loc = src.loc
@@ -255,7 +255,7 @@
 /obj/machinery/atmospherics/unary/cryo_cell/attackby(var/obj/item/weapon/G as obj, var/mob/user as mob)
 	if(istype(G, /obj/item/weapon/reagent_containers/glass))
 		if(beaker)
-			user << "<span class='indigo'>A beaker is already loaded into the machine.</span>"
+			user << "<span class='warning'>A beaker is already loaded into the machine.</span>"
 			return
 		beaker =  G
 		user.drop_item()
@@ -362,10 +362,10 @@
 		usr << "<span class='danger'>The cryo cell is already occupied!</span>"
 		return
 	if (M.abiotic())
-		usr << "<span class='indigo'>Subject may not have abiotic items on.</span>"
+		usr << "<span class='warning'>Subject may not have abiotic items on.</span>"
 		return
 	if(!node)
-		usr << "<span class='indigo'>The cell is not correctly connected to its pipe network!</span>"
+		usr << "<span class='warning'>The cell is not correctly connected to its pipe network!</span>"
 		return
 	if (M.client)
 		M.client.perspective = EYE_PERSPECTIVE

@@ -298,7 +298,7 @@
 		src.welded =! src.welded
 		src.update_icon()
 		for(var/mob/M in viewers(src))
-			M.show_message("<span class='indigo'>[src] has been [welded?"welded shut":"unwelded"] by [user.name].</span>", 3, "You hear welding.", 2)
+			M.show_message("<span class='warning'>[src] has been [welded?"welded shut":"unwelded"] by [user.name].</span>", 3, "You hear welding.", 2)
 	else if(!place(user, W))
 		src.attack_hand(user)
 	return
@@ -374,10 +374,10 @@
 			add_fingerprint(usr)
 		src.attack_hand(usr)
 	else
-		usr << "<span class='indigo'>This mob type can't use this verb.</span>"
+		usr << "<span class='warning'>This mob type can't use this verb.</span>"
 
 /obj/structure/closet/update_icon()//Putting the welded stuff in updateicon() so it's easy to overwrite for special cases (Fridges, cabinets, and whatnot)
-	overlays.Cut()
+	overlays.len = 0
 	if(!opened)
 		icon_state = icon_closed
 		if(welded)
@@ -405,7 +405,7 @@
 
 	user << "<span class='notice'>You lean on the back of [src] and start pushing the door open. (this will take about [breakout_time] minutes.)</span>"
 	for(var/mob/O in viewers(src))
-		O << "<span class='indigo'>[src] begins to shake violently!</span>"
+		O << "<span class='warning'>[src] begins to shake violently!</span>"
 	var/turf/T = get_turf(src)	//Check for moved locker
 	if(do_after(user,(breakout_time*60*10))) //minutes * 60seconds * 10deciseconds
 		if(!user || user.stat != CONSCIOUS || user.loc != src || opened || (!locked && !welded) || T != get_turf(src))

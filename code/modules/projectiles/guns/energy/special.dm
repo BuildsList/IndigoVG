@@ -79,7 +79,7 @@ var/available_staff_transforms=list("monkey","robot","slime","xeno","human","fur
 
 /obj/item/weapon/gun/energy/staff/attack_self(var/mob/living/user)
 	if(world.time < next_changetype)
-		user << "<span class='indigo'>[src] is still recharging.</span>"
+		user << "<span class='warning'>[src] is still recharging.</span>"
 		return
 
 	var/selected = input("You squint at the dial conspicuously mounted on the side of your staff.","Staff of Change") as null|anything in list("random")+available_staff_transforms

@@ -31,7 +31,7 @@
 		for(var/i = 0, i<6, i++)
 			sleep(delayfraction)
 			if(!user || user.stat || user.weakened || user.stunned || !(user.loc == loc_user) || !(O.loc == loc_nuke) || (!(user.l_hand == src) && !(user.r_hand == src)))
-				user << "<span class='indigo'>You need to stand still for the whole duration of the code breaking for the device to work, and keep it in one of your hands.</span>"
+				user << "<span class='warning'>You need to stand still for the whole duration of the code breaking for the device to work, and keep it in one of your hands.</span>"
 				icon_state = "codebreaker"
 				operation = 0
 				return

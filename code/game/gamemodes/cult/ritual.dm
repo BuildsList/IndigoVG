@@ -35,6 +35,11 @@ var/global/list/rune_list = list() // HOLY FUCK WHY ARE WE LOOPING THROUGH THE W
 	var/word1
 	var/word2
 	var/word3
+	var/image/blood_image
+
+	var/atom/movable/overlay/c_animation = null
+	var/nullblock = 0
+	var/mob/living/ajourn
 // Places these combos are mentioned: this file - twice in the rune code, once in imbued tome, once in tome's HTML runes.dm - in the imbue rune code. If you change a combination - dont forget to change it everywhere.
 
 // travel self [word] - Teleport to random [rune with word destination matching]
@@ -65,14 +70,25 @@ var/global/list/rune_list = list() // HOLY FUCK WHY ARE WE LOOPING THROUGH THE W
 // self other technology - Communication rune  //was other hear blood
 // join hide technology - stun rune. Rune color: bright pink.
 /obj/effect/rune/New()
+	for(var/obj/effect/rune/R in rune_list)
+		if(R.loc == src.loc)
+			qdel(src)
+			break
 	..()
-	var/image/blood = image(loc = src)
-	blood.override = 1
+	blood_image = image(loc = src)
+	blood_image.override = 1
 	for(var/mob/living/silicon/ai/AI in player_list)
-		AI.client.images += blood
+		AI.client.images += blood_image
 	rune_list.Add(src)
 
 /obj/effect/rune/Destroy()
+	if(istype(ajourn))
+		ajourn.ajourn = null
+	ajourn = null
+	for(var/mob/living/silicon/ai/AI in player_list)
+		AI.client.images -= blood_image
+	qdel(blood_image)
+	blood_image = null
 	rune_list.Remove(src)
 	..()
 
@@ -170,7 +186,7 @@ var/global/list/rune_list = list() // HOLY FUCK WHY ARE WE LOOPING THROUGH THE W
 	else
 		usr.whisper(pick("B'ADMINES SP'WNIN SH'T","IC'IN O'OC","RO'SHA'M I'SA GRI'FF'N ME'AI","TOX'IN'S O'NM FI'RAH","IA BL'AME TOX'IN'S","FIR'A NON'AN RE'SONA","A'OI I'RS ROUA'GE","LE'OAN JU'STA SP'A'C Z'EE SH'EF","IA PT'WOBEA'RD, IA A'DMI'NEH'LP"))
 	for (var/mob/V in viewers(src))
-		V.show_message("<span class='indigo'>The markings pulse with a small burst of light, then fall dark.</span>", 3, "<span class='indigo'>You hear a faint fizzle.</span>", 2)
+		V.show_message("<span class='warning'>The markings pulse with a small burst of light, then fall dark.</span>", 3, "<span class='warning'>You hear a faint fizzle.</span>", 2)
 	return
 
 /obj/effect/rune/proc/check_icon()
@@ -356,7 +372,7 @@ var/global/list/rune_list = list() // HOLY FUCK WHY ARE WE LOOPING THROUGH THE W
 	M.take_organ_damage(0,rand(5,20)) //really lucky - 5 hits for a crit
 	for(var/mob/O in viewers(M, null))
 		O.show_message(text("<span class='danger'>[] beats [] with the arcane tome!</span>", user, M), 1)
-	M << "<span class='indigo'>You feel searing heat inside!</span>"
+	M << "<span class='warning'>You feel searing heat inside!</span>"
 
 
 /obj/item/weapon/tome/attack_self(mob/living/user as mob)
@@ -368,7 +384,7 @@ var/global/list/rune_list = list() // HOLY FUCK WHY ARE WE LOOPING THROUGH THE W
 		runerandom()
 	if(iscultist(user))
 		if (!istype(user.loc,/turf))
-			user << "<span class='indigo'>You do not have enough space to write a proper rune.</span>"
+			user << "<span class='warning'>You do not have enough space to write a proper rune.</span>"
 			return
 
 
@@ -432,17 +448,16 @@ var/global/list/rune_list = list() // HOLY FUCK WHY ARE WE LOOPING THROUGH THE W
 
 		if(usr.get_active_hand() != src)
 			return
-
 		for (var/mob/V in viewers(src))
-			V.show_message("<span class='indigo'>[user] slices open a finger and begins to chant and paint symbols on the floor.</span>", 3, "<span class='indigo'>You hear chanting.</span>", 2)
-		user << "<span class='indigo'>You slice open one of your fingers and begin drawing a rune on the floor whilst chanting the ritual that binds your life essence with the dark arcane energies flowing through the surrounding world.</span>"
+			V.show_message("<span class='warning'>[user] slices open a finger and begins to chant and paint symbols on the floor.</span>", 3, "<span class='warning'>You hear chanting.</span>", 2)
+		user << "<span class='warning'>You slice open one of your fingers and begin drawing a rune on the floor whilst chanting the ritual that binds your life essence with the dark arcane energies flowing through the surrounding world.</span>"
 		user.take_overall_damage((rand(9)+1)/10) // 0.1 to 1.0 damage
 		if(do_after(user, 50))
 			if(usr.get_active_hand() != src)
 				return
 			var/mob/living/carbon/human/H = user
 			var/obj/effect/rune/R = new /obj/effect/rune(user.loc)
-			user << "<span class='indigo'>You finish drawing the arcane markings of the Geometer.</span>"
+			user << "<span class='warning'>You finish drawing the arcane markings of the Geometer.</span>"
 			R.word1 = w1
 			R.word2 = w2
 			R.word3 = w3
@@ -488,7 +503,7 @@ var/global/list/rune_list = list() // HOLY FUCK WHY ARE WE LOOPING THROUGH THE W
 		if(user)
 			var/r
 			if (!istype(user.loc,/turf))
-				user << "<span class='indigo'>You do not have enough space to write a proper rune.</span>"
+				user << "<span class='warning'>You do not have enough space to write a proper rune.</span>"
 			var/list/runes = list("teleport", "itemport", "tome", "armor", "convert", "tear in reality", "emp", "drain", "seer", "raise", "obscure", "reveal", "astral journey", "manifest", "imbue talisman", "sacrifice", "wall", "freedom", "cultsummon", "deafen", "blind", "bloodboil", "communicate", "stun")
 			r = input("Choose a rune to scribe", "Rune Scribing") in runes //not cancellable.
 			var/obj/effect/rune/R = new /obj/effect/rune

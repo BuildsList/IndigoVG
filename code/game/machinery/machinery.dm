@@ -129,6 +129,8 @@ Class Procs:
 
 	var/inMachineList = 1 // For debugging.
 
+	languages = ALL
+
 /obj/machinery/cultify()
 	var/list/random_structure = list(
 		/obj/structure/cult/talisman,
@@ -243,7 +245,7 @@ Class Procs:
 		var/re_init=0
 		if("set_tag" in href_list)
 			if(!(href_list["set_tag"] in vars))
-				usr << "<span class='indigo'>Something went wrong: Unable to find [href_list["set_tag"]] in vars!</span>"
+				usr << "<span class='warning'>Something went wrong: Unable to find [href_list["set_tag"]] in vars!</span>"
 				return 1
 			var/current_tag = src.vars[href_list["set_tag"]]
 			var/newid = copytext(reject_bad_text(input(usr, "Specify the new ID tag", src, current_tag) as null|text),1,MAX_MESSAGE_LEN)
@@ -260,7 +262,7 @@ Class Procs:
 			if(!O)
 				return 1
 			if(!canLink(O))
-				usr << "<span class='indigo'>You can't link with that device.</span>"
+				usr << "<span class='warning'>You can't link with that device.</span>"
 				return 1
 
 			if(unlinkFrom(usr, O))
@@ -274,7 +276,7 @@ Class Procs:
 			if(!O)
 				return 1
 			if(!canLink(O,href_list))
-				usr << "<span class='indigo'>You can't link with that device.</span>"
+				usr << "<span class='warning'>You can't link with that device.</span>"
 				return 1
 			if (isLinkedWith(O))
 				usr << "<span class='attack'>A red light flashes on \the [P]. The two devices are already linked.</span>"
@@ -324,7 +326,7 @@ Class Procs:
 		if ( ! (istype(usr, /mob/living/carbon/human) || \
 				istype(usr, /mob/living/silicon) || \
 				istype(usr, /mob/living/carbon/monkey) && ticker && ticker.mode.name == "monkey") )
-			usr << "<span class='indigo'>You don't have the dexterity to do this!</span>"
+			usr << "<span class='warning'>You don't have the dexterity to do this!</span>"
 			return 1
 
 		var/norange = 0
@@ -380,7 +382,7 @@ Class Procs:
 	if ( ! (istype(usr, /mob/living/carbon/human) || \
 			istype(usr, /mob/living/silicon) || \
 			istype(usr, /mob/living/carbon/monkey) && ticker && ticker.mode.name == "monkey") )
-		usr << "<span class='indigo'>You don't have the dexterity to do this!</span>"
+		usr << "<span class='warning'>You don't have the dexterity to do this!</span>"
 		return 1
 /*
 	//distance checks are made by atom/proc/DblClick
@@ -390,10 +392,10 @@ Class Procs:
 	if (ishuman(user))
 		var/mob/living/carbon/human/H = user
 		if(H.getBrainLoss() >= 60)
-			visible_message("<span class='indigo'>[H] stares cluelessly at [src] and drools.</span>")
+			visible_message("<span class='warning'>[H] stares cluelessly at [src] and drools.</span>")
 			return 1
 		else if(prob(H.getBrainLoss()))
-			user << "<span class='indigo'>You momentarily forget how to use [src].</span>"
+			user << "<span class='warning'>You momentarily forget how to use [src].</span>"
 			return 1
 
 	src.add_fingerprint(user)
@@ -521,7 +523,7 @@ Class Procs:
 		if(!panel_open)
 			return wrenchAnchor(user)
 		else
-			user <<"<span class='indigo'>\The [src]'s maintenance panel must be closed first!</span>"
+			user <<"<span class='warning'>\The [src]'s maintenance panel must be closed first!</span>"
 			return -1 //we return -1 rather than 0 for the if(..()) checks
 
 	if(istype(O, /obj/item/weapon/screwdriver) && machine_flags & SCREWTOGGLE)
@@ -539,7 +541,7 @@ Class Procs:
 				return -1
 
 	if(!anchored && machine_flags & FIXED2WORK)
-		return user << "<span class='indigo'>\The [src] must be anchored first!</span>"
+		return user << "<span class='warning'>\The [src] must be anchored first!</span>"
 
 /obj/machinery/proc/shock(mob/user, prb, var/siemenspassed = -1)
 	if(stat & (BROKEN|NOPOWER))		// unpowered, no shock

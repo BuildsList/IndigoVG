@@ -34,8 +34,8 @@
 			else if(istype(item, /obj/item/weapon/spellbook/oneuse))
 				var/obj/item/weapon/spellbook/oneuse/I = item
 				if(prob(80))
-					user.visible_message("<span class='indigo'>[I] catches fire!</span>")
-					del(I)
+					user.visible_message("<span class='warning'>[I] catches fire!</span>")
+					qdel(I)
 				else
 					I.used = 0
 					charged_item = I

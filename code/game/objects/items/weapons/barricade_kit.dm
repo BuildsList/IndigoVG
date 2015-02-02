@@ -15,13 +15,13 @@
 
 /obj/item/weapon/barricade_kit/attack_self(mob/user as mob)
 	if(kit_uses < 3)
-		user << "<span class='indigo'>Most of [src] was used, now it's only good for doors.</span>"
+		user << "<span class='warning'>Most of [src] was used, now it's only good for doors.</span>"
 		return
 	if(istype(user.loc,/turf/space))
-		user << "<span class='indigo'>You can't use [src] in space.</span>"
+		user << "<span class='warning'>You can't use [src] in space.</span>"
 		return
 	user << "<span class='notice'>You start building a barricade using [src].</span>"
-	user.visible_message("<span class='indigo'>[user] starts building a barricade.</span>")
+	user.visible_message("<span class='warning'>[user] starts building a barricade.</span>")
 	if(do_after(user,50))
 		user << "<span class='notice'>You finish the barricade.</span>"
 		new /obj/structure/barricade/wooden(usr.loc)
@@ -37,12 +37,12 @@
 			if(istype(S,/obj/structure/barricade/wooden/door))
 				return
 		var/obj/structure/barricade/wooden/door/B = new /obj/structure/barricade/wooden/door
-		user << "<span class='indigo'>You start installing [src].</span>"
+		user << "<span class='warning'>You start installing [src].</span>"
 		if(do_after(user,30))
 			B.loc = locate(T.x,T.y,T.z)
 			B.layer = 4 //Higher than doors and windows
 			user << "<span class='notice'>You finish installing [src].</span>"
-			user.visible_message("<span class='indigo'>[user] barricades [A].</span>")
+			user.visible_message("<span class='warning'>[user] barricades [A].</span>")
 			kit_uses -= 1
 			if(!(kit_uses))
 				del(src) //Failsafe
@@ -56,12 +56,12 @@
 				return
 			if(istype(S,/obj/structure/grille))
 				var/obj/structure/barricade/wooden/door/B = new /obj/structure/barricade/wooden/door
-				user << "<span class='indigo'>You start installing [src].</span>"
+				user << "<span class='warning'>You start installing [src].</span>"
 				if(do_after(user,30))
 					B.loc = locate(S.x,S.y,S.z)
 					B.layer = 4
 					user << "<span class='notice'>You finish installing [src].</span>"
-					user.visible_message("<span class='indigo'>[user] barricades [A].</span>")
+					user.visible_message("<span class='warning'>[user] barricades [A].</span>")
 					kit_uses -= 1
 					if(!(kit_uses))
 						del(src) //Failsafe

@@ -535,7 +535,7 @@ var/global/list/damage_icon_parts = list()
 				drop_from_inventory(w_uniform)
 				return
 		else
-			standing.icon	= file(gender_icons(usr,"uniform"))
+			standing.icon	= 'icons/mob/uniform.dmi'
 
 		var/obj/item/I = w_uniform
 		if(species.name in I.species_fit) //Allows clothes to display differently for multiple species
@@ -1023,11 +1023,3 @@ var/global/list/damage_icon_parts = list()
 
 	var/image/face_lying_image = new /image(icon = face_lying)
 	return face_lying_image
-
-/mob/living/carbon/human/proc/gender_icons(var/mob/user, var/item)
-	var/result
-	var/g = ""
-	if(ishuman(user))
-		if(user.gender == FEMALE)	g = "_f"
-		result = "icons/mob/[item][g].dmi"
-	return result

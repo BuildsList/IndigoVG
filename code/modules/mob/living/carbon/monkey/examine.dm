@@ -15,7 +15,7 @@
 	if (src.stat == DEAD || status_flags & FAKEDEATH)
 		msg += "<span class='deadsay'>It is limp and unresponsive, with no signs of life.</span>\n"
 	else
-		msg += "<span class='indigo'>"
+		msg += "<span class='warning'>"
 		if (src.getBruteLoss())
 			if (src.getBruteLoss() < 30)
 				msg += "It has minor bruising.\n"

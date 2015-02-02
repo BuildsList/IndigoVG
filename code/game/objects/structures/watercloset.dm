@@ -177,7 +177,7 @@
 			add_fingerprint(user)
 
 /obj/machinery/shower/update_icon()	//this is terribly unreadable, but basically it makes the shower mist up
-	overlays.Cut()					//once it's been on for a while, in addition to handling the water overlay.
+	overlays.len = 0					//once it's been on for a while, in addition to handling the water overlay.
 	if(mymist)
 		del(mymist)
 
@@ -312,7 +312,7 @@
 
 		if(watertemp == "freezing")
 			C.bodytemperature = max(80, C.bodytemperature - 80)
-			C << "<span class='indigo'>The water is freezing!</span>"
+			C << "<span class='warning'>The water is freezing!</span>"
 			return
 		if(watertemp == "boiling")
 			C.bodytemperature = min(500, C.bodytemperature + 35)

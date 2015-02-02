@@ -53,10 +53,10 @@
 	if(istype(W,/obj/item/device/assembly_holder) && (!stage || stage==1) && path != 2)
 		var/obj/item/device/assembly_holder/det = W
 		if(istype(det.a_left,det.a_right.type) || (!isigniter(det.a_left) && !isigniter(det.a_right)))
-			user << "<span class='indigo'> Assembly must contain one igniter.</span>"
+			user << "<span class='warning'> Assembly must contain one igniter.</span>"
 			return
 		if(!det.secured)
-			user << "<span class='indigo'> Assembly must be secured with screwdriver.</span>"
+			user << "<span class='warning'> Assembly must be secured with screwdriver.</span>"
 			return
 		path = 1
 		user << "<span class='notice'> You add [W] to the metal casing.</span>"
@@ -74,15 +74,15 @@
 				user << "<span class='notice'> You lock the assembly.</span>"
 				name = "grenade"
 			else
-//					user << "<span class='indigo'> You need to add at least one beaker before locking the assembly.</span>"
-				user << "<span class='indigo'> You lock the empty assembly.</span>"
+//					user << "<span class='warning'> You need to add at least one beaker before locking the assembly.</span>"
+				user << "<span class='warning'> You lock the empty assembly.</span>"
 				name = "fake grenade"
 			playsound(get_turf(src), 'sound/items/Screwdriver.ogg', 25, -3)
 			icon_state = initial(icon_state) +"_locked"
 			stage = 2
 		else if(stage == 2)
 			if(active && prob(95))
-				user << "<span class='indigo'> You trigger the assembly!</span>"
+				user << "<span class='warning'> You trigger the assembly!</span>"
 				prime()
 				return
 			else
@@ -95,12 +95,12 @@
 	else if(is_type_in_list(W, allowed_containers) && (!stage || stage==1) && path != 2)
 		path = 1
 		if(beakers.len == 2)
-			user << "<span class='indigo'> The grenade can not hold more containers.</span>"
+			user << "<span class='warning'> The grenade can not hold more containers.</span>"
 			return
 		else
 			if (istype(W,/obj/item/slime_extract))
 				if (inserted_cores > 0)
-					user << "<span class='indigo'> This type of grenade cannot hold more than one slime core.</span>"
+					user << "<span class='warning'> This type of grenade cannot hold more than one slime core.</span>"
 				else
 					user << "<span class='notice'> You add \the [W] to the assembly.</span>"
 					user.drop_item()
@@ -118,9 +118,9 @@
 				stage = 1
 				name = "unsecured grenade with [beakers.len] containers[detonator?" and detonator":""]"
 			else
-				user << "<span class='indigo'> \the [W] is empty.</span>"
+				user << "<span class='warning'> \the [W] is empty.</span>"
 	else if (istype(W,/obj/item/slime_extract))
-		user << "<span class='indigo'> This grenade case is too small for a slime core to fit in it.</span>"
+		user << "<span class='warning'> This grenade case is too small for a slime core to fit in it.</span>"
 
 /obj/item/weapon/grenade/chem_grenade/examine(mob/user)
 	..()
@@ -167,7 +167,7 @@
 
 	playsound(get_turf(src), 'sound/effects/bamfgas.ogg', 50, 1)
 
-	visible_message("<span class='indigo'>\icon[src] \The [src] bursts open.</span>")
+	visible_message("<span class='warning'>\icon[src] \The [src] bursts open.</span>")
 
 	reservoir = new /obj/item/weapon/reagent_containers/glass/beaker/noreactgrenade() //acts like a stasis beaker, so the chemical reactions don't occur before all the slime reactions have occured
 
@@ -249,10 +249,10 @@ obj/item/weapon/grenade/chem_grenade/exgrenade/attackby(obj/item/weapon/W as obj
 	if(istype(W,/obj/item/device/assembly_holder) && (!stage || stage==1) && path != 2)
 		var/obj/item/device/assembly_holder/det = W
 		if(istype(det.a_left,det.a_right.type) || (!isigniter(det.a_left) && !isigniter(det.a_right)))
-			user << "<span class='indigo'> Assembly must contain one igniter.</span>"
+			user << "<span class='warning'> Assembly must contain one igniter.</span>"
 			return
 		if(!det.secured)
-			user << "<span class='indigo'> Assembly must be secured with screwdriver.</span>"
+			user << "<span class='warning'> Assembly must be secured with screwdriver.</span>"
 			return
 		path = 1
 		user << "<span class='notice'> You insert [W] into the grenade.</span>"
@@ -290,12 +290,12 @@ obj/item/weapon/grenade/chem_grenade/exgrenade/attackby(obj/item/weapon/W as obj
 	else if(is_type_in_list(W, allowed_containers) && (!stage || stage==1) && path != 2)
 		path = 1
 		if(beakers.len == 3)
-			user << "<span class='indigo'> The grenade can not hold more containers.</span>"
+			user << "<span class='warning'> The grenade can not hold more containers.</span>"
 			return
 		else
 			if (istype(W,/obj/item/slime_extract))
 				if (inserted_cores > 1)
-					user << "<span class='indigo'> You cannot fit more than two slime cores in this grenade.</span>"
+					user << "<span class='warning'> You cannot fit more than two slime cores in this grenade.</span>"
 				else
 					user << "<span class='notice'> You add \the [W] to the assembly.</span>"
 					user.drop_item()
@@ -316,7 +316,7 @@ obj/item/weapon/grenade/chem_grenade/exgrenade/attackby(obj/item/weapon/W as obj
 				stage = 1
 				name = "unsecured EX grenade with [beakers.len] containers[detonator?" and detonator":""]"
 			else
-				user << "<span class='indigo'> \the [W] is empty.</span>"
+				user << "<span class='warning'> \the [W] is empty.</span>"
 
 /obj/item/weapon/grenade/chem_grenade/metalfoam
 	name = "Metal-Foam Grenade"

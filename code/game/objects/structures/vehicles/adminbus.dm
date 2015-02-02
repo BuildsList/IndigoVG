@@ -213,7 +213,7 @@
 				if(passengers.len < MAX_CAPACITY)
 					capture_mob(L)
 				else
-					buckled_mob << "<span class='indigo'>There is no place in the bus for any additional passenger.</span>"
+					buckled_mob << "<span class='warning'>There is no place in the bus for any additional passenger.</span>"
 			for(var/obj/machinery/bot/B in S)
 				if(B.flags & INVULNERABLE)
 					continue
@@ -277,7 +277,7 @@
 
 /obj/structure/stool/bed/chair/vehicle/adminbus/proc/capture_mob(atom/A, var/selfclimb=0)
 	if(passengers.len >= MAX_CAPACITY)
-		A << "<span class='indigo'>\the [src] is full!</span>"
+		A << "<span class='warning'>\the [src] is full!</span>"
 		return
 	if(unloading)
 		return
@@ -294,7 +294,7 @@
 		M.update_canmove()
 		passengers += M
 		if(!selfclimb)
-			M << "<span class='indigo'>\the [src] picks you up!</span>"
+			M << "<span class='warning'>\the [src] picks you up!</span>"
 			if(buckled_mob)
 				buckled_mob << "[M.name] captured!"
 		M << "<span class='notice'>Welcome aboard \the [src]. Please keep your hands and arms inside the bus at all times.</span>"
@@ -318,7 +318,7 @@
 
 	if(!(istype(user,/mob/living/carbon/human/dummy) || istype(user,/mob/living/simple_animal/corgi/Ian)))
 		if(!buckled_mob)
-			user << "<span class='indigo'>Only the gods have the power to drive this monstrosity.</span>"//Yes, Ian is a god. He doesn't have his own religion for nothing.
+			user << "<span class='warning'>Only the gods have the power to drive this monstrosity.</span>"//Yes, Ian is a god. He doesn't have his own religion for nothing.
 			return
 		else
 			if(door_mode)
@@ -428,11 +428,11 @@
 	return
 
 /obj/structure/stool/bed/chair/vehicle/adminbus/bullet_act(var/obj/item/projectile/Proj)
-	visible_message("<span class='indigo'>The projectile harmlessly bounces off the bus.</span>")
+	visible_message("<span class='warning'>The projectile harmlessly bounces off the bus.</span>")
 	return
 
 /obj/structure/stool/bed/chair/vehicle/adminbus/ex_act(severity)
-	visible_message("<span class='indigo'>The bus withstands the explosion with no damage.</span>")
+	visible_message("<span class='warning'>The bus withstands the explosion with no damage.</span>")
 	return
 
 /obj/structure/stool/bed/chair/vehicle/adminbus/cultify()

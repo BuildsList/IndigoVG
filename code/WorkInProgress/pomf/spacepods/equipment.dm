@@ -1,12 +1,12 @@
 /obj/item/device/spacepod_equipment/weaponry/proc/fire_weapons()
 
 	if(my_atom.next_firetime > world.time)
-		usr << "<span class='indigo'>Your weapons are recharging.</span>"
+		usr << "<span class='warning'>Your weapons are recharging.</span>"
 		return
 	var/turf/firstloc
 	var/turf/secondloc
 	if(!my_atom.equipment_system || !my_atom.equipment_system.weapon_system)
-		usr << "<span class='indigo'>Missing equipment or weapons.</span>"
+		usr << "<span class='warning'>Missing equipment or weapons.</span>"
 		my_atom.verbs -= text2path("[type]/proc/fire_weapons")
 		return
 	my_atom.battery.use(shot_cost)
@@ -86,7 +86,7 @@
 	set desc = "Fire ze tasers!"
 	set src = usr.loc
 
-	fire_weapons()
+	src.fire_weapons()
 
 /obj/item/device/spacepod_equipment/weaponry/taser/burst
 	name = "\improper burst taser system"
@@ -110,4 +110,4 @@
 	set desc = "Fire ze lasers!"
 	set src = usr.loc
 
-	fire_weapons()
+	src.fire_weapons()

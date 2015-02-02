@@ -874,18 +874,18 @@
 			M.LAssailant = user
 
 		for(var/mob/O in viewers(world.view, user))
-			O.show_message(text("<span class='indigo'>[] has been splashed with something by []!</span>", target, user), 1)
+			O.show_message(text("<span class='warning'>[] has been splashed with something by []!</span>", target, user), 1)
 		src.reagents.reaction(target, TOUCH)
 		spawn(5) src.reagents.remove_any(5)
 		return
 	else if(istype(target, /obj/structure/reagent_dispensers)) //A dispenser. Transfer FROM it TO us.
 
 		if(!target.reagents.total_volume && target.reagents)
-			user << "<span class='indigo'>[target] is empty.</span>"
+			user << "<span class='warning'>[target] is empty.</span>"
 			return
 
 		if(reagents.total_volume >= reagents.maximum_volume)
-			user << "<span class='indigo'>[src] is full.</span>"
+			user << "<span class='warning'>[src] is full.</span>"
 			return
 
 		var/trans = target.reagents.trans_to(src, target:amount_per_transfer_from_this)
@@ -893,11 +893,11 @@
 
 	else if(target.is_open_container() && target.reagents) //Something like a glass. Player probably wants to transfer TO it.
 		if(!reagents.total_volume)
-			user << "<span class='indigo'>[src] is empty.</span>"
+			user << "<span class='warning'>[src] is empty.</span>"
 			return
 
 		if(target.reagents.total_volume >= target.reagents.maximum_volume)
-			user << "<span class='indigo'>[target] is full.</span>"
+			user << "<span class='warning'>[target] is full.</span>"
 			return
 
 		var/trans = src.reagents.trans_to(target, amount_per_transfer_from_this)
@@ -910,7 +910,7 @@
 				if(reagents.has_reagent(bad_reagent))
 					badshit += reagents_to_log[bad_reagent]
 			if(badshit.len)
-				var/hl="<span class='indigo'>([english_list(badshit)])</span>"
+				var/hl="<span class='warning'>([english_list(badshit)])</span>"
 				message_admins("[user.name] ([user.ckey]) added [trans]U to \a [target] with [src].[hl] (<A HREF='?_src_=holder;adminplayerobservecoodjump=1;X=[user.x];Y=[user.y];Z=[user.z]'>JMP</a>)")
 				log_game("[user.name] ([user.ckey]) added [trans]U to \a [target] with [src].")
 

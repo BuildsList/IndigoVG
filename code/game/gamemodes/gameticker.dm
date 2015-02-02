@@ -201,9 +201,9 @@ var/global/datum/controller/gameticker/ticker
 	*/
 	processScheduler.start()
 
-//	if(config.sql_enabled)
-//		spawn(3000)
-//		statistic_cycle() // Polls population totals regularly and stores them in an SQL DB -- TLE
+	if(config.sql_enabled)
+		spawn(3000)
+		statistic_cycle() // Polls population totals regularly and stores them in an SQL DB -- TLE
 
 	return 1
 
@@ -388,7 +388,11 @@ var/global/datum/controller/gameticker/ticker
 				world << "<span class='notice'><B>Server will shut down for an automatic update [config.map_voting ? "[(restart_timeout/10)] seconds." : "in a few seconds."]</B></span>"
 				if(config.map_voting)
 					sleep(restart_timeout) //waiting for a mapvote to end
-				watchdog.signal_ready()
+				if(!delay_end)
+					watchdog.signal_ready()
+				else
+					world << "<span class='notice'><B>An admin has delayed the round end</B></span>"
+					delay_end = 2
 			else if(!delay_end)
 				sleep(restart_timeout)
 				if(!delay_end)
@@ -396,8 +400,10 @@ var/global/datum/controller/gameticker/ticker
 					world.Reboot()
 				else
 					world << "<span class='notice'><B>An admin has delayed the round end</B></span>"
+					delay_end = 2
 			else
 				world << "<span class='notice'><B>An admin has delayed the round end</B></span>"
+				delay_end = 2
 
 	return 1
 

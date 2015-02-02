@@ -105,9 +105,9 @@
 	//src.updatehealth()
 
 	visible_message( \
-		"<span class='indigo'>[src] was shocked by the [source]!</span>", \
+		"<span class='warning'>[src] was shocked by the [source]!</span>", \
 		"<span class='danger'>You feel a powerful shock course through your body!</span>", \
-		"<span class='indigo'>You hear a heavy electrical crack.</span>" \
+		"<span class='warning'>You hear a heavy electrical crack.</span>" \
 	)
 
 	//if(src.stunned < shock_damage)	src.stunned = shock_damage
@@ -129,7 +129,7 @@
 	if(item_in_hand) //this segment checks if the item in your hand is twohanded.
 		if(istype(item_in_hand,/obj/item/weapon/twohanded))
 			if(item_in_hand:wielded == 1)
-				usr << "<span class='indigo'>Your other hand is too busy holding the [item_in_hand.name]</span>"
+				usr << "<span class='warning'>Your other hand is too busy holding the [item_in_hand.name]</span>"
 				return
 	src.hand = !( src.hand )
 	if(hud_used.l_hand_hud_object && hud_used.r_hand_hud_object)
@@ -652,7 +652,7 @@
 		var/mob/dead/observer/O = B.request_player()
 		if(!O)
 			// No spaceghoasts.
-			src << "<span class='indigo'>Your young are not ready yet.</span>"
+			src << "<span class='warning'>Your young are not ready yet.</span>"
 		else
 			src << "\red <B>Your host twitches and quivers as you rapidly excrete several larvae from your sluglike body.</B>"
 			visible_message("\red <B>[src] heaves violently, expelling a rush of vomit and a wriggling, sluglike creature!</B>")

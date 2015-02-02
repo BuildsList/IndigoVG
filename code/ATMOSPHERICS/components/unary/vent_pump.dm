@@ -335,16 +335,16 @@
 	if (!istype(W, /obj/item/weapon/wrench))
 		return ..()
 	if (!(stat & NOPOWER) && on)
-		user << "<span class='indigo'>You cannot unwrench this [src], turn it off first.</span>"
+		user << "<span class='warning'>You cannot unwrench this [src], turn it off first.</span>"
 		return 1
 	var/turf/T = src.loc
 	if (level==1 && isturf(T) && T.intact)
-		user << "<span class='indigo'>You must remove the plating first.</span>"
+		user << "<span class='warning'>You must remove the plating first.</span>"
 		return 1
 	var/datum/gas_mixture/int_air = return_air()
 	var/datum/gas_mixture/env_air = loc.return_air()
 	if ((int_air.return_pressure()-env_air.return_pressure()) > 2*ONE_ATMOSPHERE)
-		user << "<span class='indigo'>You cannot unwrench this [src], it too exerted due to internal pressure.</span>"
+		user << "<span class='warning'>You cannot unwrench this [src], it too exerted due to internal pressure.</span>"
 		add_fingerprint(user)
 		return 1
 	playsound(get_turf(src), 'sound/items/Ratchet.ogg', 50, 1)

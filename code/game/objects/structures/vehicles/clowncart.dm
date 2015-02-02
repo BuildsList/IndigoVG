@@ -50,7 +50,7 @@
 		if(max_health*0.5 to max_health)
 			user << "<span class='notice'>It appears slightly dented.</span>"
 		if(1 to max_health*0.5)
-			user << "<span class='indigo'>It appears heavily dented.</span>"
+			user << "<span class='warning'>It appears heavily dented.</span>"
 		if((INFINITY * -1) to 0)
 			user << "<span class='danger'>It appears completely unsalvageable.</span>"
 
@@ -68,14 +68,14 @@
 		playsound(get_turf(src), 'sound/items/bikehorn.ogg', 50, 1)
 		if(reagents.get_reagent_amount("banana") <= 5)
 			if(activated)
-				visible_message("<span class='indigo'>[nick] lets out a last honk before running out of fuel and activating its ejection seat.</span>")
+				visible_message("<span class='warning'>[nick] lets out a last honk before running out of fuel and activating its ejection seat.</span>")
 				if(ishuman(user)) //This shouldn't be needed, but fucks sakes
 					user.Weaken(5)
 				playsound(get_turf(src), 'sound/items/bikehorn.ogg', 50, 1)
 				activated = 0
 				reagents.remove_reagent("banana", 5)
 			else
-				user << "<span class='indigo'>[src] doesn't have enough banana juice!</span>"
+				user << "<span class='warning'>[src] doesn't have enough banana juice!</span>"
 		else
 			spawn(5)
 				activated = 1
@@ -85,28 +85,28 @@
 	//Banana type items add fuel to the ride, can't add fuel over limit for obvious reasons
 	if(istype(W, /obj/item/weapon/reagent_containers/food/snacks/bananabreadslice)) //Sliced banana bread
 		if(reagents.total_volume > 5000 - 75) //You shouldn't be able to have more reagent than the container can hold, but this is mostly for fluff
-			user << "<span class='indigo'>You try to cram [W] inside, but you decide against it as banana essence starts spilling out of the fuel hatch</span>"
+			user << "<span class='warning'>You try to cram [W] inside, but you decide against it as banana essence starts spilling out of the fuel hatch</span>"
 			return
 		visible_message("<span class='notice'>[user] puts [W] into [src].</span>", "<span class='notice'>You put [W] into [src].</span>")
 		reagents.add_reagent("banana", 75)
 		del(W)
 	else if(istype(W, /obj/item/weapon/reagent_containers/food/snacks/grown/banana)) //A banana
 		if(reagents.total_volume > 5000 - 100)
-			user << "<span class='indigo'>You try to cram [W] inside, but you decide against it as banana essence starts spilling out of the fuel hatch</span>"
+			user << "<span class='warning'>You try to cram [W] inside, but you decide against it as banana essence starts spilling out of the fuel hatch</span>"
 			return
 		visible_message("<span class='notice'>[user] puts [W] into [src].</span>", "<span class='notice'>You put [W] into [src].</span>")
 		reagents.add_reagent("banana", 100)
 		del(W)
 	else if(istype(W, /obj/item/weapon/reagent_containers/food/snacks/sliceable/bananabread)) //Unsliced banana bread
 		if(reagents.total_volume > 5000 - 375)
-			user << "<span class='indigo'>You try to cram [W] inside, but you decide against it as banana essence starts spilling out of the fuel hatch</span>"
+			user << "<span class='warning'>You try to cram [W] inside, but you decide against it as banana essence starts spilling out of the fuel hatch</span>"
 			return
 		visible_message("<span class='notice'>[user] puts [W] into [src].</span>", "<span class='notice'>You put [W] into [src].</span>")
 		reagents.add_reagent("banana", 375)
 		del(W)
 	else if(istype(W, /obj/item/weapon/bananapeel)) //Banana peels
 		if(reagents.total_volume > 5000 - 10)
-			user << "<span class='indigo'>You try to cram [W] inside, but you decide against it as banana essence starts spilling out of the fuel hatch</span>"
+			user << "<span class='warning'>You try to cram [W] inside, but you decide against it as banana essence starts spilling out of the fuel hatch</span>"
 			return
 		visible_message("<span class='notice'>[user] puts [W] into [src].</span>", "<span class='notice'>You put [W] into [src].</span>")
 		reagents.add_reagent("banana", 10)
@@ -140,17 +140,17 @@
 
 	else if(istype(W, /obj/item/weapon/reagent_containers/food/snacks/pie)) //Banana pie
 		if(reagents.total_volume > 5000 - 175)
-			user << "<span class='indigo'>You try to cram [W] inside, but you decide against it as banana essence starts spilling out of the fuel hatch</span>"
+			user << "<span class='warning'>You try to cram [W] inside, but you decide against it as banana essence starts spilling out of the fuel hatch</span>"
 			return
 		visible_message("<span class='notice'>[user] puts [W] into [src], it starts boiling inside the fuel container.</span>", \
 		"<span class='notice'>You put [W] into [src], it starts boiling inside the fuel container.</span>")
 		playsound(get_turf(src), 'sound/effects/bubbles.ogg', 50, 1)
-		usr << "<span class='indigo'>[W] starts boiling inside [src]!</span>"
+		usr << "<span class='warning'>[W] starts boiling inside [src]!</span>"
 		reagents.add_reagent("banana", 175)
 		trail += 5
 		del(W)
 	else if(istype(W, /obj/item/weapon/coin/clown)) //Bananium coin
-		user.visible_message("<span class='indigo'>[user] inserts a bananium coin into [src].</span>", "<span class='notice'>You insert a bananium coin into [src].</span>")
+		user.visible_message("<span class='warning'>[user] inserts a bananium coin into [src].</span>", "<span class='notice'>You insert a bananium coin into [src].</span>")
 		playsound(get_turf(src), 'sound/machines/ping.ogg', 50, 1)
 		mode += 1
 		if(mode > 2) //only 3 modes, so when it raises above 2 reset to 0
@@ -158,14 +158,14 @@
 		switch(mode)
 			if(0)
 				spawn(5)
-					visible_message("<span class='indigo'>[src]'s SynthPeel Generator turns off with a buzz.</span>")
+					visible_message("<span class='warning'>[src]'s SynthPeel Generator turns off with a buzz.</span>")
 					playsound(get_turf(src), 'sound/machines/buzz-sigh.ogg', 50, 1)
 			if(1)
 				visible_message("<span class='notice'>[src]'s SmartCrayon Mk.II deploys, ready to draw!</span>")
 				user << {"<span class='notice'>Use a crayon to decide what you want to draw.<br>
 				Use stamps to change the colour of SmartCrayon Mk.II.</span>"}
 			if(2)
-				visible_message("<span class='indigo'>[src]'s SmartCrayon Mk.II disappears in a puff of art!</span>")
+				visible_message("<span class='warning'>[src]'s SmartCrayon Mk.II disappears in a puff of art!</span>")
 				spawn(5)
 					playsound(get_turf(src), 'sound/machines/ping.ogg', 50, 1)
 					visible_message("<span class='notice'>You hear a ping as [src]'s SynthPeel Generator starts transforming banana juice into slippery peels.</span>")
@@ -181,7 +181,7 @@
 				if("rune")
 					user << "<span class='notice'>Set to draw runes!</span>"
 				if("" || "nothing")
-					user << "<span class='indigo'>No longer drawing anything.</span>"
+					user << "<span class='warning'>No longer drawing anything.</span>"
 				if("paint")
 					user << "<span class='notice'>Set to paint the floor!</span>"
 				else
@@ -197,14 +197,14 @@
 					visible_message("<span class='notice'>The HONKTech pump starts recharging [W].</span>")
 					reagents.trans_to(W, 10)
 				else
-					user << "<span class='indigo'>There doesn't seem to be anything other than banana juice in [src]!</span>"
+					user << "<span class='warning'>There doesn't seem to be anything other than banana juice in [src]!</span>"
 				reagents.add_reagent("banana", bananas) //adding banan back
 		else
-			user << "<span class='indigo'>The HONKTech pump is not strong enough to do that yet. Reinforce it with more bananium sheets first.</span>"
+			user << "<span class='warning'>The HONKTech pump is not strong enough to do that yet. Reinforce it with more bananium sheets first.</span>"
 	else if(istype(W, /obj/item/weapon/card/emag)) //emag
 		if(!emagged)
 			emagged = 1
-			visible_message("<span class='indigo'>[src]'s eyes glow eerily red for a second.</span>")
+			visible_message("<span class='warning'>[src]'s eyes glow eerily red for a second.</span>")
 	else if(istype(W, /obj/item/weapon/stamp/))
 		if(mode == 1)
 			if(istype(W, /obj/item/weapon/stamp/captain))
@@ -249,11 +249,11 @@
 		return
 	if(empstun > 0)
 		if(user)
-			user << "<span class='indigo'>[src]'s banana essence battery has shorted out.</span>"
+			user << "<span class='warning'>[src]'s banana essence battery has shorted out.</span>"
 		return
 	if(reagents.total_volume <= 0) //No fuel
 		if(user)
-			user << "<span class='indigo'>[src] has no fuel, it activates its ejection seat as soon as you jam down the pedal!</span>"
+			user << "<span class='warning'>[src] has no fuel, it activates its ejection seat as soon as you jam down the pedal!</span>"
 			activated = 0
 			user.Weaken(5)
 		return
@@ -319,7 +319,7 @@
 	density = 0
 	if(buckled_mob)
 		unbuckle()
-	visible_message("<span class='indigo'>[nick] explodes in a puff of pure potassium!</span>")
+	visible_message("<span class='warning'>[nick] explodes in a puff of pure potassium!</span>")
 	playsound(get_turf(src), 'sound/items/bikehorn.ogg', 75, 1)
 	explosion(src.loc, -1, 0, 3, 7, 10)
 	for(var/a = 0, a < round(reagents.total_volume*0.25), a++) //Spawn banana peels in place of the cart

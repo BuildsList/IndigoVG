@@ -35,7 +35,7 @@
 			return
 
 /obj/item/weapon/clipboard/update_icon()
-	overlays.Cut()
+	overlays.len = 0
 	if(toppaper)
 		overlays += toppaper.icon_state
 		overlays += toppaper.overlays
@@ -112,7 +112,7 @@
 		if(href_list["remove"])
 			var/obj/item/P = locate(href_list["remove"])
 			if(!(P.loc == src))
-				var/message = "<span class='indigo'>[usr]([usr.key]) has tried to remove something it shouldn't from the clipboard<span>"
+				var/message = "<span class='warning'>[usr]([usr.key]) has tried to remove something it shouldn't from the clipboard<span>"
 				message_admins(message)
 				message += "[P]"
 				log_game(message)

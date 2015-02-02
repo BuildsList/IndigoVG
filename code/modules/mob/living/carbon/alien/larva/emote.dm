@@ -16,7 +16,7 @@
 				return
 			if(src.client)
 				if(client.prefs.muted & MUTE_IC)
-					src << "<span class='indigo'>You cannot send IC messages (muted).</span>"
+					src << "<span class='warning'>You cannot send IC messages (muted).</span>"
 					return
 				if(src.client.handle_spam_prevention(message,MUTE_IC))
 					return

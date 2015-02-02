@@ -6,7 +6,7 @@
 
 	if(!src.mind)		return 0
 	if(!ishuman(src))
-		src << "<span class='indigo'>You are in too weak of a form to do this!</span>"
+		src << "<span class='warning'>You are in too weak of a form to do this!</span>"
 		return 0
 
 	var/datum/vampire/vampire = src.mind.vampire
@@ -18,20 +18,20 @@
 	var/fullpower = (VAMP_FULL in vampire.powers)
 
 	if(src.stat > max_stat)
-		src << "<span class='indigo'>You are incapacitated.</span>"
+		src << "<span class='warning'>You are incapacitated.</span>"
 		return 0
 
 	if(vampire.nullified)
 		if(!fullpower)
-			src << "<span class='indigo'>Something is blocking your powers!</span>"
+			src << "<span class='warning'>Something is blocking your powers!</span>"
 			return 0
 	if(vampire.bloodusable < required_blood)
-		src << "<span class='indigo'>You require at least [required_blood] units of usable blood to do that!</span>"
+		src << "<span class='warning'>You require at least [required_blood] units of usable blood to do that!</span>"
 		return 0
 	//chapel check
 	if(istype(loc.loc, /area/chapel))
 		if(!fullpower)
-			src << "<span class='indigo'>Your powers are useless on this holy ground.</span>"
+			src << "<span class='warning'>Your powers are useless on this holy ground.</span>"
 			return 0
 	return 1
 
@@ -103,23 +103,23 @@
 	var/mob/living/carbon/C = M.current.vampire_active(0, 0, 1)
 
 	if(!C) return
-	M.current.visible_message("<span class='indigo'>[M.current.name]'s eyes flash briefly as he stares into [C.name]'s eyes</span>")
+	M.current.visible_message("<span class='warning'>[M.current.name]'s eyes flash briefly as he stares into [C.name]'s eyes</span>")
 	M.current.verbs -= /client/proc/vampire_hypnotise
 	spawn(1800)
 		M.current.verbs += /client/proc/vampire_hypnotise
 	if(do_mob(M.current, C, 50))
 		if(C.mind && C.mind.vampire)
-			M.current << "<span class='indigo'>Your piercing gaze fails to knock out [C.name].</span>"
+			M.current << "<span class='warning'>Your piercing gaze fails to knock out [C.name].</span>"
 			C << "<span class='notice'>[M.current.name]'s feeble gaze is ineffective.</span>"
 			return
 		else
-			M.current << "<span class='indigo'>Your piercing gaze knocks out [C.name].</span>"
-			C << "<span class='indigo'>You find yourself unable to move and barely able to speak.</span>"
+			M.current << "<span class='warning'>Your piercing gaze knocks out [C.name].</span>"
+			C << "<span class='warning'>You find yourself unable to move and barely able to speak.</span>"
 			C.Weaken(20)
 			C.Stun(20)
 			C.stuttering = 20
 	else
-		M.current << "<span class='indigo'>You broke your gaze.</span>"
+		M.current << "<span class='warning'>You broke your gaze.</span>"
 		return
 
 /client/proc/vampire_disease()
@@ -132,12 +132,12 @@
 	var/mob/living/carbon/C = M.current.vampire_active(50, 0, 1)
 	if(!C) return
 	if(!M.current.vampire_can_reach(C, 1))
-		M.current << "<span class='indigo'><b>You cannot touch [C.name] from where you are standing!</b></span>"
+		M.current << "<span class='warning'><b>You cannot touch [C.name] from where you are standing!</b></span>"
 		return
-	M.current << "<span class='indigo'>You stealthily infect [C.name] with your diseased touch.</span>"
+	M.current << "<span class='warning'>You stealthily infect [C.name] with your diseased touch.</span>"
 	C.help_shake_act(M.current) // i use da colon
 	if(!C.vampire_affected(M))
-		M.current << "<span class='indigo'>They seem to be unaffected.</span>"
+		M.current << "<span class='warning'>They seem to be unaffected.</span>"
 		return
 	var/datum/disease2/disease/shutdown = new /datum/disease2/disease("Created by vamp [key_name(C)].")
 	var/datum/disease2/effectholder/holder = new /datum/disease2/effectholder
@@ -165,13 +165,13 @@
 	var/datum/mind/M = usr.mind
 	if(!M) return
 	if(M.current.vampire_power(0, 1))
-		M.current.visible_message("<span class='indigo'><b>[M.current.name]'s eyes emit a blinding flash!</b></span>")
+		M.current.visible_message("<span class='warning'><b>[M.current.name]'s eyes emit a blinding flash!</b></span>")
 		//M.vampire.bloodusable -= 10
 		M.current.verbs -= /client/proc/vampire_glare
 		spawn(300)
 			M.current.verbs += /client/proc/vampire_glare
 		if(istype(M.current:glasses, /obj/item/clothing/glasses/sunglasses/blindfold))
-			M.current << "<span class='indigo'>You're blindfolded!</span>"
+			M.current << "<span class='warning'>You're blindfolded!</span>"
 			return
 		for(var/mob/living/carbon/C in view(1))
 			if(!C.vampire_affected(M)) continue
@@ -179,7 +179,7 @@
 			C.Stun(8)
 			C.Weaken(8)
 			C.stuttering = 20
-			C << "<span class='indigo'>You are blinded by [M.current.name]'s glare</span>"
+			C << "<span class='warning'>You are blinded by [M.current.name]'s glare</span>"
 
 /client/proc/vampire_shapeshift()
 	set category = "Vampire"
@@ -188,7 +188,7 @@
 	var/datum/mind/M = usr.mind
 	if(!M) return
 	if(M.current.vampire_power(0, 0))
-		M.current.visible_message("<span class='indigo'>[M.current.name] transforms!</span>")
+		M.current.visible_message("<span class='warning'>[M.current.name] transforms!</span>")
 		M.current.client.prefs.real_name = M.current.generate_name() //random_name(M.current.gender)
 		M.current.client.prefs.randomize_appearance_for(M.current)
 		M.current.regenerate_icons()
@@ -202,17 +202,17 @@
 	var/datum/mind/M = usr.mind
 	if(!M) return
 	if(M.current.vampire_power(10, 0))
-		M.current.visible_message("<span class='indigo'>[M.current.name] lets out an ear piercing shriek!</span>", "<span class='indigo'>You let out a loud shriek.</span>", "<span class='indigo'>You hear a loud painful shriek!</span>")
+		M.current.visible_message("<span class='warning'>[M.current.name] lets out an ear piercing shriek!</span>", "<span class='warning'>You let out a loud shriek.</span>", "<span class='warning'>You hear a loud painful shriek!</span>")
 		for(var/mob/living/carbon/C in hearers(4, M.current))
 			if(C == M.current) continue
 			if(ishuman(C) && C:is_on_ears(/obj/item/clothing/ears/earmuffs)) continue
 			if(!C.vampire_affected(M)) continue
-			C << "<span class='indigo'><font size='3'><b>You hear a ear piercing shriek and your senses dull!</font></b></span>"
+			C << "<span class='warning'><font size='3'><b>You hear a ear piercing shriek and your senses dull!</font></b></span>"
 			C.Weaken(8)
 			C.ear_deaf = 20
 			C.stuttering = 20
 			C.Stun(8)
-			C.make_jittery(150)
+			C.Jitter(150)
 		for(var/obj/structure/window/W in view(4))
 			W.destroy()
 		playsound(M.current.loc, 'sound/effects/creepyshriek.ogg', 100, 1)
@@ -228,10 +228,10 @@
 	if(!M) return
 	var/mob/living/carbon/C = M.current.vampire_active(300, 0, 1)
 	if(!C) return
-	M.current.visible_message("<span class='indigo'>[M.current.name] bites [C.name]'s neck!</span>", "<span class='indigo'>You bite [C.name]'s neck and begin the flow of power.</span>")
-	C << "<span class='indigo'>You feel the tendrils of evil invade your mind.</span>"
+	M.current.visible_message("<span class='warning'>[M.current.name] bites [C.name]'s neck!</span>", "<span class='warning'>You bite [C.name]'s neck and begin the flow of power.</span>")
+	C << "<span class='warning'>You feel the tendrils of evil invade your mind.</span>"
 	if(!ishuman(C))
-		M.current << "<span class='indigo'>You can only enthrall humans</span>"
+		M.current << "<span class='warning'>You can only enthrall humans</span>"
 		return
 
 	if(do_mob(M.current, C, 50))
@@ -241,7 +241,7 @@
 			M.current.verbs -= /client/proc/vampire_enthrall
 			spawn(1800) M.current.verbs += /client/proc/vampire_enthrall
 		else
-			M.current << "<span class='indigo'>You or your target either moved or you dont have enough usable blood.</span>"
+			M.current << "<span class='warning'>You or your target either moved or you dont have enough usable blood.</span>"
 			return
 
 
@@ -288,21 +288,21 @@
 		world.log << "something bad happened on enthralling a mob src is [src] [src.key] \ref[src]"
 		return 0
 	if(!C.mind)
-		src << "<span class='indigo'>[C.name]'s mind is not there for you to enthrall.</span>"
+		src << "<span class='warning'>[C.name]'s mind is not there for you to enthrall.</span>"
 		return 0
 	if(enthrall_safe || ( C.mind in ticker.mode.vampires )||( C.mind.vampire )||( C.mind in ticker.mode.enthralled ))
-		C.visible_message("<span class='indigo'>[C] seems to resist the takeover!</span>", "<span class='notice'>You feel a familiar sensation in your skull that quickly dissipates.</span>")
+		C.visible_message("<span class='warning'>[C] seems to resist the takeover!</span>", "<span class='notice'>You feel a familiar sensation in your skull that quickly dissipates.</span>")
 		return 0
 	if(!C.vampire_affected(mind))
-		C.visible_message("<span class='indigo'>[C] seems to resist the takeover!</span>", "<span class='notice'>Your faith of [ticker.Bible_deity_name] has kept your mind clear of all evil</span>")
+		C.visible_message("<span class='warning'>[C] seems to resist the takeover!</span>", "<span class='notice'>Your faith of [ticker.Bible_deity_name] has kept your mind clear of all evil</span>")
 	if(!ishuman(C))
-		src << "<span class='indigo'>You can only enthrall humans!"
+		src << "<span class='warning'>You can only enthrall humans!"
 		return 0
 	return 1
 
 /mob/proc/handle_enthrall(mob/living/carbon/human/H as mob)
 	if(!istype(H))
-		src << "<b><span class='indigo'>SOMETHING WENT WRONG, YELL AT POMF OR NEXIS</b>"
+		src << "<b><span class='warning'>SOMETHING WENT WRONG, YELL AT POMF OR NEXIS</b>"
 		return 0
 	var/ref = "\ref[src.mind]"
 	if(!(ref in ticker.mode.thralls))
@@ -312,8 +312,8 @@
 	ticker.mode.enthralled.Add(H.mind)
 	ticker.mode.enthralled[H.mind] = src.mind
 	H.mind.special_role = "VampThrall"
-	H << "<b><span class='indigo'>You have been Enthralled by [name]. Follow their every command.</b></span>"
-	src << "<span class='indigo'>You have successfully Enthralled [H.name]. <i>If they refuse to do as you say just adminhelp.</i></span>"
+	H << "<b><span class='warning'>You have been Enthralled by [name]. Follow their every command.</b></span>"
+	src << "<span class='warning'>You have successfully Enthralled [H.name]. <i>If they refuse to do as you say just adminhelp.</i></span>"
 	ticker.mode.update_vampire_icons_added(H.mind)
 	ticker.mode.update_vampire_icons_added(src.mind)
 	log_admin("[ckey(src.key)] has mind-slaved [ckey(H.key)].")
@@ -394,8 +394,9 @@
 							break
 			M.current.canmove = 1
 			M.current.client.eye = M.current
-			del(animation)
-			del(holder)
+			animation.master = null
+			qdel(animation)
+			qdel(holder)
 		M.current.verbs -= /client/proc/vampire_jaunt
 		spawn(600) M.current.verbs += /client/proc/vampire_jaunt
 
@@ -431,7 +432,7 @@
 				turfs += T
 
 			if(!turfs.len)
-				usr << "<span class='indigo'>You cannot find darkness to step to.</span>"
+				usr << "<span class='warning'>You cannot find darkness to step to.</span>"
 				return
 
 			var/turf/picked = pick(turfs)
@@ -451,7 +452,8 @@
 			//animation.master = src
 			usr.loc = picked
 			spawn(10)
-				del(animation)
+				animation.master = null
+				qdel(animation)
 		M.current.verbs -= /client/proc/vampire_shadowstep
 		spawn(20)
 			M.current.verbs += /client/proc/vampire_shadowstep

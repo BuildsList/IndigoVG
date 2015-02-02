@@ -120,15 +120,15 @@
 		if (!multiplier) multiplier = 1
 		if (src.amount < R.req_amount*multiplier)
 			if (R.req_amount*multiplier>1)
-				usr << "<span class='indigo'>You haven't got enough [src] to build \the [R.req_amount*multiplier] [R.title]\s!</span>"
+				usr << "<span class='warning'>You haven't got enough [src] to build \the [R.req_amount*multiplier] [R.title]\s!</span>"
 			else
-				usr << "<span class='indigo'>You haven't got enough [src] to build \the [R.title]!</span>"
+				usr << "<span class='warning'>You haven't got enough [src] to build \the [R.title]!</span>"
 			return
 		if (R.one_per_turf && (locate(R.result_type) in usr.loc))
-			usr << "<span class='indigo'>There is another [R.title] here!</span>"
+			usr << "<span class='warning'>There is another [R.title] here!</span>"
 			return
 		if (R.on_floor && !istype(usr.loc, /turf/simulated/floor))
-			usr << "<span class='indigo'>\The [R.title] must be constructed on the floor!</span>"
+			usr << "<span class='warning'>\The [R.title] must be constructed on the floor!</span>"
 			return
 		if (R.time)
 			usr << "<span class='notice'>Building [R.title] ...</span>"
@@ -186,8 +186,7 @@
 			continue
 		oldsrc.attackby(item, usr)
 		usr << "You add new [item.singular_name] to the stack. It now contains [item.amount] [item.singular_name]\s."
-		if(!oldsrc)
-			break
+		break
 
 /obj/item/stack/attack_hand(mob/user as mob)
 	if (user.get_inactive_hand() == src)

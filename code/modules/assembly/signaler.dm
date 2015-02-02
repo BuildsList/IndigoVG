@@ -194,4 +194,4 @@
 		var/mob/user = usr
 		deadman = 1
 		processing_objects.Add(src)
-		user.visible_message("<span class='indigo'>[user] moves their finger over [src]'s signal button...</span>")
+		user.visible_message("<span class='warning'>[user] moves their finger over [src]'s signal button...</span>")

@@ -39,7 +39,7 @@
 			num_stored_bags += 1
 			user << "<span class='notice'>You insert the [W] into the core sampler.</span>"
 		else
-			user << "<span class='indigo'>The core sampler can not fit any more bags!</span>"
+			user << "<span class='warning'>The core sampler can not fit any more bags!</span>"
 	else
 		return ..()
 
@@ -55,9 +55,9 @@
 
 	if(geo_data)
 		if(filled_bag)
-			user << "<span class='indigo'>The core sampler is full!</span>"
+			user << "<span class='warning'>The core sampler is full!</span>"
 		else if(num_stored_bags < 1)
-			user << "<span class='indigo'>The core sampler is out of sample bags!</span>"
+			user << "<span class='warning'>The core sampler is out of sample bags!</span>"
 		else
 			//create a new sample bag which we'll fill with rock samples
 			filled_bag = new /obj/item/weapon/evidencebag(src)
@@ -80,7 +80,7 @@
 
 			user << "<span class='notice'>You take a core sample of the [item_to_sample].</span>"
 	else
-		user << "<span class='indigo'>You are unable to take a sample of [item_to_sample].</span>"
+		user << "<span class='warning'>You are unable to take a sample of [item_to_sample].</span>"
 
 /obj/item/device/core_sampler/attack_self()
 	if(filled_bag)
@@ -94,4 +94,4 @@
 		filled_bag = null
 		icon_state = "sampler0"
 	else
-		usr << "<span class='indigo'>The core sampler is empty.</span>"
+		usr << "<span class='warning'>The core sampler is empty.</span>"

@@ -434,10 +434,10 @@ turf/simulated/floor/proc/update_icon()
 
 	if(istype(C, /obj/item/weapon/crowbar) && (!(is_plating())))
 		if(broken || burnt)
-			user << "<span class='indigo'>You remove the broken plating.</span>"
+			user << "<span class='warning'>You remove the broken plating.</span>"
 		else
 			if(is_wood_floor())
-				user << "<span class='indigo'>You forcefully pry off the planks, destroying them in the process.</span>"
+				user << "<span class='warning'>You forcefully pry off the planks, destroying them in the process.</span>"
 			else
 				user << "<span class='notice'>You remove the [floor_tile.name].</span>"
 				new floor_tile.type(src)
@@ -477,16 +477,16 @@ turf/simulated/floor/proc/update_icon()
 					R.use(2)
 					return
 			else
-				user << "<span class='indigo'>You need more rods.</span>"
+				user << "<span class='warning'>You need more rods.</span>"
 		else if (is_catwalk())
-			user << "<span class='indigo'>The entire thing is 100% rods already, it doesn't need any more.</span>"
+			user << "<span class='warning'>The entire thing is 100% rods already, it doesn't need any more.</span>"
 		else
-			user << "<span class='indigo'>You must remove the plating first.</span>"
+			user << "<span class='warning'>You must remove the plating first.</span>"
 		return
 
 	if(istype(C, /obj/item/stack/tile))
 		if (is_catwalk())
-			user << "<span class='indigo'>The catwalk is too primitive to support tiling.</span>"
+			user << "<span class='warning'>The catwalk is too primitive to support tiling.</span>"
 		if(is_plating())
 			if(!broken && !burnt)
 				var/obj/item/stack/tile/T = C
@@ -512,7 +512,7 @@ turf/simulated/floor/proc/update_icon()
 					levelupdate()
 					playsound(src, 'sound/weapons/Genhit.ogg', 50, 1)
 			else
-				user << "<span class='indigo'>This section is too damaged to support a tile. Use a welder to fix the damage.</span>"
+				user << "<span class='warning'>This section is too damaged to support a tile. Use a welder to fix the damage.</span>"
 
 
 	if(istype(C, /obj/item/weapon/cable_coil))
@@ -520,7 +520,7 @@ turf/simulated/floor/proc/update_icon()
 			var/obj/item/weapon/cable_coil/coil = C
 			coil.turf_place(src, user)
 		else
-			user << "<span class='indigo'>You must remove the plating first.</span>"
+			user << "<span class='warning'>You must remove the plating first.</span>"
 
 	if(istype(C, /obj/item/weapon/pickaxe/shovel))
 		if(is_grass_floor())
@@ -529,14 +529,14 @@ turf/simulated/floor/proc/update_icon()
 			user << "<span class='notice'>You shovel the grass.</span>"
 			make_plating()
 		else
-			user << "<span class='indigo'>You cannot shovel this.</span>"
+			user << "<span class='warning'>You cannot shovel this.</span>"
 
 	if(istype(C, /obj/item/weapon/weldingtool))
 		var/obj/item/weapon/weldingtool/welder = C
 		if(welder.isOn() && (is_plating()))
 			if(broken || burnt)
 				if(welder.remove_fuel(0,user))
-					user << "<span class='indigo'>You fix some dents on the broken plating.</span>"
+					user << "<span class='warning'>You fix some dents on the broken plating.</span>"
 					playsound(src, 'sound/items/Welder.ogg', 80, 1)
 					icon_state = "plating"
 					burnt = 0

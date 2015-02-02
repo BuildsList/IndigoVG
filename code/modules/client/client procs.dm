@@ -65,11 +65,11 @@
 	if(config.automute_on && !holder && src.last_message == message)
 		src.last_message_count++
 		if(src.last_message_count >= SPAM_TRIGGER_AUTOMUTE)
-			src << "<span class='indigo'>You have exceeded the spam filter limit for identical messages. An auto-mute was applied.</span>"
+			src << "<span class='warning'>You have exceeded the spam filter limit for identical messages. An auto-mute was applied.</span>"
 			cmd_admin_mute(src.mob, mute_type, 1)
 			return 1
 		if(src.last_message_count >= SPAM_TRIGGER_WARNING)
-			src << "<span class='indigo'>You are nearing the spam filter limit for identical messages.</span>"
+			src << "<span class='warning'>You are nearing the spam filter limit for identical messages.</span>"
 			return 0
 	else
 		last_message = message
@@ -99,7 +99,7 @@
 		winset(src, null, "outputwindow.output.style=[config.world_style_config];")
 		winset(src, null, "window1.msay_output.style=[config.world_style_config];") // it isn't possible to set two window elements in the same winset so we need to call it for each element we're assigning a stylesheet.
 	else
-		src << "<span class='indigo'>The stylesheet wasn't properly setup call an administrator to reload the stylesheet or relog.</span>"
+		src << "<span class='warning'>The stylesheet wasn't properly setup call an administrator to reload the stylesheet or relog.</span>"
 	TopicData = null							//Prevent calls to client.Topic from connect
 
 	if(connection != "seeker")					//Invalid connection type.
@@ -117,7 +117,7 @@
 		src.preload_rsc = pick(config.resource_urls)
 	else src.preload_rsc = 1 // If config.resource_urls is not set, preload like normal.
 
-	src << "<span class='indigo'>If the title screen is black, resources are still downloading. Please be patient until the title screen appears.</span>"
+	src << "<span class='warning'>If the title screen is black, resources are still downloading. Please be patient until the title screen appears.</span>"
 
 	clients += src
 	directory[ckey] = src
@@ -141,7 +141,7 @@
 	if(custom_event_msg && custom_event_msg != "")
 		src << "<h1 class='alert'>Custom Event</h1>"
 		src << "<h2 class='alert'>A custom event is taking place. OOC Info:</h2>"
-		src << "<span class='alert'>[rhtml_encode(custom_event_msg)]</span>"
+		src << "<span class='alert'>[html_encode(custom_event_msg)]</span>"
 		src << "<br>"
 
 	if( (world.address == address || !address) && !host )

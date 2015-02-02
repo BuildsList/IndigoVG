@@ -4,7 +4,7 @@
 		msg += "<span class='deadsay'>It is limp and unresponsive.</span>\n"
 	else
 		if (src.getBruteLoss())
-			msg += "<span class='indigo'>"
+			msg += "<span class='warning'>"
 			if (src.getBruteLoss() < 40)
 				msg += "It has some punctures in its flesh!"
 			else
@@ -20,7 +20,7 @@
 				msg += "It is glowing gently with moderate levels of electrical activity.\n"
 
 			if(6 to 9)
-				msg += "<span class='indigo'>It is glowing brightly with high levels of electrical activity.</span>\n"
+				msg += "<span class='warning'>It is glowing brightly with high levels of electrical activity.</span>\n"
 
 			if(10)
 				msg += "<span class='danger'>It is radiating with massive levels of electrical activity!</span>\n"

@@ -67,7 +67,7 @@
 
 /obj/machinery/power/smes/proc/make_terminal(const/mob/user)
 	if (user.loc == loc)
-		user << "<span class='indigo'>You must not be on the same tile with SMES.</span>"
+		user << "<span class='warning'>You must not be on the same tile with SMES.</span>"
 		return 1
 
 	var/userdir = get_dir(user, src)
@@ -76,7 +76,7 @@
 		if(userdir == dirs)
 			var/turf/T = get_turf(user)
 			if(T.intact)
-				user << "<span class='indigo'>The floor plating must be removed first.</span>"
+				user << "<span class='warning'>The floor plating must be removed first.</span>"
 				return 1
 
 			user << "<span class='notice'>You start adding cable to the SMES.</span>"
@@ -87,10 +87,10 @@
 				terminal.master = src
 				return 0
 			else
-				user << "<span class='indigo'>You moved!</span>"
+				user << "<span class='warning'>You moved!</span>"
 				return 1
 
-	user << "<span class='indigo'>You can't wire the SMES like that!</span>"
+	user << "<span class='warning'>You can't wire the SMES like that!</span>"
 	return 1
 
 /obj/machinery/power/smes/attackby(var/obj/item/weapon/W as obj, var/mob/user as mob) //these can only be moved by being reconstructed, solves having to remake the powernet.
@@ -116,7 +116,7 @@
 		else if(istype(W, /obj/item/weapon/wirecutters) && terminal)
 			var/turf/T = get_turf(terminal)
 			if(T.intact)
-				user << "<span class='indigo'>You must remove the floor plating in front of the SMES first.</span>"
+				user << "<span class='warning'>You must remove the floor plating in front of the SMES first.</span>"
 				return
 			user << "You begin to cut the cables..."
 			playsound(get_turf(src), 'sound/items/Deconstruct.ogg', 50, 1)
@@ -128,7 +128,7 @@
 					return
 				new /obj/item/weapon/cable_coil(loc,10)
 				user.visible_message(\
-					"<span class='indigo'>[user.name] cut the cables and dismantled the power terminal.</span>",\
+					"<span class='warning'>[user.name] cut the cables and dismantled the power terminal.</span>",\
 					"You cut the cables and dismantle the power terminal.")
 				del(terminal)
 		else
@@ -138,7 +138,7 @@
 	return
 
 /obj/machinery/power/smes/proc/updateicon()
-	overlays.Cut()
+	overlays.len = 0
 	if(stat & BROKEN)	return
 
 	overlays += image('icons/obj/power.dmi', "smes-op[online]")

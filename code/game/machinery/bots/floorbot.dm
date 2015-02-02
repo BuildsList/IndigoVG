@@ -141,11 +141,11 @@ var/global/list/floorbot_targets=list()
 			user << "<span class='notice'>You [src.locked ? "lock" : "unlock"] the [src] behaviour controls.</span>"
 		else
 			if(emagged)
-				user << "<span class='indigo'>ERROR</span>"
+				user << "<span class='warning'>ERROR</span>"
 			if(open)
-				user << "<span class='indigo'>Please close the access panel before locking it.</span>"
+				user << "<span class='warning'>Please close the access panel before locking it.</span>"
 			else
-				user << "<span class='indigo'>Access denied.</span>"
+				user << "<span class='warning'>Access denied.</span>"
 		src.updateUsrDialog()
 	else
 		..()

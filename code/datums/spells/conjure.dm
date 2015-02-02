@@ -33,7 +33,7 @@
 			if(summon_ignore_prev_spawn_points)
 				targets -= spawn_place
 			if(istype(spawn_place,/turf/simulated/shuttle))
-				usr << "<span class='indigo'>You can't build things on shuttles!</span>"
+				usr << "<span class='warning'>You can't build things on shuttles!</span>"
 				break
 			var/atom/movable/overlay/animation = new /atom/movable/overlay(spawn_place)
 			animation.name = "conjure"
@@ -66,7 +66,7 @@
 	return
 
 /obj/effect/proc_holder/spell/aoe_turf/conjure/proc/conjure_animation(var/atom/movable/overlay/animation, var/turf/target)
-	del(animation)
+	qdel(animation)
 
 /obj/effect/proc_holder/spell/aoe_turf/conjure/summonEdSwarm //test purposes
 	name = "Dispense Wizard Justice"

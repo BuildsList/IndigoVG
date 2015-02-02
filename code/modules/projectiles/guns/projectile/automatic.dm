@@ -33,7 +33,7 @@
 		if(ready_to_fire())
 			fire_delay = 0
 		else
-			usr << "<span class='indigo'>\The [src] is still cooling down!</span>"
+			usr << "<span class='warning'>\The [src] is still cooling down!</span>"
 			return
 		var/shots_fired = 0 //haha, I'm so clever
 		var/to_shoot = min(burst_count, getAmmo())

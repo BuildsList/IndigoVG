@@ -51,8 +51,9 @@
 							break
 			target.canmove = 1
 			target.client.eye = target
-			del(animation)
-			del(holder)
+			animation.master = null
+			qdel(animation)
+			qdel(holder)
 
 /obj/effect/proc_holder/spell/targeted/ethereal_jaunt/proc/jaunt_disappear(var/atom/movable/overlay/animation, var/mob/living/target)
 	animation.icon_state = "liquify"
@@ -88,7 +89,7 @@
 	if(!(newLoc.flags & NOJAUNT) && !A.anti_ethereal)
 		loc = newLoc
 	else
-		user << "<span class='indigo'>Some strange aura is blocking the way!</span>"
+		user << "<span class='warning'>Some strange aura is blocking the way!</span>"
 	src.canmove = 0
 	spawn(2) src.canmove = 1
 

@@ -198,7 +198,7 @@
 	for(var/R in ore_types_eaten)
 		for(counter=0, counter < ore_eaten, counter++)
 			new R(src.loc)
-	ore_types_eaten.Cut()
+	ore_types_eaten.len = 0
 	ore_eaten = 0
 
 
@@ -346,7 +346,7 @@
 	idle_vision_range = 5
 
 /mob/living/simple_animal/hostile/asteroid/goliath/OpenFire()
-	visible_message("<span class='indigo'>The [src.name] digs its tentacles under [target.name]!</span>")
+	visible_message("<span class='warning'>The [src.name] digs its tentacles under [target.name]!</span>")
 	playsound(loc, 'sound/weapons/whip.ogg', 50, 1, -1)
 	var/tturf = get_turf(target)
 	new /obj/effect/goliath_tentacle/original(tturf)
@@ -363,6 +363,7 @@
 	icon_state = "Goliath_tentacle"
 
 /obj/effect/goliath_tentacle/New()
+	..()
 	var/turftype = get_turf(src)
 	if(istype(turftype, /turf/unsimulated/mineral))
 		var/turf/unsimulated/mineral/M = turftype
@@ -385,7 +386,7 @@
 /obj/effect/goliath_tentacle/proc/Trip()
 	for(var/mob/living/M in src.loc)
 		M.Weaken(5)
-		visible_message("<span class='indigo'>The [src.name] knocks [M.name] down!</span>")
+		visible_message("<span class='warning'>The [src.name] knocks [M.name] down!</span>")
 
 	qdel(src)
 

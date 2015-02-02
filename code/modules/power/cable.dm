@@ -175,7 +175,7 @@ By design, d1 is the smallest direction and d2 is the highest
 		coil.cable_join(src, user)
 	else if(istype(W, /obj/item/device/multitool))
 		if((powernet) && (powernet.avail > 0))		// is it powered?
-			user << "<span class='indigo'>[powernet.avail]W in power network.</SPAN>"
+			user << "<SPAN CLASS='warning'>[powernet.avail]W in power network.</SPAN>"
 		else
 			user << "<SPAN CLASS='notice'>The cable is not powered.</SPAN>"
 
@@ -589,7 +589,7 @@ By design, d1 is the smallest direction and d2 is the highest
 			return
 
 		if(amount <= 14)
-			usr << "<span class='indigo'>You need at least 15 lengths to make restraints!</SPAN>"
+			usr << "<SPAN CLASS='warning'>You need at least 15 lengths to make restraints!</SPAN>"
 			return
 
 		var/obj/item/weapon/handcuffs/cable/B = new(usr.loc)
@@ -617,7 +617,7 @@ By design, d1 is the smallest direction and d2 is the highest
 		var/obj/item/weapon/cable_coil/C = W
 
 		if(C.amount >= max_amount)
-			user << "<span class='indigo'>The coil is too long, you cannot add any more cable to it.</SPAN>"
+			user << "<SPAN CLASS='warning'>The coil is too long, you cannot add any more cable to it.</SPAN>"
 			return
 
 		if((C.amount + src.amount <= max_amount))

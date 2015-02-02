@@ -46,10 +46,10 @@
 				delete = call(/obj/effect/rune/proc/communicate)()
 			if("deafen")
 				deafen()
-				del(src)
+				qdel(src)
 			if("blind")
 				blind()
-				del(src)
+				qdel(src)
 			if("runestun")
 				user << "\red To use this talisman, attack your target directly."
 				return
@@ -58,7 +58,7 @@
 		user.take_organ_damage(5, 0)
 		if(src && src.imbue!="supply" && src.imbue!="runestun")
 			if(delete)
-				del(src)
+				qdel(src)
 		return
 	else
 		user << "You see strange symbols on the paper. Are they supposed to mean something?"
@@ -70,7 +70,7 @@
 		if(imbue == "runestun")
 			user.take_organ_damage(5, 0)
 			runestun(T)
-			del(src)
+			qdel(src)
 		else
 			..()   ///If its some other talisman, use the generic attack code, is this supposed to work this way?
 	else
@@ -82,7 +82,7 @@
 
 /obj/item/weapon/paper/talisman/proc/supply(var/key)
 	if (!src.uses)
-		del(src)
+		qdel(src)
 		return
 
 	var/dat = {"<B>There are [src.uses] bloody runes on the parchment.</B>
@@ -181,10 +181,10 @@
 		C.eye_blind += 10
 		//talismans is weaker.
 		affected++
-		C << "<span class='indigo'>You feel a sharp pain in your eyes, and the world disappears into darkness..</span>"
+		C << "<span class='warning'>You feel a sharp pain in your eyes, and the world disappears into darkness..</span>"
 	if(affected)
 		usr.whisper("Sti[pick("'","`")] kaliesin!")
-		usr << "<span class='indigo'>Your talisman turns into gray dust, blinding those who not follow the Nar-Sie.</span>"
+		usr << "<span class='warning'>Your talisman turns into gray dust, blinding those who not follow the Nar-Sie.</span>"
 
 
 /obj/item/weapon/paper/talisman/proc/deafen()
@@ -199,11 +199,11 @@
 			continue
 		C.ear_deaf += 30
 		//talismans is weaker.
-		C.show_message("\<span class='indigo'>The world around you suddenly becomes quiet.</span>", 3)
+		C.show_message("\<span class='warning'>The world around you suddenly becomes quiet.</span>", 3)
 		affected++
 	if(affected)
 		usr.whisper("Sti[pick("'","`")] kaliedir!")
-		usr << "<span class='indigo'>Your talisman turns into gray dust, deafening everyone around.</span>"
+		usr << "<span class='warning'>Your talisman turns into gray dust, deafening everyone around.</span>"
 		for (var/mob/V in orange(1,src))
 			if(!(iscultist(V)))
-				V.show_message("<span class='indigo'>Dust flows from [usr]'s hands for a moment, and the world suddenly becomes quiet..</span>", 3)
+				V.show_message("<span class='warning'>Dust flows from [usr]'s hands for a moment, and the world suddenly becomes quiet..</span>", 3)

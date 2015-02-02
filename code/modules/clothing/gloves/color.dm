@@ -20,10 +20,10 @@
 		if(!cable || !istype(cable))
 			return
 		if(world.time < next_shock)
-			user << "<span class='indigo'>[src] aren't ready to shock again!</span>"
+			user << "<span class='warning'>[src] aren't ready to shock again!</span>"
 			return
-		src.visible_message("<span class='indigo'>[user.name] fires an arc of electricity!</span>", \
-			"<span class='indigo'>You fire an arc of electricity!</span>", \
+		src.visible_message("<span class='warning'>[user.name] fires an arc of electricity!</span>", \
+			"<span class='warning'>You fire an arc of electricity!</span>", \
 			"You hear the loud crackle of electricity!")
 		var/datum/powernet/PN = cable.get_powernet()
 		var/obj/item/projectile/beam/lightning/L = getFromPool(/obj/item/projectile/beam/lightning, loc)
@@ -32,11 +32,11 @@
 			if(L.damage >= 200)
 				user.apply_damage(15, BURN, (user.hand ? "l_hand" : "r_hand"))
 				time = 200
-				user << "<span class='indigo'>[src] overload\s from the massive current, shocking you in the process!"
+				user << "<span class='warning'>[src] overload\s from the massive current, shocking you in the process!"
 			else if(L.damage >= 100)
 				user.apply_damage(5, BURN, (user.hand ? "l_hand" : "r_hand"))
 				time = 150
-				user << "<span class='indigo'>[src] overload\s from the massive current, shocking you in the process!"
+				user << "<span class='warning'>[src] overload\s from the massive current, shocking you in the process!"
 			var/datum/effect/effect/system/spark_spread/s = new /datum/effect/effect/system/spark_spread
 			s.set_up(5, 1, user)
 			s.start()
@@ -86,9 +86,9 @@
 	species_fit = list("Vox")
 
 	cold_protection = HANDS
-	min_cold_protection_temperature = GLOVES_MIN_COLD_PROTECITON_TEMPERATURE
+	min_cold_protection_temperature = GLOVES_MIN_COLD_PROTECTION_TEMPERATURE
 	heat_protection = HANDS
-	max_heat_protection_temperature = GLOVES_MAX_HEAT_PROTECITON_TEMPERATURE
+	max_heat_protection_temperature = GLOVES_MAX_HEAT_PROTECTION_TEMPERATURE
 
 
 /obj/item/clothing/gloves/black/hos

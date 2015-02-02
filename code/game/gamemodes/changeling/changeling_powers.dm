@@ -31,7 +31,7 @@
 	set desc = "This costly evolution allows us to transform into an all-consuming abomination. We are extremely strong, to the point that we can force airlocks open and devour humans whole, and immune to stuns."
 
 	if(!istype(src, /mob/living/carbon/human))
-		usr << "<span class='indigo'>We must be in human form before activating Horror Form.</span>"
+		usr << "<span class='warning'>We must be in human form before activating Horror Form.</span>"
 		return
 
 	var/datum/changeling/changeling = changeling_power(0,0,100)
@@ -86,24 +86,24 @@
 		return
 
 	if(src.stat > max_stat)
-		src << "<span class='indigo'>We are incapacitated.</span>"
+		src << "<span class='warning'>We are incapacitated.</span>"
 		return
 
 	if(changeling.absorbed_dna.len < required_dna)
-		src << "<span class='indigo'>We require at least [required_dna] samples of compatible DNA.</span>"
+		src << "<span class='warning'>We require at least [required_dna] samples of compatible DNA.</span>"
 		return
 
 	if(changeling.chem_charges < required_chems)
-		src << "<span class='indigo'>We require at least [required_chems] units of chemicals to do that!</span>"
+		src << "<span class='warning'>We require at least [required_chems] units of chemicals to do that!</span>"
 		return
 
 	if(changeling.geneticdamage > max_genetic_damage)
-		src << "<span class='indigo'>Our geneomes are still reassembling. We need time to recover first.</span>"
+		src << "<span class='warning'>Our geneomes are still reassembling. We need time to recover first.</span>"
 		return
 
 	var/mob/living/carbon/human/H = src
 	if(deny_horror && istype(H) && H.species && H.species.name == "Horror")
-		src << "<span class='indigo'>You are not permitted to taint our purity.  You cannot do this as a Horror.</span>"
+		src << "<span class='warning'>You are not permitted to taint our purity.  You cannot do this as a Horror.</span>"
 		return
 
 	return changeling
@@ -120,24 +120,24 @@
 
 	var/obj/item/weapon/grab/G = src.get_active_hand()
 	if(!istype(G))
-		src << "<span class='indigo'>We must be grabbing a creature in our active hand to absorb them.</span>"
+		src << "<span class='warning'>We must be grabbing a creature in our active hand to absorb them.</span>"
 		return
 
 	var/mob/living/carbon/human/T = G.affecting
 	if(!istype(T))
-		src << "<span class='indigo'>[T] is not compatible with our biology.</span>"
+		src << "<span class='warning'>[T] is not compatible with our biology.</span>"
 		return
 
 	if(M_NOCLONE in T.mutations)
-		src << "<span class='indigo'>This creature's DNA is ruined beyond useability!</span>"
+		src << "<span class='warning'>This creature's DNA is ruined beyond useability!</span>"
 		return
 
 	if(!G.state == GRAB_KILL)
-		src << "<span class='indigo'>We must have a tighter grip to absorb this creature.</span>"
+		src << "<span class='warning'>We must have a tighter grip to absorb this creature.</span>"
 		return
 
 	if(changeling.isabsorbing)
-		src << "<span class='indigo'>We are already absorbing!</span>"
+		src << "<span class='warning'>We are already absorbing!</span>"
 		return
 
 	changeling.isabsorbing = 1
@@ -147,7 +147,7 @@
 				src << "<span class='notice'>This creature is compatible. We must hold still...</span>"
 			if(2)
 				src << "<span class='notice'>We extend a proboscis.</span>"
-				src.visible_message("<span class='indigo'>[src] extends a proboscis!</span>")
+				src.visible_message("<span class='warning'>[src] extends a proboscis!</span>")
 				playsound(get_turf(src), 'sound/effects/lingextends.ogg', 50, 1)
 			if(3)
 				src << "<span class='notice'>We stab [T] with the proboscis.</span>"
@@ -161,7 +161,7 @@
 
 		feedback_add_details("changeling_powers","A[stage]")
 		if(!do_mob(src, T, 150))
-			src << "<span class='indigo'>Our absorption of [T] has been interrupted!</span>"
+			src << "<span class='warning'>Our absorption of [T] has been interrupted!</span>"
 			changeling.isabsorbing = 0
 			return
 
@@ -231,7 +231,7 @@
 		return
 
 	changeling.chem_charges -= 5
-	src.visible_message("<span class='indigo'>[src] transforms!</span>")
+	src.visible_message("<span class='warning'>[src] transforms!</span>")
 	changeling.geneticdamage = 30
 	src.dna = chosen_dna.Clone()
 	src.real_name = chosen_dna.real_name
@@ -255,15 +255,15 @@
 	if(!changeling)	return
 
 	if(src.has_brain_worms())
-		src << "<span class='indigo'>We cannot perform this ability at the present time!</span>"
+		src << "<span class='warning'>We cannot perform this ability at the present time!</span>"
 		return
 
 	var/mob/living/carbon/C = src
 	changeling.chem_charges--
 	C.remove_changeling_powers()
-	C.visible_message("<span class='indigo'>[C] transforms!</span>")
+	C.visible_message("<span class='warning'>[C] transforms!</span>")
 	changeling.geneticdamage = 30
-	C << "<span class='indigo'>Our genes cry out!</span>"
+	C << "<span class='warning'>Our genes cry out!</span>"
 
 	//TODO replace with monkeyize proc
 	var/list/implants = list() //Try to preserve implants.
@@ -273,7 +273,7 @@
 	C.monkeyizing = 1
 	C.canmove = 0
 	C.icon = null
-	C.overlays.Cut()
+	C.overlays.len = 0
 	C.invisibility = 101
 
 	var/atom/movable/overlay/animation = new /atom/movable/overlay( C.loc )
@@ -282,7 +282,8 @@
 	animation.master = src
 	flick("h2monkey", animation)
 	sleep(48)
-	del(animation)
+	animation.master = null
+	qdel(animation)
 
 	var/mob/living/carbon/monkey/O = new /mob/living/carbon/monkey(src)
 	O.dna = C.dna.Clone()
@@ -291,7 +292,7 @@
 	for(var/obj/item/W in C)
 		C.drop_from_inventory(W)
 	for(var/obj/T in C)
-		del(T)
+		qdel(T)
 
 	O.loc = C.loc
 	O.name = "monkey ([copytext(md5(C.real_name), 2, 6)])"
@@ -337,7 +338,7 @@
 
 	changeling.chem_charges--
 	C.remove_changeling_powers()
-	C.visible_message("<span class='indigo'>[C] transforms!</span>")
+	C.visible_message("<span class='warning'>[C] transforms!</span>")
 	C.dna = chosen_dna.Clone()
 
 	var/list/implants = list()
@@ -347,7 +348,7 @@
 	C.monkeyizing = 1
 	C.canmove = 0
 	C.icon = null
-	C.overlays.Cut()
+	C.overlays.len = 0
 	C.invisibility = 101
 	var/atom/movable/overlay/animation = new /atom/movable/overlay( C.loc )
 	animation.icon_state = "blank"
@@ -376,7 +377,7 @@
 	O.real_name = chosen_dna.real_name
 
 	for(var/obj/T in C)
-		del(T)
+		qdel(T)
 
 	O.loc = C.loc
 
@@ -460,7 +461,7 @@
 					if(istype(s))
 						O.implants -= s
 						H.contents -= s
-						del(s)
+						qdel(s)
 				O.amputated = 0
 				O.brute_dam = 0
 				O.burn_dam = 0
@@ -484,7 +485,7 @@
 				IO.robotic = 0
 			H.updatehealth()
 		C << "<span class='notice'>We have regenerated.</span>"
-		C.visible_message("<span class='indigo'>[src] appears to wake from the dead, having healed all wounds.</span>")
+		C.visible_message("<span class='warning'>[src] appears to wake from the dead, having healed all wounds.</span>")
 		C.status_flags &= ~(FAKEDEATH)
 		C.update_canmove()
 		C.make_changeling()
@@ -512,7 +513,7 @@
 	C.tod = worldtime2text()
 
 	spawn(rand(800,1200))
-		src << "<span class='indigo'>We are now ready to regenerate.</span>"
+		src << "<span class='warning'>We are now ready to regenerate.</span>"
 		src.verbs += /mob/proc/changeling_returntolife
 	feedback_add_details("changeling_powers","FD")
 	return 1
@@ -756,7 +757,7 @@ var/list/datum/dna/hivemind_bank = list()
 
 	src << "<span class='notice'>We stealthily sting [T].</span>"
 	if(!T.mind || !T.mind.changeling)	return T	//T will be affected by the sting
-	T << "<span class='indigo'>You feel a tiny prick.</span>"
+	T << "<span class='warning'>You feel a tiny prick.</span>"
 	return
 
 
@@ -847,9 +848,9 @@ var/list/datum/dna/hivemind_bank = list()
 	var/mob/living/carbon/T = changeling_sting(40,/mob/proc/changeling_transformation_sting)
 	if(!T)	return 0
 	if((M_HUSK in T.mutations) || (!ishuman(T) && !ismonkey(T)))
-		src << "<span class='indigo'>Our sting appears ineffective against its DNA.</span>"
+		src << "<span class='warning'>Our sting appears ineffective against its DNA.</span>"
 		return 0
-	T.visible_message("<span class='indigo'>[T] transforms!</span>")
+	T.visible_message("<span class='warning'>[T] transforms!</span>")
 	T.dna = chosen_dna.Clone()
 	T.real_name = chosen_dna.real_name
 	T.UpdateAppearance()
@@ -881,7 +882,7 @@ var/list/datum/dna/hivemind_bank = list()
 	T << "<span class='danger'>You feel a small prick and your chest becomes tight.</span>"
 	T.silent = 10
 	T.Paralyse(10)
-	T.make_jittery(1000)
+	T.Jitter(1000)
 	if(T.reagents)	T.reagents.add_reagent("lexorin", 40)
 	feedback_add_details("changeling_powers","DTHS")
 	return 1

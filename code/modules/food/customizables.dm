@@ -73,6 +73,7 @@
 	var/fullyCustom = 0
 	var/addTop = 0
 
+
 /obj/item/weapon/reagent_containers/food/snacks/customizable/New(loc,ingredient)
 	. = ..()
 	src.reagents.add_reagent("nutriment",8)
@@ -81,7 +82,7 @@
 
 /obj/item/weapon/reagent_containers/food/snacks/customizable/attackby(obj/item/I,mob/user)
 	if((src.contents.len >= src.ingMax) || (src.contents.len >= ingredientLimit))
-		user << "<span class='indigo'>How about no.</span>"
+		user << "<span class='warning'>How about no.</span>"
 	else if(istype(I,/obj/item/weapon/reagent_containers/food/snacks))
 		var/obj/item/weapon/reagent_containers/food/snacks/S = I
 		user.drop_item()
@@ -96,16 +97,13 @@
 /obj/item/weapon/reagent_containers/food/snacks/customizable/proc/update()
 	var/i = 1
 	var/image/I
-	src.overlays.Cut()
+	var/new_name
+	src.overlays.len = 0
 	for(var/obj/item/weapon/reagent_containers/food/snacks/S in src.ingredients)
-		if(i == 1) . += "[S.name]"
-		else if(i == src.ingredients.len) . += "and [S.name]"
-		else . += ", [S.name]"
+		if(i == 1) new_name += "[S.name]"
+		else if(i == src.ingredients.len) new_name += " and [S.name]"
+		else new_name += ", [S.name]"
 		i++
-		if(length("[.] [src.name]") >= 100)
-			src.name = "A hot mess"
-		else
-			src.name = "[.] [src.name]"
 		if(src.fullyCustom)
 			I = image(S.icon,,S.icon_state)
 			I.pixel_x = rand(-1,1)
@@ -119,7 +117,7 @@
 			if(src.stackIngredients)
 				I.pixel_x = rand(-1,1)
 				I.pixel_y = (i*2)+1
-			else src.overlays.Cut()
+			else src.overlays.len = 0
 			src.overlays += I
 	if(src.addTop)
 		I = image(src.icon,,"src.[icon_state]_top")
@@ -130,7 +128,11 @@
 		I = new(src.icon,"[initial(src.icon_state)]_filling")
 		I.color = pick("#FF0000","#0000FF","#008000","#FFFF00")
 		src.overlays += I
-	return
+	if(length("[new_name] [initial(src.name)]") >= 150)
+		src.name = "hot mess"
+	else
+		src.name = "[new_name] [initial(src.name)]"
+	return new_name
 
 /obj/item/weapon/reagent_containers/food/snacks/customizable/Destroy()
 	for(. in src.ingredients) qdel(.)
@@ -141,7 +143,7 @@
 /obj/item/weapon/reagent_containers/food/snacks/customizable/sandwich
 	name = "sandwich"
 	desc = "A timeless classic."
-	icon_state = "breadslice"
+	icon_state = "c_sandwich"
 	stackIngredients = 1
 	addTop = 1
 
@@ -291,7 +293,7 @@
 			S.reagents.trans_to(src,S.reagents.total_volume)
 			src.ingredients += S
 			src.update()
-		else user << "<span class='indigo'>That won't fit.</span>"
+		else user << "<span class='warning'>That won't fit.</span>"
 	else . = ..()
 	return
 

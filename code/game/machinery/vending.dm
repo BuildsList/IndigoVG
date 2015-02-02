@@ -131,7 +131,7 @@
 	if(istype(O,/obj/structure/vendomatpack))
 		var/obj/structure/vendomatpack/P = O
 		if(!anchored)
-			user << "<span class='indigo'>You need to anchor the vending machine before you can refill it.</span>"
+			user << "<span class='warning'>You need to anchor the vending machine before you can refill it.</span>"
 			return
 		if(!pack)
 			user << "<span class='notice'>You start filling the vending machine with the recharge pack's materials.</span>"
@@ -177,7 +177,7 @@
 					if(user.machine==src)
 						src.attack_hand(user)
 			else
-				user << "<span class='indigo'>This recharge pack isn't meant for this kind of vending machines.</span>"
+				user << "<span class='warning'>This recharge pack isn't meant for this kind of vending machines.</span>"
 
 /obj/machinery/vending/proc/reconnect_database()
 	for(var/obj/machinery/account_database/DB in account_DBs)
@@ -268,9 +268,9 @@
 				var/obj/item/weapon/card/I = W
 				scan_card(I)
 			else
-				usr << "\icon[src]<span class='indigo'>Unable to connect to linked account.</span>"
+				usr << "\icon[src]<span class='warning'>Unable to connect to linked account.</span>"
 		else
-			usr << "\icon[src]<span class='indigo'>Unable to connect to accounts database.</span>"*/
+			usr << "\icon[src]<span class='warning'>Unable to connect to accounts database.</span>"*/
 
 //H.wear_id
 /obj/machinery/vending/proc/connect_account(var/obj/item/W)
@@ -285,9 +285,9 @@
 				var/obj/item/weapon/card/I = W
 				scan_card(I)
 			else
-				usr << "\icon[src]<span class='indigo'>Unable to connect to linked account.</span>"
+				usr << "\icon[src]<span class='warning'>Unable to connect to linked account.</span>"
 		else
-			usr << "\icon[src]<span class='indigo'>Unable to connect to accounts database.</span>"
+			usr << "\icon[src]<span class='warning'>Unable to connect to accounts database.</span>"
 
 /obj/machinery/vending/proc/scan_card(var/obj/item/weapon/card/I)
 	if(!currently_vending) return
@@ -329,11 +329,11 @@
 					src.vend(src.currently_vending, usr)
 					currently_vending = null
 				else
-					usr << "\icon[src]<span class='indigo'>You don't have that much money!</span>"
+					usr << "\icon[src]<span class='warning'>You don't have that much money!</span>"
 			else
-				usr << "\icon[src]<span class='indigo'>Unable to access account. Check security settings and try again.</span>"
+				usr << "\icon[src]<span class='warning'>Unable to access account. Check security settings and try again.</span>"
 		else
-			usr << "\icon[src]<span class='indigo'>EFTPOS is not connected to an account.</span>"
+			usr << "\icon[src]<span class='warning'>EFTPOS is not connected to an account.</span>"
 
 /obj/machinery/vending/attack_paw(mob/user as mob)
 	return attack_hand(user)
@@ -950,7 +950,7 @@
 			if(istype(W, /obj/item/weapon/circuitboard))
 				var/obj/item/weapon/circuitboard/C=W
 				if(!(istype(C,/obj/item/weapon/circuitboard/vendomat)))
-					user << "<span class='indigo'>You cannot install this type of board into a NanoMed frame.</span>"
+					user << "<span class='warning'>You cannot install this type of board into a NanoMed frame.</span>"
 					return
 				usr << "You begin to insert \the [C] into \the [src]."
 				if(do_after(user, 10))
@@ -977,7 +977,7 @@
 					else
 						C=new boardtype(get_turf(src))
 					user.visible_message(\
-						"<span class='indigo'>[user.name] has removed \the [C]!</span>",\
+						"<span class='warning'>[user.name] has removed \the [C]!</span>",\
 						"You remove \the [C].")
 				return 1
 			if(istype(W, /obj/item/weapon/cable_coil))
@@ -989,7 +989,7 @@
 					build++
 					update_icon()
 					user.visible_message(\
-						"<span class='indigo'>[user.name] has added cables to \the [src]!</span>",\
+						"<span class='warning'>[user.name] has added cables to \the [src]!</span>",\
 						"You add cables to \the [src].")
 		if(2) // Circuitboard installed, wired.
 			if(istype(W, /obj/item/weapon/wirecutters))
@@ -997,7 +997,7 @@
 				if(do_after(user, 50))
 					new /obj/item/weapon/cable_coil(loc,5)
 					user.visible_message(\
-						"<span class='indigo'>[user.name] cut the cables.</span>",\
+						"<span class='warning'>[user.name] cut the cables.</span>",\
 						"You cut the cables.")
 					build--
 					update_icon()
@@ -1011,7 +1011,7 @@
 					build++
 					update_icon()
 					user.visible_message(\
-						"<span class='indigo'>[user.name] has finished \the [src]!</span>",\
+						"<span class='warning'>[user.name] has finished \the [src]!</span>",\
 						"You finish \the [src].")
 				return 1
 		if(3) // Waiting for a recharge pack
@@ -1049,7 +1049,7 @@
 					contents = 0
 					qdel(src)
 			else
-				user << "<span class='indigo'>This recharge pack isn't meant for this kind of vending machines.</span>"
+				user << "<span class='warning'>This recharge pack isn't meant for this kind of vending machines.</span>"
 
 ////////////////////////////////////////
 
@@ -1290,7 +1290,7 @@
 
 /obj/machinery/vending/nazivend/emag(mob/user)
 	if(!emagged)
-		user << "<span class='indigo'>As you slide the emag on the machine, you can hear something unlocking inside, and the machine starts emitting an evil glow.</span>"
+		user << "<span class='warning'>As you slide the emag on the machine, you can hear something unlocking inside, and the machine starts emitting an evil glow.</span>"
 		message_admins("[key_name_admin(user)] unlocked a Nazivend's DANGERMODE")
 		contraband[/obj/item/clothing/head/helmet/space/rig/nazi] = 3
 		contraband[/obj/item/clothing/suit/space/rig/nazi] = 3
@@ -1337,7 +1337,7 @@
 
 /obj/machinery/vending/sovietvend/emag(mob/user)
 	if(!emagged)
-		user << "<span class='indigo'>As you slide the emag on the machine, you can hear something unlocking inside, and the machine starts emitting an evil glow.</span>"
+		user << "<span class='warning'>As you slide the emag on the machine, you can hear something unlocking inside, and the machine starts emitting an evil glow.</span>"
 		message_admins("[key_name_admin(user)] unlocked a Sovietvend's DANGERMODE")
 		contraband[/obj/item/clothing/head/helmet/space/rig/soviet] = 3
 		contraband[/obj/item/clothing/suit/space/rig/soviet] = 3

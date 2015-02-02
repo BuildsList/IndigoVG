@@ -57,7 +57,7 @@
 	if(bcell)
 		user <<"<span class='info'>The baton is [round(bcell.percent())]% charged.</span>"
 	if(!bcell)
-		user <<"<span class='indigo'>The baton does not have a power source installed.</span>"
+		user <<"<span class='warning'>The baton does not have a power source installed.</span>"
 
 /obj/item/weapon/melee/baton/attackby(obj/item/weapon/W, mob/user)
 	if(istype(W, /obj/item/weapon/cell))
@@ -84,7 +84,7 @@
 
 /obj/item/weapon/melee/baton/attack_self(mob/user)
 	if(status && (M_CLUMSY in user.mutations) && prob(50))
-		user << "<span class='indigo'>You grab the [src] on the wrong side.</span>"
+		user << "<span class='warning'>You grab the [src] on the wrong side.</span>"
 		user.Weaken(stunforce*3)
 		deductcharge(hitcost)
 		return
@@ -96,9 +96,9 @@
 	else
 		status = 0
 		if(!bcell)
-			user << "<span class='indigo'>[src] does not have a power source!</span>"
+			user << "<span class='warning'>[src] does not have a power source!</span>"
 		else
-			user << "<span class='indigo'>[src] is out of charge.</span>"
+			user << "<span class='warning'>[src] is out of charge.</span>"
 	add_fingerprint(user)
 
 /obj/item/weapon/melee/baton/attack(mob/M, mob/user)
@@ -155,18 +155,20 @@
 			M.LAssailant = user
 
 /obj/item/weapon/melee/baton/throw_impact(atom/hit_atom)
+	foundmob = directory[ckey(fingerprintslast)]
 	if (prob(50))
 		if(istype(hit_atom, /mob/living))
 			var/mob/living/L = hit_atom
 			if(status)
-				foundmob.lastattacked = L
-				L.lastattacker = foundmob
+				if(foundmob)
+					foundmob.lastattacked = L
+					L.lastattacker = foundmob
 
 				L.Stun(stunforce)
 				L.Weaken(stunforce)
 				L.apply_effect(STUTTER, stunforce)
 
-				L.visible_message("<span class='danger'>[L] has been stunned with [src] by [foundmob]!</span>")
+				L.visible_message("<span class='danger'>[L] has been stunned with [src] by [foundmob ? foundmob : "Unknown"]!</span>")
 				playsound(loc, 'sound/weapons/Egloves.ogg', 50, 1, -1)
 
 				if(isrobot(loc))
@@ -181,8 +183,8 @@
 					H.forcesay(hit_appends)
 
 				foundmob.attack_log += "\[[time_stamp()]\]<font color='red'> Stunned [L.name] ([L.ckey]) with [name]</font>"
-				L.attack_log += "\[[time_stamp()]\]<font color='orange'> Stunned by thrown [src] by [foundmob.name] ([foundmob.ckey])</font>"
-				log_attack("<font color='red'>Flying [src.name], thrown by [foundmob.name] ([foundmob.ckey]) stunned [L.name] ([L.ckey])</font>" )
+				L.attack_log += "\[[time_stamp()]\]<font color='orange'> Stunned by thrown [src] by [istype(foundmob) ? foundmob.name : ""] ([istype(foundmob) ? foundmob.ckey : ""])</font>"
+				log_attack("<font color='red'>Flying [src.name], thrown by [istype(foundmob) ? foundmob.name : ""] ([istype(foundmob) ? foundmob.ckey : ""]) stunned [L.name] ([L.ckey])</font>" )
 				if(!iscarbon(foundmob))
 					L.LAssailant = null
 				else

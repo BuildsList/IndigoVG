@@ -84,10 +84,10 @@
 			playsound(get_turf(src), 'sound/weapons/blade1.ogg', 50, 1)
 			playsound(get_turf(src), "sparks", 50, 1)
 			for(var/mob/O in viewers(user, 3))
-				O.show_message("<span class='indigo'>The locker has been sliced open by [user] with an energy blade!</span>", 1, "You hear metal being sliced and sparks flying.", 2)
+				O.show_message("<span class='warning'>The locker has been sliced open by [user] with an energy blade!</span>", 1, "You hear metal being sliced and sparks flying.", 2)
 		else
 			for(var/mob/O in viewers(user, 3))
-				O.show_message("<span class='indigo'>The locker has been broken by [user] with an electromagnetic card!</span>", 1, "You hear a faint electrical spark.", 2)
+				O.show_message("<span class='warning'>The locker has been broken by [user] with an electromagnetic card!</span>", 1, "You hear a faint electrical spark.", 2)
 	else
 		if(istype(W, /obj/item/weapon/weldingtool))
 			var/obj/item/weapon/weldingtool/WT = W
@@ -97,7 +97,7 @@
 			src.welded =! src.welded
 			src.update_icon()
 			for(var/mob/M in viewers(src))
-				M.show_message("<span class='indigo'>[src] has been [welded?"welded shut":"unwelded"] by [user.name].</span>", 3, "You hear welding.", 2)
+				M.show_message("<span class='warning'>[src] has been [welded?"welded shut":"unwelded"] by [user.name].</span>", 3, "You hear welding.", 2)
 		else
 			togglelock(user)
 
@@ -157,10 +157,10 @@
 		if (!opened)
 			togglelock(usr)
 	else
-		usr << "<span class='indigo'>This mob type can't use this verb.</span>"
+		usr << "<span class='warning'>This mob type can't use this verb.</span>"
 
 /obj/structure/closet/secure_closet/update_icon()//Putting the welded stuff in updateicon() so it's easy to overwrite for special cases (Fridges, cabinets, and whatnot)
-	overlays.Cut()
+	overlays.len = 0
 	if(!opened)
 		if(locked)
 			icon_state = icon_locked

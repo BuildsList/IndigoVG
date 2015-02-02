@@ -149,7 +149,7 @@
 	set src in view(1)
 
 	if(!istype(usr, /mob/living))
-		usr << "<span class='indigo'>You can't do that.</span>"
+		usr << "<span class='warning'>You can't do that.</span>"
 		return
 
 	if(usr.stat)

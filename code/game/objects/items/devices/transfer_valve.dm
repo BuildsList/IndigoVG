@@ -18,7 +18,7 @@
 /obj/item/device/transfer_valve/attackby(obj/item/item, mob/user)
 	if(istype(item, /obj/item/weapon/tank))
 		if(tank_one && tank_two)
-			user << "<span class='indigo'>There are already two tanks attached, remove one first.</span>"
+			user << "<span class='warning'>There are already two tanks attached, remove one first.</span>"
 			return
 
 		if(!tank_one)
@@ -40,7 +40,7 @@
 			user << "<span class='notice'>The device is secured.</span>"
 			return
 		if(attached_device)
-			user << "<span class='indigo'>There is already a device attached to the valve, remove it first.</span>"
+			user << "<span class='warning'>There is already a device attached to the valve, remove it first.</span>"
 			return
 		user.remove_from_mob(item)
 		attached_device = A
@@ -115,7 +115,7 @@
 			toggle = 1
 
 /obj/item/device/transfer_valve/update_icon()
-	overlays.Cut()
+	overlays.len = 0
 	underlays = null
 
 	if(!tank_one && !tank_two && !attached_device)

@@ -158,7 +158,7 @@
 										"<span class='notice'>A cloud of fine ice crystals cover your [H.head]'s visor.</span>")
 				else
 					H.visible_message("\red A cloud of fine ice crystals engulfs [H]!",
-										"<span class='indigo'>A cloud of fine ice crystals cover your [H.head]'s visor and make it into your air vents!.</span>")
+										"<span class='warning'>A cloud of fine ice crystals cover your [H.head]'s visor and make it into your air vents!.</span>")
 					H.bodytemperature = max(0, H.bodytemperature - 50)
 					H.adjustFireLoss(5)
 	if(!handle_suit)
@@ -305,7 +305,7 @@
 	else
 		usr.visible_message("\red [usr] eats \the [the_item].")
 		playsound(usr.loc, 'sound/items/eatfood.ogg', 50, 0)
-		del(the_item)
+		qdel(the_item)
 		doHeal(usr)
 
 	return
@@ -365,8 +365,8 @@
 		if(failure)
 			usr.Weaken(5)
 			usr.Stun(5)
-			usr.visible_message("<span class='indigo'> \the [usr] attempts to leap away but is slammed back down to the ground!</span>",
-								"<span class='indigo'>You attempt to leap away but are suddenly slammed back down to the ground!</span>",
+			usr.visible_message("<span class='warning'> \the [usr] attempts to leap away but is slammed back down to the ground!</span>",
+								"<span class='warning'>You attempt to leap away but are suddenly slammed back down to the ground!</span>",
 								"<span class='notice'>You hear the flexing of powerful muscles and suddenly a crash as a body hits the floor.</span>")
 			return 0
 		var/prevLayer = usr.layer

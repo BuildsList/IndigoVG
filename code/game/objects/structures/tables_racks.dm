@@ -295,10 +295,10 @@
 		if(prob(chance))
 			health -= P.damage/2
 			if (health > 0)
-				visible_message("<span class='indigo'>[P] hits \the [src]!</span>")
+				visible_message("<span class='warning'>[P] hits \the [src]!</span>")
 				return 0
 			else
-				visible_message("<span class='indigo'>[src] breaks down!</span>")
+				visible_message("<span class='warning'>[src] breaks down!</span>")
 				destroy()
 				return 1
 	return 1
@@ -406,7 +406,7 @@
 	if(!flip(get_cardinal_dir(usr,src)))
 		usr << "<span class='notice'>It won't budge.</span>"
 	else
-		usr.visible_message("<span class='indigo'>[usr] flips \the [src]!</span>")
+		usr.visible_message("<span class='warning'>[usr] flips \the [src]!</span>")
 		return
 
 /obj/structure/table/proc/unflipping_check(var/direction)

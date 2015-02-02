@@ -229,7 +229,7 @@ var/list/valid_secondary_effect_types = list(\
 		user << "<span class='rose'>Your ghostly hand goes right through!</span>"
 		return
 	if (get_dist(user, src) > 1)
-		user << "<span class='indigo'>You can't reach [src] from here.</span>"
+		user << "<span class='warning'>You can't reach [src] from here.</span>"
 		return
 	if(ishuman(user) && user:gloves)
 		user << "<b>You touch [src]</b> with your gloved hands, [pick("but nothing of note happens","but nothing happens","but nothing interesting happens","but you notice nothing different","but nothing seems to have happened")]."

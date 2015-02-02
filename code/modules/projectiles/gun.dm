@@ -106,7 +106,7 @@
 
 	if (!ready_to_fire())
 		if (world.time % 3) //to prevent spam
-			user << "<span class='indigo'>[src] is not ready to fire again!"
+			user << "<span class='warning'>[src] is not ready to fire again!"
 		return
 
 	if(!process_chambered()) //CHECK
@@ -132,8 +132,8 @@
 		playsound(user, fire_sound, 10, 1)
 	else
 		playsound(user, fire_sound, 50, 1)
-		user.visible_message("<span class='indigo'>[user] fires [src][reflex ? " by reflex":""]!</span>", \
-		"<span class='indigo'>You fire [src][reflex ? "by reflex":""]!</span>", \
+		user.visible_message("<span class='warning'>[user] fires [src][reflex ? " by reflex":""]!</span>", \
+		"<span class='warning'>You fire [src][reflex ? "by reflex":""]!</span>", \
 		"You hear a [istype(in_chamber, /obj/item/projectile/beam) ? "laser blast" : "gunshot"]!")
 
 	in_chamber.original = target

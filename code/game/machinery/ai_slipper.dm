@@ -46,7 +46,7 @@
 				if (user.machine == src)
 					src.attack_hand(usr)
 		else
-			user << "<span class='indigo'>Access denied.</span>"
+			user << "<span class='warning'>Access denied.</span>"
 			return
 	return
 
@@ -79,7 +79,7 @@
 	..()
 	if(src.locked)
 		if(!istype(usr, /mob/living/silicon))
-			usr << "<span class='indigo'>Control panel is locked!</span>"
+			usr << "<span class='warning'>Control panel is locked!</span>"
 			return
 	if(href_list["toggleOn"])
 		src.disabled = !src.disabled

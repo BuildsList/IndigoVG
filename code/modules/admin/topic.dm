@@ -2505,7 +2505,7 @@
 						if(F.z == 1)
 							F.name = initial(F.name)
 							F.desc = initial(F.desc)
-							F.overlays.Cut()
+							F.overlays.len = 0
 							F.lava = 0
 							F.update_icon()
 					floorIsLava = 0
@@ -2648,7 +2648,7 @@
 				if(choice == "Biohazard") //GUISE WE HAVE A BLOB
 					var/levelchoice = input("Set the level of the biohazard alert, or leave at 0 to have a random level (1 to 7 supported only)", "Space FEMA Readiness Program", 0) as num
 					if(!levelchoice || levelchoice > 7 || levelchoice < 0)
-						usr << "<span class='indigo'>Invalid input range (0 to 7 only)</span>"
+						usr << "<span class='warning'>Invalid input range (0 to 7 only)</span>"
 						return
 					biohazard_alert(level = levelchoice)
 					message_admins("[key_name_admin(usr)] triggered a FAKE Biohzard Alert.")
@@ -2692,7 +2692,7 @@
 				feedback_add_details("admin_secrets_fun_used","FAKEE")
 				var/choice = input("How much high-budget explosions do you want ?", "Micheal Bay SFX Systems", 1) as num
 				if(choice < 1) //No negative or null explosion amounts here math genius
-					usr << "<span class='indigo'>Invalid input range (null or negative)</span>"
+					usr << "<span class='warning'>Invalid input range (null or negative)</span>"
 					return
 				message_admins("[key_name_admin(usr)] improvised himself as Micheal Bay and triggered [round(choice)] fake explosions.")
 				log_admin("[key_name_admin(usr)] improvised himself as Micheal Bay and triggered [round(choice)] fake explosions.")

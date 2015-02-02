@@ -71,7 +71,7 @@
 
 
 /obj/item/device/assembly_holder/update_icon()
-	overlays.Cut()
+	overlays.len = 0
 	if(a_left)
 		overlays += "[a_left.icon_state]_left"
 		for(var/O in a_left.attached_overlays)
@@ -149,7 +149,7 @@
 /obj/item/device/assembly_holder/attackby(obj/item/weapon/W as obj, mob/user as mob)
 	if(isscrewdriver(W))
 		if(!a_left || !a_right)
-			user << "<span class='indigo'>BUG:Assembly part missing, please report this!</span>"
+			user << "<span class='warning'>BUG:Assembly part missing, please report this!</span>"
 			return
 		a_left.toggle_secure()
 		a_right.toggle_secure()
@@ -164,10 +164,10 @@
 		attach_special(W, user)
 	else if(istype(W,/obj/item/weapon/weldingtool))
 		if(!a_left || !a_right)
-			user << "<span class='indigo'>BUG:Assembly part missing, please report this!</span>"
+			user << "<span class='warning'>BUG:Assembly part missing, please report this!</span>"
 			return
 		if(!isigniter(a_left) && !isigniter(a_right))
-			user << "<span class='indigo'>You can't make an igniter without an igniting component!</span>"
+			user << "<span class='warning'>You can't make an igniter without an igniting component!</span>"
 			return
 		var/obj/item/weapon/weldingtool/WT = W
 		if (WT.remove_fuel(0,user))
@@ -179,7 +179,7 @@
 				src.loc=igniter
 				user << "<span class='notice'>You attach the assembly to the floor with a few spot welds.</span>"
 		else:
-			user << "<span class='indigo'>You need more welder fuel to do that.</span>"
+			user << "<span class='warning'>You need more welder fuel to do that.</span>"
 			return
 
 	else
@@ -191,7 +191,7 @@
 	src.add_fingerprint(user)
 	if(src.secured)
 		if(!a_left || !a_right)
-			user << "<span class='indigo'>Assembly part missing!</span>"
+			user << "<span class='warning'>Assembly part missing!</span>"
 			return
 		if(istype(a_left,a_right.type))//If they are the same type it causes issues due to window code
 			switch(alert("Which side would you like to use?",,"Left","Right"))

@@ -208,16 +208,17 @@
 
 /mob/living/carbon/monkey/proc/wearhat(var/obj/item/clothing/head/H as obj)
 	if(H)
-		var/obj/item/clothing/head/oldhat = null
-		if(hat)
-			oldhat = hat
-			hat = null
-		hat = H
-		usr.drop_item()
-		hat.loc = src
-		regenerate_icons()
-		if (hat)
-			usr.put_in_hands(oldhat)
+		if(istype(H))
+			var/obj/item/clothing/head/oldhat = null
+			if(hat)
+				oldhat = hat
+				hat = null
+			hat = H
+			usr.drop_item()
+			hat.loc = src
+			regenerate_icons()
+			if (hat)
+				usr.put_in_hands(oldhat)
 	else
 		if(hat)
 			usr.put_in_hands(hat)
@@ -226,16 +227,17 @@
 
 /mob/living/carbon/monkey/proc/wearclothes(var/obj/item/clothing/monkeyclothes/C as obj)
 	if(C)
-		var/obj/item/clothing/monkeyclothes/olduniform = null
-		if(uniform)
-			olduniform = uniform
-			uniform = null
-		uniform = C
-		usr.drop_item()
-		uniform.loc = src
-		regenerate_icons()
-		if (olduniform)
-			usr.put_in_hands(olduniform)
+		if(istype(C))
+			var/obj/item/clothing/monkeyclothes/olduniform = null
+			if(uniform)
+				olduniform = uniform
+				uniform = null
+			uniform = C
+			usr.drop_item()
+			uniform.loc = src
+			regenerate_icons()
+			if (olduniform)
+				usr.put_in_hands(olduniform)
 	else
 		if(uniform)
 			usr.put_in_hands(uniform)
@@ -271,7 +273,7 @@
 					uniform = null
 					regenerate_icons()
 				else
-					usr << "<span class='indigo'>He has no uniform to remove.</span>"
+					usr << "<span class='warning'>He has no uniform to remove.</span>"
 					return
 			if("hat")
 				if(hat)
@@ -279,7 +281,7 @@
 					hat = null
 					regenerate_icons()
 				else
-					usr << "<span class='indigo'>He has no hat to remove</span>"
+					usr << "<span class='warning'>He has no hat to remove</span>"
 					return
 		show_inv(usr)
 	else if(href_list["add_inv"])
@@ -288,18 +290,18 @@
 
 		var/add_to = href_list["add_inv"]
 		if(!usr.get_active_hand())
-			usr << "<span class='indigo'> You have nothing in your hand to put on him.</span>"
+			usr << "<span class='warning'> You have nothing in your hand to put on him.</span>"
 			return
 		switch(add_to)
 			if("uniform")
 				if(uniform)
-					usr << "<span class='indigo'>He's already wearing something.</span>"
+					usr << "<span class='warning'>He's already wearing something.</span>"
 					return
 				else
 					wearclothes(usr.get_active_hand())
 			if("hat")
 				if(hat)
-					usr << "<span class='indigo'>He's already wearing something.</span>"
+					usr << "<span class='warning'>He's already wearing something.</span>"
 					return
 				else
 					wearhat(usr.get_active_hand())
@@ -581,14 +583,14 @@
 
 /mob/living/carbon/monkey/Stat()
 	..()
-	statpanel("Status")
-	stat(null, text("Intent: []", a_intent))
-	stat(null, text("Move Mode: []", m_intent))
-	if(client && mind)
-		if (client.statpanel == "Status")
-			if(mind.changeling)
-				stat("Chemical Storage", mind.changeling.chem_charges)
-				stat("Genetic Damage Time", mind.changeling.geneticdamage)
+	if(statpanel("Status"))
+		stat(null, text("Intent: []", a_intent))
+		stat(null, text("Move Mode: []", m_intent))
+		if(client && mind)
+			if (client.statpanel == "Status")
+				if(mind.changeling)
+					stat("Chemical Storage", mind.changeling.chem_charges)
+					stat("Genetic Damage Time", mind.changeling.geneticdamage)
 	return
 
 

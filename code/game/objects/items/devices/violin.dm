@@ -300,11 +300,10 @@
 	onclose(user, "violin")
 
 /obj/item/device/violin/Topic(href, href_list)
-
-	if(!in_range(src, usr) || issilicon(usr) || !isliving(usr) || !usr.canmove || usr.restrained())
-		usr << browse(null, "window=violin;size=700x300")
-		onclose(usr, "violin")
+	if(..())
 		return
+
+	usr.set_machine(src)
 
 	if(href_list["newsong"])
 		song = new()
@@ -329,7 +328,7 @@
 				spawn() playsong()
 
 		else if(href_list["newline"])
-			var/newline = rhtml_encode(input("Enter your line: ", "violin") as text|null)
+			var/newline = html_encode(input("Enter your line: ", "violin") as text|null)
 			if(!newline)
 				return
 			if(song.lines.len > 50)
@@ -346,7 +345,7 @@
 
 		else if(href_list["modifyline"])
 			var/num = round(text2num(href_list["modifyline"]),1)
-			var/content = rhtml_encode(input("Enter your line: ", "violin", song.lines[num]) as text|null)
+			var/content = html_encode(input("Enter your line: ", "violin", song.lines[num]) as text|null)
 			if(!content)
 				return
 			if(length(content) > 50)
@@ -367,7 +366,7 @@
 		else if(href_list["import"])
 			var/t = ""
 			do
-				t = rhtml_encode(input(usr, "Please paste the entire song, formatted:", text("[]", name), t)  as message)
+				t = html_encode(input(usr, "Please paste the entire song, formatted:", text("[]", name), t)  as message)
 				if(!in_range(src, usr))
 					return
 
@@ -399,7 +398,8 @@
 				song.tempo = tempo
 
 	add_fingerprint(usr)
-	for(var/mob/M in viewers(1, loc))
-		if((M.client && M.machine == src))
-			attack_self(M)
+	src.updateUsrDialog()
+	//for(var/mob/M in viewers(1, loc))
+	//	if((M.client && M.machine == src))
+	//		attack_self(M)
 	return

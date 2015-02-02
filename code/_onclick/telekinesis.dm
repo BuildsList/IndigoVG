@@ -126,7 +126,7 @@ var/const/tk_maxrange = 15
 				user << "\blue Your mind won't reach that far."
 				return*/
 		if(d > tk_maxrange)
-			user << "<span class='indigo'>Your mind won't reach that far.</span>"
+			user << "<span class='warning'>Your mind won't reach that far.</span>"
 			return
 
 		if(!focus)
@@ -183,7 +183,7 @@ var/const/tk_maxrange = 15
 
 
 	update_icon()
-		overlays.Cut()
+		overlays.len = 0
 		if(focus && focus.icon && focus.icon_state)
 			overlays += icon(focus.icon,focus.icon_state)
 		return

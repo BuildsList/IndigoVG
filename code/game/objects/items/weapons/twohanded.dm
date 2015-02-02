@@ -72,7 +72,7 @@
 /obj/item/weapon/twohanded/mob_can_equip(M as mob, slot)
 	//Cannot equip wielded items.
 	if(wielded)
-		M << "<span class='indigo'>Unwield the [initial(name)] first!</span>"
+		M << "<span class='warning'>Unwield the [initial(name)] first!</span>"
 		return 0
 
 	return ..()
@@ -95,7 +95,7 @@
 
 /obj/item/weapon/twohanded/attack_self(mob/user as mob)
 	if( istype(user,/mob/living/carbon/monkey) )
-		user << "<span class='indigo'>It's too heavy for you to wield fully.</span>"
+		user << "<span class='warning'>It's too heavy for you to wield fully.</span>"
 		return
 
 	//..()
@@ -108,15 +108,15 @@
 		var/obj/item/weapon/twohanded/offhand/O = user.get_inactive_hand()
 		if(O && istype(O))
 			O.unwield(user)
-		//world << "<span class='indigo'>[icon_state]</span>" // debugging
+		//world << "<span class='warning'>[icon_state]</span>" // debugging
 		return
 
 	else //Trying to wield it
 		if(user.get_inactive_hand() == 0)
-			user << "<span class='indigo'>You can't seem to wield it properly.</span>"
+			user << "<span class='warning'>You can't seem to wield it properly.</span>"
 			return
 		if(user.get_inactive_hand())
-			user << "<span class='indigo'>You need your other hand to be empty</span>"
+			user << "<span class='warning'>You need your other hand to be empty</span>"
 			return
 		wield(user)
 		user << "<span class='notice'>You grab the [initial(name)] with both hands.</span>"
@@ -128,7 +128,7 @@
 		O.name = "[initial(name)] - offhand"
 		O.desc = "Your second grip on the [initial(name)]"
 		user.put_in_inactive_hand(O)
-		//world << "<span class='indigo'>[icon_state]</span>" // debugging
+		//world << "<span class='warning'>[icon_state]</span>" // debugging
 		return
 
 ///////////OFFHAND///////////////
@@ -162,7 +162,7 @@
 
 /obj/item/weapon/twohanded/required/mob_can_equip(M as mob, slot)
 	if(wielded)
-		M << "<span class='indigo'>[src.name] is too cumbersome to carry with anything but your hands!</span>"
+		M << "<span class='warning'>[src.name] is too cumbersome to carry with anything but your hands!</span>"
 		return 0
 	return ..()
 

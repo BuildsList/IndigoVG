@@ -64,7 +64,7 @@
 	set category = "Alien"
 
 	if(locate(/obj/effect/alien/egg) in get_turf(src))
-		src << "<span class='indigo'>There's already an egg here.</span>"
+		src << "<span class='warning'>There's already an egg here.</span>"
 		return
 
 	if(powerc(75, 1))//Can't plant eggs on spess tiles. That's silly.
@@ -82,7 +82,7 @@
 /mob/living/carbon/alien/humanoid/queen/large/update_icons()
 	lying_prev = lying	//so we don't update overlays for lying/standing unless our stance changes again
 	update_hud()		//TODO: remove the need for this to be here
-	overlays.Cut()
+	overlays.len = 0
 	if(lying)
 		if(resting)					icon_state = "queen_sleep"
 		else						icon_state = "queen_l"

@@ -69,9 +69,9 @@
 
 /obj/item/weapon/dnainjector/proc/inject(mob/M as mob, mob/user as mob)
 	if(istype(M,/mob/living/carbon/human/manifested))
-		M << "<span class='indigo'> Apparently it didn't work.</span>"
+		M << "<span class='warning'> Apparently it didn't work.</span>"
 		if(M != user)
-			user << "<span class='indigo'> Apparently it didn't work.</span>"
+			user << "<span class='warning'> Apparently it didn't work.</span>"
 	else
 		if(istype(M,/mob/living))
 			M.radiation += rand(5,20)

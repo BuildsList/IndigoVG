@@ -112,7 +112,7 @@
 		if(ishuman(M) && !M.restrained() && !M.stat && !M.paralysis && ! M.stunned)
 			if(!istype(M.loc,/turf)) return
 			if(C.amount < 10)
-				usr << "<span class='indigo'>You need at least 10 lengths to make a bolas wire!</span>"
+				usr << "<span class='warning'>You need at least 10 lengths to make a bolas wire!</span>"
 				return
 			var/obj/item/weapon/legcuffs/bolas/cable/B = new /obj/item/weapon/legcuffs/bolas/cable(usr.loc)
 			qdel(src)
@@ -123,7 +123,7 @@
 			M << "<span class='notice'>You wind some cable around the screwdriver handle to make a bolas wire.</span>"
 			C.use(10)
 		else
-			usr << "<span class='indigo'>You cannot do that.</span>"
+			usr << "<span class='warning'>You cannot do that.</span>"
 	else
 		..()
 /*
@@ -216,7 +216,7 @@
 /obj/item/weapon/weldingtool/attackby(obj/item/W as obj, mob/user as mob)
 	if(istype(W,/obj/item/weapon/screwdriver))
 		if(welding)
-			user << "<span class='indigo'>Stop welding first!</span>"
+			user << "<span class='warning'>Stop welding first!</span>"
 			return
 		status = !status
 		if(status)
@@ -301,7 +301,7 @@
 	else if (istype(O, /obj/structure/reagent_dispensers/fueltank) && get_dist(src,O) <= 1 && src.welding)
 		message_admins("[key_name_admin(user)] triggered a fueltank explosion.")
 		log_game("[key_name(user)] triggered a fueltank explosion.")
-		user << "<span class='indigo'>That was stupid of you.</span>"
+		user << "<span class='warning'>That was stupid of you.</span>"
 		var/obj/structure/reagent_dispensers/fueltank/tank = O
 		tank.explode()
 		return
@@ -414,26 +414,26 @@
 			return
 		switch(safety)
 			if(1)
-				usr << "<span class='indigo'>Your eyes sting a little.</span>"
+				usr << "<span class='warning'>Your eyes sting a little.</span>"
 				E.damage += rand(1, 2)
 				if(E.damage > 12)
 					user.eye_blurry += rand(3,6)
 			if(0)
-				usr << "<span class='indigo'>Your eyes burn.</span>"
+				usr << "<span class='warning'>Your eyes burn.</span>"
 				E.damage += rand(2, 4)
 				if(E.damage > 10)
 					E.damage += rand(4,10)
 			if(-1)
-				usr << "<span class='indigo'>Your thermals intensify the welder's glow. Your eyes itch and burn severely.</span>"
+				usr << "<span class='warning'>Your thermals intensify the welder's glow. Your eyes itch and burn severely.</span>"
 				user.eye_blurry += rand(12,20)
 				E.damage += rand(12, 16)
 		if(E.damage > 10 && safety < 2)
-			user << "<span class='indigo'>Your eyes are really starting to hurt. This can't be good for you!</span>"
+			user << "<span class='warning'>Your eyes are really starting to hurt. This can't be good for you!</span>"
 		if (E.damage >= E.min_broken_damage)
-			user << "<span class='indigo'>You go blind!</span>"
+			user << "<span class='warning'>You go blind!</span>"
 			user.sdisabilities |= BLIND
 		else if (E.damage >= E.min_bruised_damage)
-			user << "<span class='indigo'>You go blind!</span>"
+			user << "<span class='warning'>You go blind!</span>"
 			user.eye_blind = 5
 			user.eye_blurry = 5
 			user.disabilities |= NEARSIGHTED

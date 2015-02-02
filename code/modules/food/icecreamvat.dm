@@ -39,7 +39,7 @@
 			. = 1
 			user << "<span class='notice'>You add the [I.name] to the [src.name].</span>"
 			src.updateUsrDialog()
-		else user << "<span class='indigo'>The [src.name] already has a beaker.</span>"
+		else user << "<span class='warning'>The [src.name] already has a beaker.</span>"
 	else if(istype(I,/obj/item/weapon/reagent_containers/food/snacks/icecream))
 		if(!I.reagents.has_reagent("sprinkles"))
 			I.reagents.add_reagent("sprinkles",1)
@@ -47,7 +47,7 @@
 			I.name += " with sprinkles"
 			I.desc += " It has sprinkles on top."
 			. = 1
-		else . = "<span class='indigo'>The [I.name] already has sprinkles.</span>"
+		else . = "<span class='warning'>The [I.name] already has sprinkles.</span>"
 	return
 
 // Interactions ////////////////////////////////////////////////

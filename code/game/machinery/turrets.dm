@@ -398,7 +398,7 @@
 				if (user.machine==src)
 					src.attack_hand(user)
 		else
-			user << "<span class='indigo'>Access denied.</span>"
+			user << "<span class='warning'>Access denied.</span>"
 
 /obj/machinery/turretid/attack_ai(mob/user as mob)
 	src.add_hiddenprint(user)

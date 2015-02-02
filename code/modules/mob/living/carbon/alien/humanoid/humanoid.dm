@@ -103,7 +103,7 @@
 	if(shielded)
 		damage /= 4
 
-	src << "<span class='indigo'>The blob attacks you!</span>"
+	src << "<span class='warning'>The blob attacks you!</span>"
 
 	adjustFireLoss(damage)
 
@@ -113,7 +113,7 @@
 /mob/living/carbon/alien/humanoid/meteorhit(O as obj)
 	if(flags & INVULNERABLE)
 		return
-	visible_message("<span class='indigo'>\The [src] has been hit by [O]</span>")
+	visible_message("<span class='warning'>\The [src] has been hit by [O]</span>")
 	if(health > 0)
 		adjustFireLoss((istype(O, /obj/effect/meteor/small) ? 10 : 25))
 		adjustFireLoss(30)
@@ -126,7 +126,7 @@
 		return//Fix for aliens receiving double messages when attacking other aliens.
 
 	if(!ticker)
-		M << "<span class='indigo'>You cannot attack people before the game has started.</span>"
+		M << "<span class='warning'>You cannot attack people before the game has started.</span>"
 		return
 
 	/*
@@ -153,7 +153,7 @@
 
 /mob/living/carbon/alien/humanoid/attack_slime(mob/living/carbon/slime/M as mob)
 	if(!ticker)
-		M << "<span class='indigo'>You cannot attack people before the game has started.</span>"
+		M << "<span class='warning'>You cannot attack people before the game has started.</span>"
 		return
 
 	if(M.Victim) return // can't attack while eating!
@@ -211,14 +211,14 @@
 		src.attack_log += text("\[[time_stamp()]\] <font color='orange'>Has been [M.attacktext] by [M.name] ([M.ckey])</font>")
 		if(M.attack_sound)
 			playsound(loc, M.attack_sound, 50, 1, 1)
-		visible_message("<span class='indigo'><B>[M]</B> [M.attacktext] \the [src] !</span>")
+		visible_message("<span class='warning'><B>[M]</B> [M.attacktext] \the [src] !</span>")
 		var/damage = rand(M.melee_damage_lower, M.melee_damage_upper)
 		adjustBruteLoss(damage)
 		updatehealth()
 
 /mob/living/carbon/alien/humanoid/attack_hand(mob/living/carbon/human/M as mob)
 	if(!ticker)
-		M << "<span class='indigo'>You cannot attack people before the game has started.</span>"
+		M << "<span class='warning'>You cannot attack people before the game has started.</span>"
 		return
 
 	/*
@@ -243,7 +243,7 @@
 					visible_message("<span class='danger'>\The [src] has been touched with the stun gloves by [M] !</span>")
 					return
 				else
-					M << "<span class='indigo'>Not enough charge !</span>"
+					M << "<span class='warning'>Not enough charge !</span>"
 					return
 
 	switch(M.a_intent)
@@ -280,7 +280,7 @@
 			LAssailant = M
 
 			playsound(loc, 'sound/weapons/thudswoosh.ogg', 50, 1, -1)
-			visible_message("<span class='indigo'>[M] has grabbed \the [src] passively!</span>")
+			visible_message("<span class='warning'>[M] has grabbed \the [src] passively!</span>")
 
 		if("hurt")
 			var/damage = rand(1, 9)
@@ -326,7 +326,7 @@ In all, this is a lot like the monkey code. /N
 
 /mob/living/carbon/alien/humanoid/attack_alien(mob/living/carbon/alien/humanoid/M as mob)
 	if(!ticker)
-		M << "<span class='indigo'>You cannot attack people before the game has started.</span>"
+		M << "<span class='warning'>You cannot attack people before the game has started.</span>"
 		return
 
 	/*

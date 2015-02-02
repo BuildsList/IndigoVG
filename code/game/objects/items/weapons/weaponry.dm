@@ -56,7 +56,7 @@
 		if(M.mind.vampire)
 			if(ishuman(M))
 				if(!(VAMP_FULL in M.mind.vampire.powers))
-					M << "<span class='indigo'>The nullrod's power interferes with your own!</span>"
+					M << "<span class='warning'>The nullrod's power interferes with your own!</span>"
 					M.mind.vampire.nullified = max(5, M.mind.vampire.nullified + 2)
 	..()
 

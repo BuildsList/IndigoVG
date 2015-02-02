@@ -31,9 +31,9 @@
 				user << "<span class='notice'>You put the syringe in [src].</span>"
 				user << "<span class='notice'>[syringes.len] / [max_syringes] syringes.</span>"
 			else
-				usr << "<span class='indigo'>[src] cannot hold more syringes.</span>"
+				usr << "<span class='warning'>[src] cannot hold more syringes.</span>"
 		else
-			usr << "<span class='indigo'>This syringe is broken!</span>"
+			usr << "<span class='warning'>This syringe is broken!</span>"
 
 
 /obj/item/weapon/gun/syringe/afterattack(obj/target, mob/user , flag)
@@ -50,7 +50,7 @@
 	if(syringes.len)
 		spawn(0) fire_syringe(target,user)
 	else
-		usr << "<span class='indigo'>[src] is empty.</span>"
+		usr << "<span class='warning'>[src] is empty.</span>"
 
 /obj/item/weapon/gun/syringe/proc/fire_syringe(atom/target, mob/user)
 	if (locate (/obj/structure/table, src.loc))

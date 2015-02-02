@@ -21,7 +21,7 @@
 	..()
 
 
-	if (src.req_access && src.req_access.len)
+	if ((istype(src.req_access) && src.req_access.len) || istext(req_access))
 		src.icon_state = "[src.icon_state]"
 		src.base_state = src.icon_state
 	return
@@ -138,7 +138,7 @@
 /obj/machinery/door/window/hitby(AM as mob|obj)
 
 	..()
-	visible_message("<span class='indigo'>The glass door was hit by [AM].</span>", 1)
+	visible_message("<span class='warning'>The glass door was hit by [AM].</span>", 1)
 	var/tforce = 0
 	if(ismob(AM))
 		tforce = 40
@@ -160,7 +160,7 @@
 		user.delayNextAttack(8)
 		src.health = max(0, src.health - 25)
 		playsound(get_turf(src), 'sound/effects/Glasshit.ogg', 75, 1)
-		visible_message("<span class='indigo'>[user] smashes against the [src.name].</span>", 1)
+		visible_message("<span class='warning'>[user] smashes against the [src.name].</span>", 1)
 		if (src.health <= 0)
 			getFromPool(/obj/item/weapon/shard, loc)
 			var/obj/item/weapon/cable_coil/CC = new /obj/item/weapon/cable_coil(src.loc)
@@ -243,7 +243,7 @@
 		spark_system.start()
 		playsound(get_turf(src), "sparks", 50, 1)
 		playsound(get_turf(src), 'sound/weapons/blade1.ogg', 50, 1)
-		visible_message("<span class='indigo'>The glass door was sliced open by [user]!</span>")
+		visible_message("<span class='warning'>The glass door was sliced open by [user]!</span>")
 	flick("[src.base_state]spark", src)
 	sleep(6)
 	open()

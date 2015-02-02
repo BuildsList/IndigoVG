@@ -94,7 +94,7 @@
 			user << "<span class='notice'>[I] doesn't seem to fit into [src].</span>"
 			return
 		if(beakers.len >= max_beakers)
-			user << "<span class='indigo'>[src] already has [max_beakers] vials in it - another one isn't going to fit!</span>"
+			user << "<span class='warning'>[src] already has [max_beakers] vials in it - another one isn't going to fit!</span>"
 			return
 		var/obj/item/weapon/reagent_containers/glass/beaker/B = I
 		user.drop_item()
@@ -144,10 +144,10 @@
 		var/obj/effect/syringe_gun_dummy/D = new/obj/effect/syringe_gun_dummy(get_turf(src))
 		var/obj/item/weapon/reagent_containers/syringe/S = get_mixed_syringe()
 		if(!S)
-			user << "<span class='indigo'>There are no darts in [src]!</span>"
+			user << "<span class='warning'>There are no darts in [src]!</span>"
 			return
 		if(!S.reagents)
-			user << "<span class='indigo'>There are no reagents available!</span>"
+			user << "<span class='warning'>There are no reagents available!</span>"
 			return
 		cartridge.darts--
 		src.update_icon()
@@ -300,7 +300,7 @@
 	if(cartridge)
 		spawn(0) fire_dart(target,user)
 	else
-		usr << "<span class='indigo'>[src] is empty.</span>"
+		usr << "<span class='warning'>[src] is empty.</span>"
 
 
 /obj/item/weapon/gun/dartgun/vox

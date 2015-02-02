@@ -23,12 +23,12 @@
 		user << "<span class='notice'>Set the tag first dumbass</span>"
 		return 0
 	if(is_type_in_list(src.excludes))
-		user << "<span class='indigo'>\The [src] won't stick!</span>"
+		user << "<span class='warning'>\The [src] won't stick!</span>"
 		return 0
 	if(istype(A, /obj/item))
 		var/obj/item/I = A
 		if(I.w_class < 3)
-			user << "<span class='indigo'>\The [I] is too small for \the [src]</span>"
+			user << "<span class='warning'>\The [I] is too small for \the [src]</span>"
 			return 0
 	user << "<span class='notice'>You stealthily place \the [src] onto \the [A]</span>"
 	user.drop_item(src)

@@ -209,7 +209,7 @@ log transactions
 				<input type='submit' value='Submit'><br>
 				</form>"}
 		else
-			dat += "<span class='indigo'>Unable to connect to accounts database, please retry and if the issue persists contact NanoTrasen IT support.</span>"
+			dat += "<span class='warning'>Unable to connect to accounts database, please retry and if the issue persists contact NanoTrasen IT support.</span>"
 			reconnect_database()
 
 		user << browse(dat,"window=atm;size=550x650")
@@ -241,10 +241,10 @@ log transactions
 							T.amount = "([transfer_amount])"
 							authenticated_account.transaction_log.Add(T)
 						else
-							usr << "\icon[src]<span class='indigo'>Funds transfer failed.</span>"
+							usr << "\icon[src]<span class='warning'>Funds transfer failed.</span>"
 
 					else
-						usr << "\icon[src]<span class='indigo'>You don't have enough funds to do that!</span>"
+						usr << "\icon[src]<span class='warning'>You don't have enough funds to do that!</span>"
 			if("view_screen")
 				view_screen = text2num(href_list["view_screen"])
 			if("change_security_level")
@@ -326,7 +326,7 @@ log transactions
 						T.time = worldtime2text()
 						authenticated_account.transaction_log.Add(T)
 					else
-						usr << "\icon[src]<span class='indigo'>You don't have enough funds to do that!</span>"
+						usr << "\icon[src]<span class='warning'>You don't have enough funds to do that!</span>"
 			if("balance_statement")
 				if(authenticated_account)
 					if(world.timeofday < lastprint + PRINT_DELAY)

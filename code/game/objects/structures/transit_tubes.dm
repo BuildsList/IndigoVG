@@ -92,7 +92,7 @@ obj/structure/ex_act(severity)
 /obj/structure/transit_tube/Bumped(mob/AM as mob|obj)
 	var/obj/structure/transit_tube/T = locate() in AM.loc
 	if(T)
-		AM << "<span class='indigo'>The tube's support pylons block your way.</span>"
+		AM << "<span class='warning'>The tube's support pylons block your way.</span>"
 		return ..()
 	else
 		AM.loc = src.loc

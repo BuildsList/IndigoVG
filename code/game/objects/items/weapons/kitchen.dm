@@ -307,7 +307,7 @@
 /obj/item/weapon/tray/attack(mob/living/carbon/M as mob, mob/living/carbon/user as mob)
 
 	// Drop all the things. All of them.
-	overlays.Cut()
+	overlays.len = 0
 	for(var/obj/item/I in carrying)
 		I.loc = M.loc
 		carrying.Remove(I)
@@ -430,7 +430,7 @@
 /obj/item/weapon/tray/attackby(obj/item/weapon/W as obj, mob/user as mob)
 	if(istype(W, /obj/item/weapon/kitchen/rollingpin))
 		if(cooldown < world.time - 25)
-			user.visible_message("<span class='indigo'>[user] bashes [src] with [W]!</span>")
+			user.visible_message("<span class='warning'>[user] bashes [src] with [W]!</span>")
 			playsound(user.loc, 'sound/effects/shieldbash.ogg', 50, 1)
 			cooldown = world.time
 	else
@@ -489,7 +489,7 @@
 		foundtable = 1
 		break
 
-	overlays.Cut()
+	overlays.len = 0
 
 	for(var/obj/item/I in carrying)
 		I.loc = loc

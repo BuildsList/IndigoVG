@@ -58,8 +58,8 @@
 	var/t = "<span class='notice'> Coordinates: [x],[y] \n</span>"
 
 	// AUTOFIXED BY fix_string_idiocy.py
-	// C:\Users\Rob\Documents\Projects\vgstation13\code\modules\mob\mob.dm:25: t+= "<span class='indigo'> Temperature: [environment.temperature] \n"
-	t += {"<span class='indigo'> Temperature: [environment.temperature] \n</span>
+	// C:\Users\Rob\Documents\Projects\vgstation13\code\modules\mob\mob.dm:25: t+= "<span class='warning'> Temperature: [environment.temperature] \n"
+	t += {"<span class='warning'> Temperature: [environment.temperature] \n</span>
 <span class='notice'> Nitrogen: [environment.nitrogen] \n</span>
 <span class='notice'> Oxygen: [environment.oxygen] \n</span>
 <span class='notice'> Plasma : [environment.toxins] \n</span>
@@ -206,7 +206,7 @@
 						W.loc=get_turf(src) // I think.
 					else
 						if(!disable_warning)
-							src << "<span class='indigo'> You are unable to equip that.</span>" //Only print if act_on_fail is NOTHING
+							src << "<span class='warning'> You are unable to equip that.</span>" //Only print if act_on_fail is NOTHING
 				return 0
 			if(1)
 				equip_to_slot(W, slot, redraw_mob)
@@ -441,7 +441,7 @@
 					W.loc=get_turf(src) // I think.
 				else
 					if(!disable_warning)
-						src << "<span class='indigo'> You are unable to equip that.</span>" //Only print if act_on_fail is NOTHING
+						src << "<span class='warning'> You are unable to equip that.</span>" //Only print if act_on_fail is NOTHING
 			return 0
 
 		equip_to_slot(W, slot, redraw_mob) //This proc should not ever fail.
@@ -577,7 +577,7 @@ var/list/slot_equipment_priority = list( \
 			if(slot_belt)
 				if(!H.w_uniform)
 					if(!disable_warning)
-						H << "<span class='indigo'> You need a jumpsuit before you can attach this [name].</span>"
+						H << "<span class='warning'> You need a jumpsuit before you can attach this [name].</span>"
 					return 0
 				if( !(slot_flags & SLOT_BELT) )
 					return 0
@@ -628,7 +628,7 @@ var/list/slot_equipment_priority = list( \
 			if(slot_wear_id)
 				if(!H.w_uniform)
 					if(!disable_warning)
-						H << "<span class='indigo'> You need a jumpsuit before you can attach this [name].</span>"
+						H << "<span class='warning'> You need a jumpsuit before you can attach this [name].</span>"
 					return 0
 				if( !(slot_flags & SLOT_ID) )
 					return 0
@@ -643,7 +643,7 @@ var/list/slot_equipment_priority = list( \
 					return 0
 				if(!H.w_uniform)
 					if(!disable_warning)
-						H << "<span class='indigo'> You need a jumpsuit before you can attach this [name].</span>"
+						H << "<span class='warning'> You need a jumpsuit before you can attach this [name].</span>"
 					return 0
 				if(slot_flags & SLOT_DENYPOCKET)
 					return
@@ -654,7 +654,7 @@ var/list/slot_equipment_priority = list( \
 					return 0
 				if(!H.w_uniform)
 					if(!disable_warning)
-						H << "<span class='indigo'> You need a jumpsuit before you can attach this [name].</span>"
+						H << "<span class='warning'> You need a jumpsuit before you can attach this [name].</span>"
 					return 0
 				if(slot_flags & SLOT_DENYPOCKET)
 					return 0
@@ -664,7 +664,7 @@ var/list/slot_equipment_priority = list( \
 			if(slot_s_store)
 				if(!H.wear_suit)
 					if(!disable_warning)
-						H << "<span class='indigo'> You need a suit before you can attach this [name].</span>"
+						H << "<span class='warning'> You need a suit before you can attach this [name].</span>"
 					return 0
 				if(!H.wear_suit.allowed)
 					if(!disable_warning)
@@ -914,11 +914,11 @@ var/list/slot_equipment_priority = list( \
 	set src in usr
 	if(usr != src)
 		usr << "No."
-	var/msg = input(usr,"Set the flavor text in your 'examine' verb. Can also be used for OOC notes about your character.","Flavor Text",rhtml_decode(flavor_text)) as message|null
+	var/msg = input(usr,"Set the flavor text in your 'examine' verb. Can also be used for OOC notes about your character.","Flavor Text",html_decode(flavor_text)) as message|null
 
 	if(msg != null)
 		msg = copytext(msg, 1, MAX_MESSAGE_LEN)
-		msg = rhtml_encode(msg)
+		msg = html_encode(msg)
 
 		flavor_text = msg
 
@@ -986,7 +986,7 @@ var/list/slot_equipment_priority = list( \
 	if(!client)
 		log_game("[usr.key] AM failed due to disconnect.")
 		return
-	client.screen.Cut()
+	client.screen.len = 0
 	if(!client)
 		log_game("[usr.key] AM failed due to disconnect.")
 		return
@@ -1173,90 +1173,17 @@ var/list/slot_equipment_priority = list( \
 	for(var/mob/M in viewers())
 		M.see(message)
 
-/*
-adds a dizziness amount to a mob
-use this rather than directly changing var/dizziness
-since this ensures that the dizzy_process proc is started
-currently only humans get dizzy
-
-value of dizziness ranges from 0 to 1000
-below 100 is not dizzy
-*/
-/mob/proc/make_dizzy(var/amount)
-	if(!istype(src, /mob/living/carbon/human)) // for the moment, only humans get dizzy
-		return
-
-	dizziness = min(1000, dizziness + amount)	// store what will be new value
-													// clamped to max 1000
-	if(dizziness > 100 && !is_dizzy)
-		spawn(0)
-			dizzy_process()
-
-
-/*
-dizzy process - wiggles the client's pixel offset over time
-spawned from make_dizzy(), will terminate automatically when dizziness gets <100
-note dizziness decrements automatically in the mob's Life() proc.
-*/
-/mob/proc/dizzy_process()
-	is_dizzy = 1
-	while(dizziness > 100)
-		if(client)
-			var/amplitude = dizziness*(sin(dizziness * 0.044 * world.time) + 1) / 70
-			client.pixel_x = amplitude * sin(0.008 * dizziness * world.time)
-			client.pixel_y = amplitude * cos(0.008 * dizziness * world.time)
-
-		sleep(1)
-	//endwhile - reset the pixel offsets to zero
-	is_dizzy = 0
-	if(client)
-		client.pixel_x = 0
-		client.pixel_y = 0
-
-// jitteriness - copy+paste of dizziness
-
-/mob/proc/make_jittery(var/amount)
-	if(!istype(src, /mob/living/carbon/human)) // for the moment, only humans get dizzy
-		return
-
-	jitteriness = min(1000, jitteriness + amount)	// store what will be new value
-													// clamped to max 1000
-	if(jitteriness > 100 && !is_jittery)
-		spawn(0)
-			jittery_process()
-
-
-// Typo from the oriignal coder here, below lies the jitteriness process. So make of his code what you will, the previous comment here was just a copypaste of the above.
-/mob/proc/jittery_process()
-	var/old_x = pixel_x
-	var/old_y = pixel_y
-	is_jittery = 1
-	while((jitteriness > 100) && !(flags & INVULNERABLE))
-//		var/amplitude = jitteriness*(sin(jitteriness * 0.044 * world.time) + 1) / 70
-//		pixel_x = amplitude * sin(0.008 * jitteriness * world.time)
-//		pixel_y = amplitude * cos(0.008 * jitteriness * world.time)
-
-		var/amplitude = min(4, jitteriness / 100)
-		pixel_x = rand(-amplitude, amplitude)
-		pixel_y = rand(-amplitude/3, amplitude/3)
-
-		sleep(1)
-	//endwhile - reset the pixel offsets to zero
-	is_jittery = 0
-	pixel_x = old_x
-	pixel_y = old_y
-
 /mob/Stat()
 	..()
 
-	if(client && client.holder)
+	if(client && client.holder && client.inactivity < (1200))
 
 		if (statpanel("Status"))	//not looking at that panel
 			stat(null, "Location:\t([x], [y], [z])")
 			stat(null, "CPU:\t[world.cpu]")
 			stat(null, "Instances:\t[world.contents.len]")
 
-			if (master_controller)
+			if (garbageCollector)
 				/*stat(null, "MasterController-[last_tick_duration] ([master_controller.processing?"On":"Off"]-[master_controller.iteration])")
 				stat(null, "Air-[master_controller.air_cost]")
 				stat(null, "Sun-[master_controller.sun_cost]")
@@ -1274,9 +1201,8 @@ note dizziness decrements automatically in the mob's Life() proc.
 				stat(null, "\ttotal delete - [garbageCollector.dels_count]")
 				stat(null, "\tsoft delete - [garbageCollector.dels_count - garbageCollector.hard_dels]")
 				stat(null, "\thard delete - [garbageCollector.hard_dels]")
-				stat(null, "ALL - [master_controller.total_cost]")
 			else
-				stat(null, "master controller - ERROR")
+				stat(null, "Garbage Controller is not running.")
 
 			if(processScheduler.getIsRunning())
 				var/datum/controller/process/process
@@ -1334,27 +1260,28 @@ note dizziness decrements automatically in the mob's Life() proc.
 			else
 				stat(null, "processScheduler is not running.")
 
-	if(listed_turf && client)
-		if(get_dist(listed_turf,src) > 1)
-			listed_turf = null
-		else
-			statpanel(listed_turf.name, null, listed_turf)
-			for(var/atom/A in listed_turf)
-				if(A.invisibility > see_invisible)
-					continue
-				statpanel(listed_turf.name, null, A)
+	if(client && client.inactivity < (1200))
+		if(listed_turf)
+			if(get_dist(listed_turf,src) > 1)
+				listed_turf = null
+			else if(statpanel(listed_turf.name))
+				statpanel(listed_turf.name, null, listed_turf)
+				for(var/atom/A in listed_turf)
+					if(A.invisibility > see_invisible)
+						continue
+					statpanel(listed_turf.name, null, A)
 
-	if(spell_list && spell_list.len)
-		for(var/obj/effect/proc_holder/spell/S in spell_list)
-			if(istype(S, /obj/effect/proc_holder/spell/noclothes))
-				continue //Not showing the noclothes spell
-			switch(S.charge_type)
-				if("recharge")
-					statpanel(S.panel,"[S.charge_counter/10.0]/[S.charge_max/10]",S)
-				if("charges")
-					statpanel(S.panel,"[S.charge_counter]/[S.charge_max]",S)
-				if("holdervar")
-					statpanel(S.panel,"[S.holder_var_type] [S.holder_var_amount]",S)
+		if(spell_list && spell_list.len)
+			for(var/obj/effect/proc_holder/spell/S in spell_list)
+				if(istype(S, /obj/effect/proc_holder/spell/noclothes) || !statpanel(S.panel))
+					continue //Not showing the noclothes spell
+				switch(S.charge_type)
+					if("recharge")
+						statpanel(S.panel,"[S.charge_counter/10.0]/[S.charge_max/10]",S)
+					if("charges")
+						statpanel(S.panel,"[S.charge_counter]/[S.charge_max]",S)
+					if("holdervar")
+						statpanel(S.panel,"[S.holder_var_type] [S.holder_var_amount]",S)
 
 
 
@@ -1497,6 +1424,13 @@ note dizziness decrements automatically in the mob's Life() proc.
 		update_canmove()	//updates lying, canmove and icons
 	return
 
+/mob/proc/Jitter(amount)
+	jitteriness = max(jitteriness,amount,0)
+
+/mob/proc/Dizzy(amount)
+	dizziness = max(dizziness,amount,0)
+
+
 /mob/proc/Paralyse(amount)
 	if(status_flags & CANPARALYSE)
 		paralysis = max(max(paralysis,amount),0)
@@ -1584,9 +1518,9 @@ note dizziness decrements automatically in the mob's Life() proc.
 	var/obj/item/weapon/selection = input("What do you want to yank out?", "Embedded objects") in valid_objects
 
 	if(self)
-		src << "<span class='indigo'>You attempt to get a good grip on the [selection] in your body.</span></span>"
+		src << "<span class='warning'>You attempt to get a good grip on the [selection] in your body.</span></span>"
 	else
-		U << "<span class='indigo'>You attempt to get a good grip on the [selection] in [S]'s body.</span>"
+		U << "<span class='warning'>You attempt to get a good grip on the [selection] in [S]'s body.</span>"
 
 	if(!do_after(U, 80))
 		return
@@ -1594,9 +1528,9 @@ note dizziness decrements automatically in the mob's Life() proc.
 		return
 
 	if(self)
-		visible_message("<span class='indigo'><b>[src] rips [selection] out of their body.</b></span>","<span class='indigo'><b>You rip [selection] out of your body.</b></span>")
+		visible_message("<span class='warning'><b>[src] rips [selection] out of their body.</b></span>","<span class='warning'><b>You rip [selection] out of your body.</b></span>")
 	else
-		visible_message("<span class='indigo'><b>[usr] rips [selection] out of [src]'s body.</b></span>","<span class='indigo'><b>[usr] rips [selection] out of your body.</b></span>")
+		visible_message("<span class='warning'><b>[usr] rips [selection] out of [src]'s body.</b></span>","<span class='warning'><b>[usr] rips [selection] out of your body.</b></span>")
 
 	selection.loc = get_turf(src)
 

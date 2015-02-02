@@ -77,7 +77,7 @@
 		usepaper(amount)
 		usr << "<span class='notice'>You pick the ribbon knot and drop all the papers.</span>"
 	else
-		usr << "<span class='indigo'>You don't think it would be wise to drop this much paper.</span>"
+		usr << "<span class='warning'>You don't think it would be wise to drop this much paper.</span>"
 
 /obj/item/weapon/paper_pack/nano //now in flavours!
 	papertype = /obj/item/weapon/paper/nano

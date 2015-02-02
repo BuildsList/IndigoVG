@@ -26,12 +26,12 @@
 
 		if(chargelevel != newlevel)
 
-			overlays.Cut()
+			overlays.len = 0
 			overlays += "ccharger-o[newlevel]"
 
 			chargelevel = newlevel
 	else
-		overlays.Cut()
+		overlays.len = 0
 
 /obj/machinery/cell_charger/examine(mob/user)
 	..()
@@ -46,14 +46,14 @@
 	..()
 	if(istype(W, /obj/item/weapon/cell) && anchored)
 		if(charging)
-			user << "<span class='indigo'>There is already a cell in the charger.</span>"
+			user << "<span class='warning'>There is already a cell in the charger.</span>"
 			return
 		else
 			var/area/a = loc.loc // Gets our locations location, like a dream within a dream
 			if(!isarea(a))
 				return
 			if(a.power_equip == 0) // There's no APC in this area, don't try to cheat power!
-				user << "<span class='indigo'>The [name] blinks red as you try to insert the cell!</span>"
+				user << "<span class='warning'>The [name] blinks red as you try to insert the cell!</span>"
 				return
 
 			user.drop_item()
@@ -76,7 +76,7 @@
 
 /obj/machinery/cell_charger/wrenchAnchor(mob/user)
 	if(charging)
-		user << "<span class='indigo'>Remove the cell first!</span>"
+		user << "<span class='warning'>Remove the cell first!</span>"
 		return
 	..()
 

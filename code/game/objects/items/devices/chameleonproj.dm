@@ -130,22 +130,22 @@
 
 /obj/effect/dummy/chameleon/attackby()
 	for(var/mob/M in src)
-		M << "<span class='indigo'>Your chameleon-projector deactivates.</span>"
+		M << "<span class='warning'>Your chameleon-projector deactivates.</span>"
 	master.disrupt()
 
 /obj/effect/dummy/chameleon/attack_hand()
 	for(var/mob/M in src)
-		M << "<span class='indigo'>Your chameleon-projector deactivates.</span>"
+		M << "<span class='warning'>Your chameleon-projector deactivates.</span>"
 	master.disrupt()
 
 /obj/effect/dummy/chameleon/ex_act()
 	for(var/mob/M in src)
-		M << "<span class='indigo'>Your chameleon-projector deactivates.</span>"
+		M << "<span class='warning'>Your chameleon-projector deactivates.</span>"
 	master.disrupt()
 
 /obj/effect/dummy/chameleon/bullet_act()
 	for(var/mob/M in src)
-		M << "<span class='indigo'>Your chameleon-projector deactivates.</span>"
+		M << "<span class='warning'>Your chameleon-projector deactivates.</span>"
 	..()
 	master.disrupt()
 

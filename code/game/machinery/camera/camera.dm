@@ -120,7 +120,7 @@ var/list/camera_names=list()
 	if(!istype(user))
 		return
 	status = 0
-	visible_message("<span class='indigo'>\The [user] slashes at [src]!</span>")
+	visible_message("<span class='warning'>\The [user] slashes at [src]!</span>")
 	playsound(get_turf(src), 'sound/weapons/slash.ogg', 100, 1)
 	icon_state = "[initial(icon_state)]1"
 	add_hiddenprint(user)
@@ -191,19 +191,19 @@ var/list/camera_names=list()
 		status = !( src.status )
 		if (!(src.status))
 			if(user)
-				visible_message("<span class='indigo'>[user] has deactivated [src]!</span>")
+				visible_message("<span class='warning'>[user] has deactivated [src]!</span>")
 				add_hiddenprint(user)
 			else
-				visible_message("<span class='indigo'> \The [src] deactivates!</span>")
+				visible_message("<span class='warning'> \The [src] deactivates!</span>")
 			playsound(get_turf(src), 'sound/items/Wirecutter.ogg', 100, 1)
 			icon_state = "[initial(icon_state)]1"
 			add_hiddenprint(user)
 		else
 			if(user)
-				visible_message("<span class='indigo'> [user] has reactivated [src]!</span>")
+				visible_message("<span class='warning'> [user] has reactivated [src]!</span>")
 				add_hiddenprint(user)
 			else
-				visible_message("<span class='indigo'> \the [src] reactivates!</span>")
+				visible_message("<span class='warning'> \the [src] reactivates!</span>")
 			playsound(get_turf(src), 'sound/items/Wirecutter.ogg', 100, 1)
 			icon_state = initial(icon_state)
 			add_hiddenprint(user)

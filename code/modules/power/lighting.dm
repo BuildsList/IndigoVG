@@ -2,8 +2,6 @@
 //
 // consists of light fixtures (/obj/machinery/light) and light tube/bulb items (/obj/item/weapon/light)
 
-#define LIGHTING_POWER_FACTOR 20 // Watt per unit luminosity.
-
 // status values shared between lighting fixtures and items
 #define LIGHT_OK     0
 #define LIGHT_EMPTY  1
@@ -140,6 +138,7 @@
 	power_channel = LIGHT //Lights are calc'd via area so they dont need to be in the machine list
 	var/on = 0					// 1 if on, 0 if off
 	var/on_gs = 0
+	var/static_power_used = 0
 	var/brightness = 8			// luminosity when on, also used in power calculation
 	var/status = LIGHT_OK		// LIGHT_OK, _EMPTY, _BURNED or _BROKEN
 	var/flickering = 0
@@ -252,6 +251,11 @@
 	active_power_usage = (luminosity * 10)
 	if(on != on_gs)
 		on_gs = on
+		if(on)
+			static_power_used = luminosity * 20 //20W per unit luminosity
+			addStaticPower(static_power_used, STATIC_LIGHT)
+		else
+			removeStaticPower(static_power_used, STATIC_LIGHT)
 
 
 /*
@@ -429,7 +433,7 @@
 /obj/machinery/light/attack_animal(mob/living/simple_animal/M)
 	if(M.melee_damage_upper == 0)	return
 	if(status == LIGHT_EMPTY||status == LIGHT_BROKEN)
-		M << "<span class='indigo'>That object is useless to you.</span>"
+		M << "<span class='warning'>That object is useless to you.</span>"
 		return
 	else if (status == LIGHT_OK||status == LIGHT_BURNED)
 		for(var/mob/O in viewers(src))
@@ -533,23 +537,6 @@
 /obj/machinery/light/blob_act()
 	if(prob(75))
 		broken()
-
-/obj/machinery/light/process()
-	switch (on)
-		if (1)
-			switch (idle)
-				if (1)
-					use_power = 2
-					idle_power_usage = active_power_usage >> 1
-				if (0)
-					use_power = 1
-					active_power_usage = LIGHTING_POWER_FACTOR * luminosity
-					idle = 1
-		if (0)
-			use_power = 0
-			idle = 0
-#undef LIGHTING_POWER_FACTOR
-
 /*
  * Called when area power state changes.
  */
@@ -689,7 +676,7 @@
 
 /obj/item/weapon/light/proc/shatter()
 	if(status == LIGHT_OK || status == LIGHT_BURNED)
-		src.visible_message("<span class='indigo'>[name] shatters.</span>","<span class='indigo'>You hear a small glass object shatter.</span>")
+		src.visible_message("<span class='warning'>[name] shatters.</span>","<span class='warning'>You hear a small glass object shatter.</span>")
 		status = LIGHT_BROKEN
 		force = 5
 		playsound(get_turf(src), 'sound/effects/Glasshit.ogg', 75, 1)

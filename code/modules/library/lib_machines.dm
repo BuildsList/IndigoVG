@@ -2,6 +2,7 @@
  *
  * Contains:
  *		Borrowbook datum
+ *		Cachedbook datum from tkdrg, thanks
  *		Library Public Computer
  *		Library Computer
  *		Library Scanner
@@ -18,6 +19,50 @@ datum/borrowbook // Datum used to keep track of who has borrowed what when and f
 	var/duedate
 
 /*
+ * Cachedbook datum
+ */
+datum/cachedbook // Datum used to cache the SQL DB books locally in order to achieve a performance gain.
+	var/id
+	var/title
+	var/author
+	var/category
+	var/content
+
+var/global/list/datum/cachedbook/cachedbooks // List of our cached book datums
+var/global/list/obj/machinery/librarycomp/library_computers = list()
+var/libcomp_menu
+
+/proc/add_book_to_cache(author, title, category, id)
+	for(var/obj/machinery/librarycomp/L in library_computers)
+		L.booklist += "<tr><td>[author]</td><td>[title]</td><td>[category]</td><td><A href='?src=\ref[L];cacheid=[id]'>\[Order\]</A></td></tr>"
+
+/proc/load_library_db_to_cache(force = FALSE)
+	if(cachedbooks && !force)
+		return
+
+	establish_db_connection()
+
+	if(!dbcon.IsConnected())
+		return
+
+	cachedbooks = list()
+	var/DBQuery/query = dbcon.NewQuery("SELECT id, author, title, category FROM library")
+	query.Execute()
+
+	while(query.NextRow())
+		var/datum/cachedbook/newbook = new/datum/cachedbook()
+		newbook.id = query.item[1]
+		newbook.author = query.item[2]
+		newbook.title = query.item[3]
+		newbook.category = query.item[4]
+
+		cachedbooks += newbook
+
+	if(force)
+		for(var/obj/machinery/librarycomp/L in library_computers)
+			L.build_library_menu()
+
+/*
  * Library Public Computer
  */
 /obj/machinery/librarypubliccomp
@@ -32,27 +77,41 @@ datum/borrowbook // Datum used to keep track of who has borrowed what when and f
 	var/author
 	var/SQLquery
 
+/obj/machinery/librarypubliccomp/cultify()
+	new /obj/structure/cult/tome(loc)
+	..()
+
 /obj/machinery/librarypubliccomp/attack_hand(var/mob/user as mob)
+	if(istype(user,/mob/dead))
+		user << "<span class='danger'>Nope.</span>"
+		return
 	usr.set_machine(src)
 	var/dat = "<HEAD><TITLE>Library Visitor</TITLE></HEAD><BODY>\n" // <META HTTP-EQUIV='Refresh' CONTENT='10'>
 	switch(screenstate)
 		if(0)
+
+			// AUTOFIXED BY fix_string_idiocy.py
+			// C:\Users\Rob\Documents\Projects\vgstation13\code\modules\library\lib_machines.dm:40: dat += "<h2>Search Settings</h2><br>"
 			dat += {"<h2>Search Settings</h2><br>
-			<A href='?src=\ref[src];settitle=1'>Filter by Title: [title]</A><BR>
-			<A href='?src=\ref[src];setcategory=1'>Filter by Category: [category]</A><BR>
-			<A href='?src=\ref[src];setauthor=1'>Filter by Author: [author]</A><BR>
-			<A href='?src=\ref[src];search=1'>\[Start Search\]</A><BR>"}
+				<A href='?src=\ref[src];settitle=1'>Filter by Title: [title]</A><BR>
+				<A href='?src=\ref[src];setcategory=1'>Filter by Category: [category]</A><BR>
+				<A href='?src=\ref[src];setauthor=1'>Filter by Author: [author]</A><BR>
+				<A href='?src=\ref[src];search=1'>\[Start Search\]</A><BR>"}
+			// END AUTOFIX
 		if(1)
-			establish_db_connection()
-			if(!dbcon.IsConnected())
+			establish_old_db_connection()
+			if(!dbcon_old.IsConnected())
 				dat += "<font color=red><b>ERROR</b>: Unable to contact External Archive. Please contact your system administrator for assistance.</font><BR>"
 			else if(!SQLquery)
 				dat += "<font color=red><b>ERROR</b>: Malformed search request. Please contact your system administrator for assistance.</font><BR>"
 			else
-				dat += {"<table>
-				<tr><td>AUTHOR</td><td>TITLE</td><td>CATEGORY</td><td>SS<sup>13</sup>BN</td></tr>"}
 
-				var/DBQuery/query = dbcon.NewQuery(SQLquery)
+				// AUTOFIXED BY fix_string_idiocy.py
+				// C:\Users\Rob\Documents\Projects\vgstation13\code\modules\library\lib_machines.dm:52: dat += "<table>"
+				dat += {"<table>
+					<tr><td>AUTHOR</td><td>TITLE</td><td>CATEGORY</td><td>SS<sup>13</sup>BN</td></tr>"}
+				// END AUTOFIX
+				var/DBQuery/query = dbcon_old.NewQuery(SQLquery)
 				query.Execute()
 
 				while(query.NextRow())
@@ -94,7 +153,7 @@ datum/borrowbook // Datum used to keep track of who has borrowed what when and f
 			author = null
 		author = sanitizeSQL(author)
 	if(href_list["search"])
-		SQLquery = "SELECT author, title, category, id FROM erro_library WHERE "
+		SQLquery = "SELECT author, title, category, id FROM library WHERE "
 		if(category == "Any")
 			SQLquery += "author LIKE '%[author]%' AND title LIKE '%[title]%'"
 		else
@@ -111,9 +170,11 @@ datum/borrowbook // Datum used to keep track of who has borrowed what when and f
 
 /*
  * Library Computer
+ *
+ * TODO: Make this an actual /obj/machinery/computer that can be crafted from circuit boards and such
+ * It is August 22nd, 2012... This TODO has already been here for months.. I wonder how long it'll last before someone does something about it.
+ * It's 25th of January in the year of (our) Lord 2015... And it's still not a computer.
  */
-// TODO: Make this an actual /obj/machinery/computer that can be crafted from circuit boards and such
-// It is August 22nd, 2012... This TODO has already been here for months.. I wonder how long it'll last before someone does something about it.
 /obj/machinery/librarycomp
 	name = "Check-In/Out Computer"
 	icon = 'icons/obj/library.dmi'
@@ -131,19 +192,59 @@ datum/borrowbook // Datum used to keep track of who has borrowed what when and f
 	var/obj/machinery/libraryscanner/scanner // Book scanner that will be used when uploading books to the Archive
 
 	var/bibledelay = 0 // LOL NO SPAM (1 minute delay) -- Doohl
+	var/booklist
+
+	machine_flags = EMAGGABLE
+
+/obj/machinery/librarycomp/New(loc)
+	..(loc)
+	library_computers.Add(src)
+
+	if(ticker)
+		initialize()
+
+/obj/machinery/librarycomp/initialize()
+	..()
+	build_library_menu()
+
+/obj/machinery/librarycomp/Destroy()
+	library_computers -= src
+	..()
+
+/obj/machinery/librarycomp/cultify()
+	new /obj/structure/cult/tome(loc)
+	..()
+
+/obj/machinery/librarycomp/proc/build_library_menu()
+	var/menu
+
+	for(var/datum/cachedbook/C in cachedbooks)
+		menu += "<tr><td>[C.author]</td><td>[C.title]</td><td>[C.category]</td><td><A href='?src=\ref[src];cacheid=[cachedbooks.Find(C)]'>\[Order\]</A></td></tr>"
+
+	booklist = menu
 
 /obj/machinery/librarycomp/attack_hand(var/mob/user as mob)
-	usr.set_machine(src)
+	if(istype(user,/mob/dead))
+		user << "<span class='danger'>Nope.</span>"
+		return
+
+	user.set_machine(src)
+
 	var/dat = "<HEAD><TITLE>Book Inventory Management</TITLE></HEAD><BODY>\n" // <META HTTP-EQUIV='Refresh' CONTENT='10'>
+
 	switch(screenstate)
 		if(0)
 			// Main Menu
+
+			// AUTOFIXED BY fix_string_idiocy.py
+			// C:\Users\Rob\Documents\Projects\vgstation13\code\modules\library\lib_machines.dm:141: dat += "<A href='?src=\ref[src];switchscreen=1'>1. View General Inventory</A><BR>"
 			dat += {"<A href='?src=\ref[src];switchscreen=1'>1. View General Inventory</A><BR>
-			<A href='?src=\ref[src];switchscreen=2'>2. View Checked Out Inventory</A><BR>
-			<A href='?src=\ref[src];switchscreen=3'>3. Check out a Book</A><BR>
-			<A href='?src=\ref[src];switchscreen=4'>4. Connect to External Archive</A><BR>
-			<A href='?src=\ref[src];switchscreen=5'>5. Upload New Title to Archive</A><BR>
-			<A href='?src=\ref[src];switchscreen=6'>6. Print a Bible</A><BR>"}
+				<A href='?src=\ref[src];switchscreen=2'>2. View Checked Out Inventory</A><BR>
+				<A href='?src=\ref[src];switchscreen=3'>3. Check out a Book</A><BR>
+				<A href='?src=\ref[src];switchscreen=4'>4. Connect to External Archive</A><BR>
+				<A href='?src=\ref[src];switchscreen=5'>5. Upload New Title to Archive</A><BR>
+				<A href='?src=\ref[src];switchscreen=6'>6. Print a Bible</A><BR>"}
+			// END AUTOFIX
 			if(src.emagged)
 				dat += "<A href='?src=\ref[src];switchscreen=7'>7. Access the Forbidden Lore Vault</A><BR>"
 			if(src.arcanecheckout)
@@ -172,40 +273,43 @@ datum/borrowbook // Datum used to keep track of who has borrowed what when and f
 					timedue = "<font color=red><b>(OVERDUE)</b> [timedue]</font>"
 				else
 					timedue = round(timedue)
+
+				// AUTOFIXED BY fix_string_idiocy.py
+				// C:\Users\Rob\Documents\Projects\vgstation13\code\modules\library\lib_machines.dm:175: dat += "\"[b.bookname]\", Checked out to: [b.mobname]<BR>--- Taken: [timetaken] minutes ago, Due: in [timedue] minutes<BR>"
 				dat += {"\"[b.bookname]\", Checked out to: [b.mobname]<BR>--- Taken: [timetaken] minutes ago, Due: in [timedue] minutes<BR>
-				<A href='?src=\ref[src];checkin=\ref[b]'>(Check In)</A><BR><BR>"}
+					<A href='?src=\ref[src];checkin=\ref[b]'>(Check In)</A><BR><BR>"}
+				// END AUTOFIX
 			dat += "<A href='?src=\ref[src];switchscreen=0'>(Return to main menu)</A><BR>"
 		if(3)
 			// Check Out a Book
+
+			// AUTOFIXED BY fix_string_idiocy.py
+			// C:\Users\Rob\Documents\Projects\vgstation13\code\modules\library\lib_machines.dm:180: dat += "<h3>Check Out a Book</h3><BR>"
 			dat += {"<h3>Check Out a Book</h3><BR>
-			Book: [src.buffer_book]
-			<A href='?src=\ref[src];editbook=1'>\[Edit\]</A><BR>
-			Recipient: [src.buffer_mob]
-			<A href='?src=\ref[src];editmob=1'>\[Edit\]</A><BR>
-			Checkout Date : [world.time/600]<BR>
-			Due Date: [(world.time + checkoutperiod)/600]<BR>
-			(Checkout Period: [checkoutperiod] minutes) (<A href='?src=\ref[src];increasetime=1'>+</A>/<A href='?src=\ref[src];decreasetime=1'>-</A>)
-			<A href='?src=\ref[src];checkout=1'>(Commit Entry)</A><BR>
-			<A href='?src=\ref[src];switchscreen=0'>(Return to main menu)</A><BR>"}
+				Book: [src.buffer_book]
+				<A href='?src=\ref[src];editbook=1'>\[Edit\]</A><BR>
+				Recipient: [src.buffer_mob]
+				<A href='?src=\ref[src];editmob=1'>\[Edit\]</A><BR>
+				Checkout Date : [world.time/600]<BR>
+				Due Date: [(world.time + checkoutperiod)/600]<BR>
+				(Checkout Period: [checkoutperiod] minutes) (<A href='?src=\ref[src];increasetime=1'>+</A>/<A href='?src=\ref[src];decreasetime=1'>-</A>)
+				<A href='?src=\ref[src];checkout=1'>(Commit Entry)</A><BR>
+				<A href='?src=\ref[src];switchscreen=0'>(Return to main menu)</A><BR>"}
+			// END AUTOFIX
 		if(4)
 			dat += "<h3>External Archive</h3>"
-			establish_db_connection()
-			if(!dbcon.IsConnected())
+			if(!cachedbooks)
 				dat += "<font color=red><b>ERROR</b>: Unable to contact External Archive. Please contact your system administrator for assistance.</font>"
 			else
+
+				// AUTOFIXED BY fix_string_idiocy.py
+				// C:\Users\Rob\Documents\Projects\vgstation13\code\modules\library\lib_machines.dm:196: dat += "<A href='?src=\ref[src];orderbyid=1'>(Order book by SS<sup>13</sup>BN)</A><BR><BR>"
 				dat += {"<A href='?src=\ref[src];orderbyid=1'>(Order book by SS<sup>13</sup>BN)</A><BR><BR>
-				<table>
-				<tr><td>AUTHOR</td><td>TITLE</td><td>CATEGORY</td><td></td></tr>"}
+					<table>
+					<tr><td>AUTHOR</td><td>TITLE</td><td>CATEGORY</td><td></td></tr>"}
+				// END AUTOFIX
+				dat += booklist
 
-				var/DBQuery/query = dbcon.NewQuery("SELECT id, author, title, category FROM library")
-				query.Execute()
-
-				while(query.NextRow())
-					var/id = query.item[1]
-					var/author = query.item[2]
-					var/title = query.item[3]
-					var/category = query.item[4]
-					dat += "<tr><td>[author]</td><td>[title]</td><td>[category]</td><td><A href='?src=\ref[src];targetid=[id]'>\[Order\]</A></td></tr>"
 				dat += "</table>"
 			dat += "<BR><A href='?src=\ref[src];switchscreen=0'>(Return to main menu)</A><BR>"
 		if(5)
@@ -219,27 +323,43 @@ datum/borrowbook // Datum used to keep track of who has borrowed what when and f
 			else if(!scanner.cache)
 				dat += "<FONT color=red>No data found in scanner memory.</FONT><BR>"
 			else
+
+				// AUTOFIXED BY fix_string_idiocy.py
+				// C:\Users\Rob\Documents\Projects\vgstation13\code\modules\library\lib_machines.dm:222: dat += "<TT>Data marked for upload...</TT><BR>"
 				dat += {"<TT>Data marked for upload...</TT><BR>
-				<TT>Title: </TT>[scanner.cache.name]<BR>"}
+					<TT>Title: </TT>[scanner.cache.name]<BR>"}
+				// END AUTOFIX
 				if(!scanner.cache.author)
 					scanner.cache.author = "Anonymous"
+
+				// AUTOFIXED BY fix_string_idiocy.py
+				// C:\Users\Rob\Documents\Projects\vgstation13\code\modules\library\lib_machines.dm:226: dat += "<TT>Author: </TT><A href='?src=\ref[src];setauthor=1'>[scanner.cache.author]</A><BR>"
 				dat += {"<TT>Author: </TT><A href='?src=\ref[src];setauthor=1'>[scanner.cache.author]</A><BR>
-				<TT>Category: </TT><A href='?src=\ref[src];setcategory=1'>[upload_category]</A><BR>
-				<A href='?src=\ref[src];upload=1'>\[Upload\]</A><BR>"}
+					<TT>Category: </TT><A href='?src=\ref[src];setcategory=1'>[upload_category]</A><BR>
+					<A href='?src=\ref[src];upload=1'>\[Upload\]</A><BR>"}
+				// END AUTOFIX
 			dat += "<A href='?src=\ref[src];switchscreen=0'>(Return to main menu)</A><BR>"
 		if(7)
-			dat += {"<h3>Accessing Forbidden Lore Vault v 1.3</h3>
-			Are you absolutely sure you want to proceed? EldritchTomes Inc. takes no responsibilities for loss of sanity resulting from this action.<p>
-			<A href='?src=\ref[src];arccheckout=1'>Yes.</A><BR>
-			<A href='?src=\ref[src];switchscreen=0'>No.</A><BR>"}
 
+			// AUTOFIXED BY fix_string_idiocy.py
+			// C:\Users\Rob\Documents\Projects\vgstation13\code\modules\library\lib_machines.dm:231: dat += "<h3>Accessing Forbidden Lore Vault v 1.3</h3>"
+			dat += {"<h3>Accessing Forbidden Lore Vault v 1.3</h3>
+				Are you absolutely sure you want to proceed? EldritchTomes Inc. takes no responsibilities for loss of sanity resulting from this action.<p>
+				<A href='?src=\ref[src];arccheckout=1'>Yes.</A><BR>
+				<A href='?src=\ref[src];switchscreen=0'>No.</A><BR>"}
+			// END AUTOFIX
 	//dat += "<A HREF='?src=\ref[user];mach_close=library'>Close</A><br><br>"
 	user << browse(dat, "window=library")
 	onclose(user, "library")
 
-/obj/machinery/librarycomp/attackby(obj/item/weapon/W as obj, mob/user as mob)
-	if (src.density && istype(W, /obj/item/weapon/card/emag))
+/obj/machinery/librarycomp/emag(mob/user)
+	if(!emagged)
 		src.emagged = 1
+		user << "\blue You override the library computer's printing restrictions."
+		return 1
+	return
+
+/obj/machinery/librarycomp/attackby(obj/item/weapon/W as obj, mob/user as mob)
 	if(istype(W, /obj/item/weapon/barcodescanner))
 		var/obj/item/weapon/barcodescanner/scanner = W
 		scanner.computer = src
@@ -247,7 +367,7 @@ datum/borrowbook // Datum used to keep track of who has borrowed what when and f
 		for (var/mob/V in hearers(src))
 			V.show_message("[src] lets out a low, short blip.", 2)
 	else
-		..()
+		return ..()
 
 /obj/machinery/librarycomp/Topic(href, href_list)
 	if(..())
@@ -329,32 +449,53 @@ datum/borrowbook // Datum used to keep track of who has borrowed what when and f
 			if(scanner.cache)
 				var/choice = input("Are you certain you wish to upload this title to the Archive?") in list("Confirm", "Abort")
 				if(choice == "Confirm")
-					establish_db_connection()
-					if(!dbcon.IsConnected())
+					establish_old_db_connection()
+					if(!dbcon_old.IsConnected())
 						alert("Connection to Archive has been severed. Aborting.")
 					else
-						/*
-						var/sqltitle = dbcon.Quote(scanner.cache.name)
-						var/sqlauthor = dbcon.Quote(scanner.cache.author)
-						var/sqlcontent = dbcon.Quote(scanner.cache.dat)
-						var/sqlcategory = dbcon.Quote(upload_category)
-						*/
 						var/sqltitle = sanitizeSQL(scanner.cache.name)
 						var/sqlauthor = sanitizeSQL(scanner.cache.author)
 						var/sqlcontent = sanitizeSQL(scanner.cache.dat)
 						var/sqlcategory = sanitizeSQL(upload_category)
-						var/DBQuery/query = dbcon.NewQuery("INSERT INTO erro_library (author, title, content, category) VALUES ('[sqlauthor]', '[sqltitle]', '[sqlcontent]', '[sqlcategory]')")
-						if(!query.Execute())
+						var/DBQuery/query = dbcon_old.NewQuery("INSERT INTO library (author, title, content, category) VALUES ('[sqlauthor]', '[sqltitle]', '[sqlcontent]', '[sqlcategory]')")
+						var/response = query.Execute()
+						if(!response)
 							usr << query.ErrorMsg()
 						else
+							world.log << response
 							log_game("[usr.name]/[usr.key] has uploaded the book titled [scanner.cache.name], [length(scanner.cache.dat)] signs")
 							alert("Upload Complete.")
+							var/datum/cachedbook/newbook = new()
+							newbook.id = cachedbooks.len + 1
+							newbook.author = sqlauthor
+							newbook.title = sqltitle
+							newbook.category = sqlcategory
+							newbook.content = sqlcontent
+							cachedbooks += newbook
+							add_book_to_cache(sqlauthor,sqltitle,sqlcategory,newbook.id)
 
 	if(href_list["targetid"])
-		var/sqlid = sanitizeSQL(href_list["targetid"])
-		establish_db_connection()
-		if(!dbcon.IsConnected())
+		var/id = text2num(href_list["targetid"])
+		if(!id || !isnum(id) || id < 1)
+			usr << "<span class='warning'>Invalid SS<sup>13</sup>BN</span>"
+			return
+		var/datum/cachedbook/found
+		for(var/datum/cachedbook/newbook in cachedbooks)
+			if(newbook.id == id)
+				found = newbook
+				break
+		if(!found)
+			usr << "<span class='warning'>Unable to locate a book with an SS<sup>13</sup>BN of [id]</span>"
+			return
+		make_external_book(found)
+
+	if(href_list["cacheid"])
+		//var/sqlid = sanitizeSQL(href_list["targetid"])
+		/*
+		establish_old_db_connection()
+		if(!dbcon_old.IsConnected())
 			alert("Connection to Archive has been severed. Aborting.")
+		*/
 		if(bibledelay)
 			for (var/mob/V in hearers(src))
 				V.show_message("<b>[src]</b>'s monitor flashes, \"Printer unavailable. Please allow a short time before attempting to print.\"")
@@ -362,21 +503,13 @@ datum/borrowbook // Datum used to keep track of who has borrowed what when and f
 			bibledelay = 1
 			spawn(60)
 				bibledelay = 0
-			var/DBQuery/query = dbcon.NewQuery("SELECT * FROM erro_library WHERE id=[sqlid]")
-			query.Execute()
+			//var/DBQuery/query = dbcon_old.NewQuery("SELECT * FROM library WHERE id=[sqlid]")
+			//query.Execute()
+			var/datum/cachedbook/newbook = cachedbooks[text2num(href_list["cacheid"])]
+			if(!newbook)
+				return
+			make_external_book(newbook)
 
-			while(query.NextRow())
-				var/author = query.item[2]
-				var/title = query.item[3]
-				var/content = query.item[4]
-				var/obj/item/weapon/book/B = new(src.loc)
-				B.name = "Book: [title]"
-				B.title = title
-				B.author = author
-				B.dat = content
-				B.icon_state = "book[rand(1,7)]"
-				src.visible_message("[src]'s printer hums as it produces a completely bound book. How did it do that?")
-				break
 	if(href_list["orderbyid"])
 		var/orderid = input("Enter your order:") as num|null
 		if(orderid)
@@ -390,6 +523,25 @@ datum/borrowbook // Datum used to keep track of who has borrowed what when and f
 /*
  * Library Scanner
  */
+
+/obj/machinery/librarycomp/proc/make_external_book(var/datum/cachedbook/newbook)
+	if(!newbook || !newbook.id)
+		return
+	var/list/_http = world.Export("http://vg13.undo.it/index.php/book?id=[newbook.id]")
+	if(!_http || !_http["CONTENT"])
+		return
+	var/http = file2text(_http["CONTENT"])
+	if(!http)
+		return
+	var/obj/item/weapon/book/B = new(src.loc)
+
+	B.name = "Book: [newbook.title]"
+	B.title = newbook.title
+	B.author = newbook.author
+	B.dat = http
+	B.icon_state = "book[rand(1,7)]"
+	src.visible_message("[src]'s printer hums as it produces a completely bound book. How did it do that?")
+
 /obj/machinery/libraryscanner
 	name = "scanner"
 	icon = 'icons/obj/library.dmi'
@@ -398,12 +550,19 @@ datum/borrowbook // Datum used to keep track of who has borrowed what when and f
 	density = 1
 	var/obj/item/weapon/book/cache		// Last scanned book
 
+	machine_flags = WRENCHMOVE | FIXED2WORK
+
 /obj/machinery/libraryscanner/attackby(var/obj/O as obj, var/mob/user as mob)
 	if(istype(O, /obj/item/weapon/book))
 		user.drop_item()
 		O.loc = src
+	else
+		return ..()
 
 /obj/machinery/libraryscanner/attack_hand(var/mob/user as mob)
+	if(istype(user,/mob/dead))
+		user << "<span class='danger'>Nope.</span>"
+		return
 	usr.set_machine(src)
 	var/dat = "<HEAD><TITLE>Scanner Control Interface</TITLE></HEAD><BODY>\n" // <META HTTP-EQUIV='Refresh' CONTENT='10'>
 	if(cache)
@@ -449,7 +608,7 @@ datum/borrowbook // Datum used to keep track of who has borrowed what when and f
 	density = 1
 
 /obj/machinery/bookbinder/attackby(var/obj/O as obj, var/mob/user as mob)
-	if(istype(O, /obj/item/weapon/paper))
+	if(istype(O, /obj/item/weapon/paper) || istype(O, /obj/item/weapon/paper/nano))
 		user.drop_item()
 		O.loc = src
 		user.visible_message("[user] loads some paper into [src].", "You load some paper into [src].")
@@ -462,4 +621,4 @@ datum/borrowbook // Datum used to keep track of who has borrowed what when and f
 		b.icon_state = "book[rand(1,7)]"
 		del(O)
 	else
-		..()
+		return ..()

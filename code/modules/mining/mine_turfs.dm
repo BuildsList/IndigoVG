@@ -193,6 +193,8 @@
 		return
 
 	if (istype(W, /obj/item/device/core_sampler))
+		if(!geologic_data)
+			geologic_data = new/datum/geosample(src)
 		geologic_data.UpdateNearbyArtifactInfo(src)
 		var/obj/item/device/core_sampler/C = W
 		C.sample_item(src, user)
@@ -521,7 +523,7 @@
 	return
 
 /turf/unsimulated/floor/asteroid/proc/updateMineralOverlays()
-	src.overlays.Cut()
+	src.overlays.len = 0
 
 	if(istype(get_step(src, NORTH), /turf/unsimulated/mineral))
 		src.overlays += image('icons/turf/walls.dmi', "rock_side_n")
@@ -820,13 +822,13 @@
 	if(istype(AM,/mob/living/carbon/human))
 		var/mob/living/carbon/human/H = AM
 		if((istype(H.get_active_hand(),/obj/item/weapon/pickaxe) || istype(H.get_inactive_hand(),/obj/item/weapon/pickaxe)) && src.stage == 1)
-			H << "<span class='indigo'>You don't think that's a good idea...</span>"
+			H << "<span class='warning'>You don't think that's a good idea...</span>"
 			bump_reject = 1
 
 	else if(istype(AM,/mob/living/silicon/robot))
 		var/mob/living/silicon/robot/R = AM
 		if(istype(R.module_active, /obj/item/weapon/pickaxe))
-			R << "<span class='indigo'>You don't think that's a good idea...</span>"
+			R << "<span class='warning'>You don't think that's a good idea...</span>"
 			bump_reject = 1
 		else if(istype(R.module_active, /obj/item/device/mining_scanner))
 			attackby(R.module_active, R) //let's bump to disable. This is kinder, because borgs need some love
@@ -834,14 +836,14 @@
 	else if(istype(AM,/obj/mecha))
 		var/obj/mecha/M = AM
 		if(istype(M.selected, /obj/item/mecha_parts/mecha_equipment/tool/drill))
-			M.occupant_message("<span class='indigo'>Safety features prevent this action.</span>")
+			M.occupant_message("<span class='warning'>Safety features prevent this action.</span>")
 			bump_reject = 1
 
 	if(!bump_reject) //if we haven't been pushed off, we do the drilling bit
 		return ..()
 
 /turf/unsimulated/mineral/gibtonite/attackby(obj/item/I, mob/user)
-	if(istype(I, /obj/item/device/mining_scanner) && stage == 1)
+	if(((istype(I, /obj/item/device/mining_scanner)) || (istype(I, /obj/item/device/depth_scanner))) && stage == 1)
 		user.visible_message("<span class='notice'>You use [I] to locate where to cut off the chain reaction and attempt to stop it...</span>")
 		defuse()
 	if(istype(I, /obj/item/weapon/pickaxe))
@@ -855,7 +857,7 @@
 		name = "Gibtonite deposit"
 		desc = "An active gibtonite reserve. Run!"
 		stage = 1
-		visible_message("<span class='indigo'>There was gibtonite inside! It's going to explode!</span>")
+		visible_message("<span class='warning'>There was gibtonite inside! It's going to explode!</span>")
 		var/turf/bombturf = get_turf(src)
 		var/area/A = get_area(bombturf)
 		var/log_str = "[src.activated_ckey]<A HREF='?_src_=holder;adminmoreinfo=\ref[usr]'>?</A> [src.activated_name] has triggered a gibtonite deposit reaction <A HREF='?_src_=holder;adminplayerobservecoodjump=1;X=[bombturf.x];Y=[bombturf.y];Z=[bombturf.z]'>[A.name] (JMP)</a>."

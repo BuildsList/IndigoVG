@@ -29,7 +29,7 @@ var/global/list/valid_abandoned_crate_types = typesof(/obj/structure/closet/crat
 			else if (input == null || input > max || input < min)
 				user << "<span class='notice'>You leave the crate alone.</span>"
 			else
-				user << "<span class='indigo'>A red light flashes.</span>"
+				user << "<span class='warning'>A red light flashes.</span>"
 				lastattempt = input
 				attempts--
 				if (attempts == 0)
@@ -54,7 +54,7 @@ var/global/list/valid_abandoned_crate_types = typesof(/obj/structure/closet/crat
 		if (istype(W, /obj/item/device/multitool))
 			user << "<span class='notice'>DECA-CODE LOCK REPORT:</span>"
 			if (attempts == 1)
-				user << "<span class='indigo'>* Anti-Tamper Bomb will activate on next failed access attempt.</span>"
+				user << "<span class='warning'>* Anti-Tamper Bomb will activate on next failed access attempt.</span>"
 			else
 				user << "<span class='notice'>* Anti-Tamper Bomb will activate after [src.attempts] failed access attempts.</span>"
 			if (lastattempt == null)

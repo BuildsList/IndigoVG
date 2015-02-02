@@ -88,9 +88,7 @@
 	return
 
 /datum/game_mode/proc/auto_declare_completion_vampire()
-	testing("VAMPIRE GAMEMODE END CALL")
 	if(vampires.len)
-		testing("VAMP HAS LENGTH")
 		var/text = "<FONT size = 2><B>The vampires were:</B></FONT>"
 		for(var/datum/mind/vampire in vampires)
 			var/traitorwin = 1
@@ -132,8 +130,6 @@
 				text += "<br><font color='red'><B>The [special_role_text] has failed!</B></font>"
 				feedback_add_details("traitor_success","FAIL")
 		world << text
-	else
-		testing("VAMP HAS NO LENGTH")
 	return 1
 
 /datum/game_mode/proc/auto_declare_completion_enthralled()
@@ -284,7 +280,7 @@ You are weak to holy things and starlight. Don't go into space and avoid the Cha
 			src << "\red Your fangs have disappeared!"
 			return 0
 		if(H.flags & NO_BLOOD)
-			src << "<span class='indigo'>Not a drop of blood here</span>"
+			src << "<span class='warning'>Not a drop of blood here</span>"
 			return 0
 		bloodtotal = src.mind.vampire.bloodtotal
 		bloodusable = src.mind.vampire.bloodusable
@@ -430,7 +426,8 @@ You are weak to holy things and starlight. Don't go into space and avoid the Cha
 					for(var/image/I in t_mind.current.client.images)
 						if((I.icon_state == "vampthrall" || I.icon_state == "vampire") && I.loc == vampire_mind.current)
 							//world.log << "deleting [vampire_mind] overlay"
-							del(I)
+							//del(I)
+							t_mind.current.client.images -= I
 		if(head)
 			//world.log << "found [head.name]"
 			if(head.current)
@@ -438,12 +435,14 @@ You are weak to holy things and starlight. Don't go into space and avoid the Cha
 					for(var/image/I in head.current.client.images)
 						if((I.icon_state == "vampthrall" || I.icon_state == "vampire") && I.loc == vampire_mind.current)
 							//world.log << "deleting [vampire_mind] overlay"
-							del(I)
+							//del(I)
+							head.current.client.images -= I
 	if(vampire_mind.current)
 		if(vampire_mind.current.client)
 			for(var/image/I in vampire_mind.current.client.images)
 				if(I.icon_state == "vampthrall" || I.icon_state == "vampire")
-					del(I)
+					//del(I)
+					vampire_mind.current.client.images -= I
 
 /datum/game_mode/proc/remove_vampire_mind(datum/mind/vampire_mind, datum/mind/head)
 	//var/list/removal
@@ -479,7 +478,7 @@ You are weak to holy things and starlight. Don't go into space and avoid the Cha
 			if(80 to 100)
 				src << "\red Your skin flakes away..."
 			if(60 to 80)
-				src << "<span class='indigo'>Your skin sizzles!</span>"
+				src << "<span class='warning'>Your skin sizzles!</span>"
 			if((-INFINITY) to 60)
 				if(!on_fire)
 					src << "<b>\red Your skin catches fire!</b>"

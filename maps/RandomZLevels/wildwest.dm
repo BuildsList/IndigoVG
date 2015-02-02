@@ -172,6 +172,6 @@
 		C.heal_overall_damage(C.getBruteLoss(), C.getFireLoss())
 		C.reagents.clear_reagents()
 		C << "<span class='notice'>You have regenerated.</span>"
-		C.visible_message("<span class='indigo'>[usr] appears to wake from the dead, having healed all wounds.</span>")
+		C.visible_message("<span class='warning'>[usr] appears to wake from the dead, having healed all wounds.</span>")
 		C.update_canmove()
 	return 1

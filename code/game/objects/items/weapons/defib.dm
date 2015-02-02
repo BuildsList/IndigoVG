@@ -25,7 +25,7 @@
 	return ..()
 
 /obj/item/weapon/melee/defibrillator/suicide_act(mob/user)
-	viewers(user) << "<span class='indigo'>[user] is putting the live paddles on \his chest! It looks like \he's trying to commit suicide.</span>"
+	viewers(user) << "<span class='warning'>[user] is putting the live paddles on \his chest! It looks like \he's trying to commit suicide.</span>"
 	playsound(get_turf(src),'sound/items/defib.ogg',50,1)
 	return (FIRELOSS)
 
@@ -49,7 +49,7 @@
 /obj/item/weapon/melee/defibrillator/attack_self(mob/user)
 	if(charges)
 		if((M_CLUMSY in user.mutations) && prob(50))
-			user << "<span class='indigo'>You touch the paddles together, shorting the device.</span>"
+			user << "<span class='warning'>You touch the paddles together, shorting the device.</span>"
 			sparks.start()
 			playsound(get_turf(src),'sound/items/defib.ogg',50,1)
 			user.Weaken(5)
@@ -63,7 +63,7 @@
 			playsound(get_turf(src),"sparks",75,1,-1)
 			update_icon()
 	else
-		user << "<span class='indigo'>[src] is out of charges.</span>"
+		user << "<span class='warning'>[src] is out of charges.</span>"
 	add_fingerprint(user)
 	return
 
@@ -71,29 +71,29 @@
 	if(istype(W,/obj/item/weapon/card/emag))
 		emagged = !src.emagged
 		if(emagged)
-			user << "<span class='indigo'>You short out [src]'s safety protocols.</span>"
+			user << "<span class='warning'>You short out [src]'s safety protocols.</span>"
 			overlays += "defib_emag"
 		else
 			user << "<span class='notice'>You reset [src]'s safety protocols.</span>"
-			overlays.Cut()
+			overlays.len = 0
 	else
 		. = ..()
 	return
 
 /obj/item/weapon/melee/defibrillator/attack(mob/M,mob/user)
 	if(!ishuman(M))
-		user << "<span class='indigo'>You can't defibrilate [M]. You don't even know where to put the paddles!</span>"
+		user << "<span class='warning'>You can't defibrilate [M]. You don't even know where to put the paddles!</span>"
 	else if(!charges)
-		user << "<span class='indigo'>[src] is out of charges.</span>"
+		user << "<span class='warning'>[src] is out of charges.</span>"
 	else if(!ready)
-		user << "<span class='indigo'>Take the paddles out first.</span>"
+		user << "<span class='warning'>Take the paddles out first.</span>"
 	else
 		var/mob/living/carbon/human/target = M
 		if(!(target.stat == 2 || target.stat == DEAD))
 			if(emagged)
 				shockAttack(target,user)
 			else
-				user << "<span class='indigo'>[src] buzzes: Vital signs detected.</span>"
+				user << "<span class='warning'>[src] buzzes: Vital signs detected.</span>"
 		else
 			attemptDefib(target,user)
 	return
@@ -134,15 +134,15 @@
 				if(ghost.mind == target.mind && ghost.can_reenter_corpse)
 					ghost << 'sound/effects/adminhelp.ogg'
 					ghost << "<span class='danger'>Someone is trying to revive your body. Return to it if you want to be resurrected!</span>"
-					user << "<span class='indigo'>[src] buzzes: Defibrillation failed. Vital signs are too weak, please try again in five seconds.</span>"
+					user << "<span class='warning'>[src] buzzes: Defibrillation failed. Vital signs are too weak, please try again in five seconds.</span>"
 					break
 		if(!target.client || !target.mind) //Let's call up the ghost and then still revive the corspe ! Also, bodies with clients only, thank you
-			user << "<span class='indigo'>[src] buzzes: Vital signs are too weak, please try again in five seconds.</span>"
+			user << "<span class='warning'>[src] buzzes: Vital signs are too weak, please try again in five seconds.</span>"
 			return
 		if(target.wear_suit && istype(target.wear_suit,/obj/item/clothing/suit/armor) && prob(95)) //75 ? Let's stay realistic here
-			user << "<span class='indigo'>[src] buzzes: Defibrillation failed. Please apply on bare skin.</span>"
+			user << "<span class='warning'>[src] buzzes: Defibrillation failed. Please apply on bare skin.</span>"
 		else if(target.w_uniform && istype(target.w_uniform,/obj/item/clothing/under && prob(50)))
-			user << "<span class='indigo'>[src] buzzes: Defibrillation failed. Please apply on bare skin.</span>"
+			user << "<span class='warning'>[src] buzzes: Defibrillation failed. Please apply on bare skin.</span>"
 		else
 			var/datum/organ/internal/heart/heart = target.internal_organs_by_name["heart"]
 			if(prob(25)) heart.damage += 5 //Allow the defibrilator to possibly worsen heart damage. Still rare enough to just be the "clone damage" of the defib

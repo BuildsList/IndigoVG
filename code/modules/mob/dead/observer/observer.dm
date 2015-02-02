@@ -111,13 +111,13 @@
 		if(src.invisibility != 0)
 			M.invisibility = 0
 			user.visible_message(
-				"<span class='indigo'>[user] drags ghost, [M], to our plan of reality!</span>",
-				"<span class='indigo'>You drag [M] to our plan of reality!</span>"
+				"<span class='warning'>[user] drags ghost, [M], to our plan of reality!</span>",
+				"<span class='warning'>You drag [M] to our plan of reality!</span>"
 			)
 		else
 			user.visible_message (
-				"<span class='indigo'>[user] just tried to smash his book into that ghost!  It's not very effective</span>",
-				"<span class='indigo'>You get the feeling that the ghost can't become any more visible.</span>"
+				"<span class='warning'>[user] just tried to smash his book into that ghost!  It's not very effective</span>",
+				"<span class='warning'>You get the feeling that the ghost can't become any more visible.</span>"
 			)
 
 	if(istype(W,/obj/item/weapon/storage/bible) || istype(W,/obj/item/weapon/nullrod))
@@ -125,8 +125,8 @@
 		if(src.invisibility == 0)
 			M.invisibility = 60
 			user.visible_message(
-				"<span class='indigo'>[user] banishes the ghost from our plan of reality!</span>",
-				"<span class='indigo'>You banish the ghost from our plan of reality!</span>"
+				"<span class='warning'>[user] banishes the ghost from our plan of reality!</span>",
+				"<span class='warning'>You banish the ghost from our plan of reality!</span>"
 			)
 
 /mob/dead/observer/get_multitool(var/active_only=0)
@@ -344,8 +344,7 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 
 /mob/dead/observer/Stat()
 	..()
-	statpanel("Status")
-	if (client.statpanel == "Status")
+	if(statpanel("Status"))
 		stat(null, "Station Time: [worldtime2text()]")
 		if(ticker)
 			if(ticker.mode)
@@ -365,17 +364,19 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 	set name = "Re-enter Corpse"
 	if(!client)	return
 	if(!(mind && mind.current && can_reenter_corpse))
-		src << "<span class='indigo'>You have no body.</span>"
+		src << "<span class='warning'>You have no body.</span>"
 		return
 	if(mind.current.key && copytext(mind.current.key,1,2)!="@")	//makes sure we don't accidentally kick any clients
-		usr << "<span class='indigo'>Another consciousness is in your body...It is resisting you.</span>"
+		usr << "<span class='warning'>Another consciousness is in your body...It is resisting you.</span>"
 		return
 	if(mind.current.ajourn && mind.current.stat != DEAD) 	//check if the corpse is astral-journeying (it's client ghosted using a cultist rune).
-		var/obj/effect/rune/R = locate() in mind.current.loc	//whilst corpse is alive, we can only reenter the body if it's on the rune
+		var/obj/effect/rune/R = mind.current.ajourn	//whilst corpse is alive, we can only reenter the body if it's on the rune
 		if(!(R && R.word1 == cultwords["hell"] && R.word2 == cultwords["travel"] && R.word3 == cultwords["self"]))	//astral journeying rune
-			usr << "<span class='indigo'>The astral cord that ties your body and your spirit has been severed. You are likely to wander the realm beyond until your body is finally dead and thus reunited with you.</span>"
+			usr << "<span class='warning'>The astral cord that ties your body and your spirit has been severed. You are likely to wander the realm beyond until your body is finally dead and thus reunited with you.</span>"
 			return
-	mind.current.ajourn=0
+	if(mind && mind.current && mind.current.ajourn)
+		mind.current.ajourn.ajourn = null
+		mind.current.ajourn = null
 	mind.current.key = key
 	return 1
 
@@ -452,7 +453,7 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 
 	if(!L || !L.len)
 		if(holyblock)
-			usr << "<span class='indigo'>This area has been entirely made into sacred grounds, you cannot enter it while you are in this plane of existence!</span>"
+			usr << "<span class='warning'>This area has been entirely made into sacred grounds, you cannot enter it while you are in this plane of existence!</span>"
 		else
 			usr << "No area available."
 
@@ -480,7 +481,7 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 			usr << "<span class='sinister'>You can sense a sinister force surrounding that mob, your spooky body itself refuses to follow it.</span>"
 			return
 		if(targetloc.holy && ((src.invisibility == 0) || (src.mind in ticker.mode.cult)))
-			usr << "<span class='indigo'>You cannot follow a mob standing on holy grounds!</span>"
+			usr << "<span class='warning'>You cannot follow a mob standing on holy grounds!</span>"
 			return
 		if(target != src)
 			if(following && following == target)
@@ -524,7 +525,7 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 				usr << "<span class='sinister'>You can sense a sinister force surrounding that mob, your spooky body itself refuses to jump to it.</span>"
 				return
 			if(targetloc && targetloc.holy && ((src.invisibility == 0) || (src.mind in ticker.mode.cult)))
-				usr << "<span class='indigo'>The mob that you are trying to follow is standing on holy grounds, you cannot reach him!</span>"
+				usr << "<span class='warning'>The mob that you are trying to follow is standing on holy grounds, you cannot reach him!</span>"
 				return
 			var/mob/M = dest[target] //Destination mob
 			var/mob/A = src			 //Source mob
@@ -624,14 +625,14 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 	set category = "Ghost"
 
 	if(!config.respawn_as_mouse)
-		src << "<span class='indigo'>Respawning as mouse is disabled..</span>"
+		src << "<span class='warning'>Respawning as mouse is disabled..</span>"
 		return
 
 	var/timedifference = world.time - client.time_died_as_mouse
 	if(client.time_died_as_mouse && timedifference <= mouse_respawn_time * 600)
 		var/timedifference_text
 		timedifference_text = time2text(mouse_respawn_time * 600 - timedifference,"mm:ss")
-		src << "<span class='indigo'>You may only spawn again as a mouse more than [mouse_respawn_time] minutes after your death. You have [timedifference_text] left.</span>"
+		src << "<span class='warning'>You may only spawn again as a mouse more than [mouse_respawn_time] minutes after your death. You have [timedifference_text] left.</span>"
 		return
 
 	var/response = alert(src, "Are you -sure- you want to become a mouse?","Are you sure you want to squeek?","Squeek!","Nope!")
@@ -649,7 +650,7 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 		vent_found = pick(found_vents)
 		host = new /mob/living/simple_animal/mouse(vent_found.loc)
 	else
-		src << "<span class='indigo'>Unable to find any unwelded vents to spawn mice at.</span>"
+		src << "<span class='warning'>Unable to find any unwelded vents to spawn mice at.</span>"
 
 	if(host)
 		if(config.uneducated_mice)
@@ -711,7 +712,7 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 		T = get_step(T,text2dir(direction))
 
 	if (!istype(T))
-		src << "<span class='indigo'>You cannot doodle there.</span>"
+		src << "<span class='warning'>You cannot doodle there.</span>"
 		return
 
 	if(!choice || choice.amount == 0 || !(src.Adjacent(choice)))
@@ -723,7 +724,7 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 	for (var/obj/effect/decal/cleanable/blood/writing/W in T)
 		num_doodles++
 	if (num_doodles > 4)
-		src << "<span class='indigo'>There is no space to write on!</span>"
+		src << "<span class='warning'>There is no space to write on!</span>"
 		return
 
 	var/max_length = 50
@@ -734,7 +735,7 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 
 		if (length(message) > max_length)
 			message += "-"
-			src << "<span class='indigo'>You ran out of blood to write with!</span>"
+			src << "<span class='warning'>You ran out of blood to write with!</span>"
 
 		var/obj/effect/decal/cleanable/blood/writing/W = new(T)
 		W.basecolor = doodle_color
@@ -750,14 +751,14 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 	set category = "Ghost"
 
 	if(!config.respawn_as_mommi)
-		src << "<span class='indigo'>Respawning as MoMMI is disabled..</span>"
+		src << "<span class='warning'>Respawning as MoMMI is disabled..</span>"
 		return
 
 	var/timedifference = world.time - client.time_died_as_mouse
 	if(client.time_died_as_mouse && timedifference <= mouse_respawn_time * 600)
 		var/timedifference_text
 		timedifference_text = time2text(mouse_respawn_time * 600 - timedifference,"mm:ss")
-		src << "<span class='indigo'>You may only spawn again as a mouse or MoMMI more than [mouse_respawn_time] minutes after your death. You have [timedifference_text] left.</span>"
+		src << "<span class='warning'>You may only spawn again as a mouse or MoMMI more than [mouse_respawn_time] minutes after your death. You have [timedifference_text] left.</span>"
 		return
 
 	//find a viable mouse candidate
@@ -770,7 +771,7 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 		spawner = pick(found_spawners)
 		spawner.attack_ghost(src)
 	else
-		src << "<span class='indigo'>Unable to find any powered MoMMI Spawners on this z-level.</span>"
+		src << "<span class='warning'>Unable to find any powered MoMMI Spawners on this z-level.</span>"
 
 	//if(host)
 	//	host.ckey = src.ckey

@@ -13,7 +13,7 @@
 		updateicon()
 
 /obj/item/weapon/cell/proc/updateicon()
-	overlays.Cut()
+	overlays.len = 0
 
 	if(charge < 0.01)
 		return
@@ -57,7 +57,7 @@
 /obj/item/weapon/cell/examine(mob/user)
 	..()
 	if(crit_fail)
-		user << "<span class='indigo'>This power cell seems to be faulty.</span>"
+		user << "<span class='warning'>This power cell seems to be faulty.</span>"
 	else
 		user << "<span class='info'>The charge meter reads [round(src.percent() )]%.</span>"
 

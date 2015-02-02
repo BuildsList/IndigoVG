@@ -8,9 +8,9 @@
 	heat_protection = UPPER_TORSO|LOWER_TORSO|LEGS|FEET|ARMS|HANDS
 	body_parts_covered = UPPER_TORSO|LOWER_TORSO|LEGS|FEET|ARMS|HANDS
 	flags_inv = HIDEGLOVES|HIDESHOES|HIDEJUMPSUIT
-	max_heat_protection_temperature = SPACE_SUIT_MAX_HEAT_PROTECITON_TEMPERATURE
+	max_heat_protection_temperature = SPACE_SUIT_MAX_HEAT_PROTECTION_TEMPERATURE
 	species_restricted = list("Plasmaman")
-	flags = FPRINT  | STOPSPRESSUREDMAGE | PLASMAGUARD
+	flags = FPRINT  | STOPSPRESSUREDMG | PLASMAGUARD
 
 	icon_state = "plasmaman_suit"
 	item_state = "plasmaman_suit"
@@ -31,11 +31,11 @@
 
 		next_extinguish = world.time + extinguish_cooldown
 		extinguishes_left--
-		H << "<span class='indigo'>Your suit automatically extinguishes the fire.</span>"
+		H << "<span class='warning'>Your suit automatically extinguishes the fire.</span>"
 		H.ExtinguishMob()
 
 /obj/item/clothing/head/helmet/space/plasmaman
-	flags = FPRINT  | BLOCKHAIR | STOPSPRESSUREDMAGE | PLASMAGUARD
+	flags = FPRINT  | BLOCKHAIR | STOPSPRESSUREDMG | PLASMAGUARD
 	species_restricted = list("Plasmaman")
 
 	icon_state = "plasmaman_helmet0"

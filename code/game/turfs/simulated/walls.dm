@@ -156,22 +156,28 @@
 /turf/simulated/wall/attackby(obj/item/weapon/W as obj, mob/user as mob)
 	user.delayNextAttack(8)
 	if (!(istype(user, /mob/living/carbon/human) || ticker) && ticker.mode.name != "monkey")
-		user << "<span class='indigo'>You don't have the dexterity to do this!</span>"
+		user << "<span class='warning'>You don't have the dexterity to do this!</span>"
 		return
 
 	//get the user's location
 	if( !istype(user.loc, /turf) )	return	//can't do this stuff whilst inside objects and such
 
 	if(rotting)
-		if(istype(W, /obj/item/weapon/weldingtool) )
+		if(iswelder(W))
 			var/obj/item/weapon/weldingtool/WT = W
 			if( WT.remove_fuel(0,user) )
 				user << "<span class='notice'>You burn away the fungi with \the [WT].</span>"
 				playsound(src, 'sound/items/Welder.ogg', 10, 1)
 				for(var/obj/effect/E in src) if(E.name == "Wallrot")
-					del E
+					qdel(E)
 				rotting = 0
 				return
+		if(istype(W,/obj/item/weapon/soap))
+			user << "<span class='notice'>You forcefully scrub away the fungi with your [W].</span>"
+			for(var/obj/effect/E in src) if(E.name == "Wallrot")
+				qdel(E)
+			rotting = 0
+			return
 		else if(!is_sharp(W) && W.force >= 10 || W.force >= 20)
 			user << "<span class='notice'>\The [src] crumbles away under the force of your [W.name].</span>"
 			src.dismantle_wall(1)
@@ -248,7 +254,7 @@
 				message_admins("[user.real_name] ([formatPlayerPanel(user,user.ckey)]) dismantled with a pdiff of [pdiff] at [formatJumpTo(loc)]!")
 				log_admin("[user.real_name] ([user.ckey]) dismantled with a pdiff of [pdiff] at [loc]!")
 			for(var/mob/O in viewers(user, 5))
-				O.show_message("<span class='indigo'>The wall was taken apart by [user]!</span>", 1, "<span class='indigo'>You hear metal [PK.drill_verb] apart.</span>", 2)
+				O.show_message("<span class='warning'>The wall was taken apart by [user]!</span>", 1, "<span class='warning'>You hear metal [PK.drill_verb] apart.</span>", 2)
 		return
 
 	else if( istype(W, /obj/item/weapon/melee/energy/blade) )
@@ -273,7 +279,7 @@
 				message_admins("[user.real_name] ([formatPlayerPanel(user,user.ckey)]) sliced up a wall with a pdiff of [pdiff] at [formatJumpTo(loc)]!")
 				log_admin("[user.real_name] ([user.ckey]) sliced up a wall with a pdiff of [pdiff] at [loc]!")
 			for(var/mob/O in viewers(user, 5))
-				O.show_message("<span class='indigo'>The wall was sliced apart by [user]!</span>", 1, "<span class='indigo'>You hear metal being sliced apart and sparks flying.</span>", 2)
+				O.show_message("<span class='warning'>The wall was sliced apart by [user]!</span>", 1, "<span class='warning'>You hear metal being sliced apart and sparks flying.</span>", 2)
 		return
 
 	else if(istype(W, /obj/item/mounted)) //if we place it, we don't want to have a silly message
@@ -320,11 +326,11 @@
 		if(O)
 			message_admins("[user.real_name] ([formatPlayerPanel(user,user.ckey)]) thermited a wall into space at [formatJumpTo(loc)]!")
 			del(O)
-			user << "<span class='indigo'>The thermite melts through the wall.</span>"
+			user << "<span class='warning'>The thermite melts through the wall.</span>"
 		return
 	F.burn_tile()
 	F.icon_state = "wall_thermite"
-	user << "<span class='indigo'>The thermite melts through the wall.</span>"
+	user << "<span class='warning'>The thermite melts through the wall.</span>"
 
 	var/pdiff=performWallPressureCheck(src.loc)
 	if(pdiff)

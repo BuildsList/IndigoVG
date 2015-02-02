@@ -1107,7 +1107,7 @@ datum
 			on_reaction(var/datum/reagents/holder)
 				feedback_add_details("slime_cores_used","[replacetext(name," ","_")]")
 				if (!istype(holder.my_atom.loc,/obj/item/weapon/grenade/chem_grenade))
-					holder.my_atom.visible_message("<span class='indigo'>The slime extract begins to vibrate violently !</span>")
+					holder.my_atom.visible_message("<span class='warning'>The slime extract begins to vibrate violently !</span>")
 					send_admin_alert(holder, reaction_name="gold slime + plasma")
 					sleep(50)
 				else
@@ -1180,7 +1180,7 @@ datum
 			on_reaction(var/datum/reagents/holder)
 				feedback_add_details("slime_cores_used","[replacetext(name," ","_")]")
 				if (!istype(holder.my_atom.loc,/obj/item/weapon/grenade/chem_grenade))
-					holder.my_atom.visible_message("<span class='indigo'>The slime extract begins to vibrate violently !</span>")
+					holder.my_atom.visible_message("<span class='warning'>The slime extract begins to vibrate violently !</span>")
 					send_admin_alert(holder, reaction_name="gold slime + blood")
 					sleep(50)
 				else
@@ -1369,7 +1369,7 @@ datum
 			on_reaction(var/datum/reagents/holder)
 				feedback_add_details("slime_cores_used","[replacetext(name," ","_")]")
 				if (!istype(holder.my_atom.loc,/obj/item/weapon/grenade/chem_grenade))
-					holder.my_atom.visible_message("<span class='indigo'>The slime extract begins to vibrate violently !</span>")
+					holder.my_atom.visible_message("<span class='warning'>The slime extract begins to vibrate violently !</span>")
 					send_admin_alert(holder, reaction_name="dark blue slime + plasma (Freeze)")
 					sleep(50)
 				else
@@ -1403,7 +1403,7 @@ datum
 			on_reaction(var/datum/reagents/holder)
 				feedback_add_details("slime_cores_used","[replacetext(name," ","_")]")
 				if (!istype(holder.my_atom.loc,/obj/item/weapon/grenade/chem_grenade))
-					holder.my_atom.visible_message("<span class='indigo'>The slime extract begins to vibrate violently !</span>")
+					holder.my_atom.visible_message("<span class='warning'>The slime extract begins to vibrate violently !</span>")
 					send_admin_alert(holder, reaction_name="orange slime + plasma (Napalm)")
 					sleep(50)
 				else
@@ -1538,13 +1538,13 @@ datum
 					send_admin_alert(holder, reaction_name="red slime + blood (Slime Frenzy) in a grenade")
 				for(var/mob/living/carbon/slime/slime in viewers(get_turf(holder.my_atom), null))
 					slime.rabid()
-					holder.my_atom.visible_message("<span class='indigo'>The [slime] is driven into a frenzy !</span>")
+					holder.my_atom.visible_message("<span class='warning'>The [slime] is driven into a frenzy !</span>")
 				for(var/mob/living/simple_animal/slime/slime in viewers(get_turf(holder.my_atom), null))
 					slime.rabid()
-					holder.my_atom.visible_message("<span class='indigo'>The [slime] is driven into a frenzy !</span>")
+					holder.my_atom.visible_message("<span class='warning'>The [slime] is driven into a frenzy !</span>")
 				for(var/mob/living/simple_animal/adultslime/slime in viewers(get_turf(holder.my_atom), null))
 					slime.rabid()
-					holder.my_atom.visible_message("<span class='indigo'>The [slime] is driven into a frenzy !</span>")
+					holder.my_atom.visible_message("<span class='warning'>The [slime] is driven into a frenzy !</span>")
 
 //Pink
 		slimeppotion
@@ -1587,7 +1587,7 @@ datum
 			on_reaction(var/datum/reagents/holder)
 				feedback_add_details("slime_cores_used","[replacetext(name," ","_")]")
 				if (!istype(holder.my_atom.loc,/obj/item/weapon/grenade/chem_grenade))
-					holder.my_atom.visible_message("<span class='indigo'>The slime extract begins to vibrate violently !</span>")
+					holder.my_atom.visible_message("<span class='warning'>The slime extract begins to vibrate violently !</span>")
 					send_admin_alert(holder, reaction_name="oil slime + plasma (Explosion)")
 					sleep(50)
 				else

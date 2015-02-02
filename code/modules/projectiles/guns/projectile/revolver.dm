@@ -61,7 +61,7 @@
 						return
 					caliber["38"] = 0
 					desc = "The barrel and chamber assembly seems to have been modified."
-					user << "<span class='indigo'>You reinforce the barrel of [src]! Now it will fire .357 rounds.</span>"
+					user << "<span class='warning'>You reinforce the barrel of [src]! Now it will fire .357 rounds.</span>"
 					if(CK && istype(CK))
 						perfect = 1
 			else
@@ -77,7 +77,7 @@
 						return
 					caliber["38"] = 1
 					desc = initial(desc)
-					user << "<span class='indigo'>You remove the modifications on [src]! Now it will fire .38 rounds.</span>"
+					user << "<span class='warning'>You remove the modifications on [src]! Now it will fire .38 rounds.</span>"
 					perfect = 0
 
 
@@ -99,6 +99,7 @@
 	origin_tech = "combat=2;materials=2"
 
 /obj/item/weapon/gun/projectile/russian/New()
+	..()
 	Spin()
 	update_icon()
 
@@ -136,9 +137,9 @@
 		A.update_icon()
 
 	if(num_loaded)
-		user.visible_message("<span class='indigo'>[user] loads a single bullet into the revolver and spins the chamber.</span>", "<span class='indigo'>You load a single bullet into the chamber and spin it.</span>")
+		user.visible_message("<span class='warning'>[user] loads a single bullet into the revolver and spins the chamber.</span>", "<span class='warning'>You load a single bullet into the chamber and spin it.</span>")
 	else
-		user.visible_message("<span class='indigo'>[user] spins the chamber of the revolver.</span>", "<span class='indigo'>You spin the revolver's chamber.</span>")
+		user.visible_message("<span class='warning'>[user] spins the chamber of the revolver.</span>", "<span class='warning'>You spin the revolver's chamber.</span>")
 	if(getAmmo() > 0)
 		Spin()
 	update_icon()
@@ -146,7 +147,7 @@
 
 /obj/item/weapon/gun/projectile/russian/attack_self(mob/user as mob)
 
-	user.visible_message("<span class='indigo'>[user] spins the chamber of the revolver.</span>", "<span class='indigo'>You spin the revolver's chamber.</span>")
+	user.visible_message("<span class='warning'>[user] spins the chamber of the revolver.</span>", "<span class='warning'>You spin the revolver's chamber.</span>")
 	if(getAmmo() > 0)
 		Spin()
 

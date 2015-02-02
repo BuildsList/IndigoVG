@@ -147,7 +147,7 @@
 						break
 
 				if(!appdatum)
-					usr << "\icon[src]<span class='indigo'>An error occured while trying to download: \"[app_name]\"</span>"
+					usr << "\icon[src]<span class='warning'>An error occured while trying to download: \"[app_name]\"</span>"
 					flick("pdaterm-problem", src)
 					return
 
@@ -178,7 +178,7 @@
 						else
 							flick("pdaterm-problem", src)
 					else
-						usr << "\icon[src]<span class='indigo'>No ID detected. Cannot proceed with the purchase.</span>"
+						usr << "\icon[src]<span class='warning'>No ID detected. Cannot proceed with the purchase.</span>"
 						flick("pdaterm-problem", src)
 
 		if ("new_pda")
@@ -212,7 +212,7 @@
 					else
 						flick("pdaterm-problem", src)
 				else
-					usr << "\icon[src]<span class='indigo'>No ID detected. Cannot proceed with the purchase.</span>"
+					usr << "\icon[src]<span class='warning'>No ID detected. Cannot proceed with the purchase.</span>"
 					flick("pdaterm-problem", src)
 	return 1
 
@@ -225,9 +225,9 @@
 			if(linked_account)
 				return	scan_card(user,W,appdatum)
 			else
-				user << "\icon[src]<span class='indigo'>Unable to connect to linked account.</span>"
+				user << "\icon[src]<span class='warning'>Unable to connect to linked account.</span>"
 		else
-			user << "\icon[src]<span class='indigo'>Unable to connect to accounts database.</span>"
+			user << "\icon[src]<span class='warning'>Unable to connect to accounts database.</span>"
 	return	0
 
 /obj/machinery/computer/pda_terminal/proc/scan_card(var/mob/user,var/obj/item/weapon/card/id/C,var/datum/pda_app/appdatum)
@@ -267,13 +267,13 @@
 					return 1
 
 				else
-					user << "\icon[src]<span class='indigo'>You don't have that much money!</span>"
+					user << "\icon[src]<span class='warning'>You don't have that much money!</span>"
 					return 0
 			else
-				user << "\icon[src]<span class='indigo'>Unable to access account. Check security settings and try again.</span>"
+				user << "\icon[src]<span class='warning'>Unable to access account. Check security settings and try again.</span>"
 				return 0
 		else
-			user << "\icon[src]<span class='indigo'>EFTPOS is not connected to an account.</span>"
+			user << "\icon[src]<span class='warning'>EFTPOS is not connected to an account.</span>"
 			return 0
 
 /obj/machinery/computer/pda_terminal/update_icon()

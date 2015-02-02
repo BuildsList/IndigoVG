@@ -83,7 +83,7 @@
 	//Next, check objects to block entry that are on the border
 	for(var/atom/movable/border_obstacle in src)
 		if(border_obstacle.flags&ON_BORDER)
-			if(!border_obstacle.CanPass(mover, mover.loc, 1) && (forget != border_obstacle))
+			if(!border_obstacle.CanPass(mover, mover.loc) && (forget != border_obstacle))
 				mover.Bump(border_obstacle, 1)
 				return 0
 		else
@@ -96,7 +96,7 @@
 
 	//Finally, check objects/mobs to block entry that are not on the border
 	for(var/atom/movable/obstacle in large_dense)
-		if(!obstacle.CanPass(mover, mover.loc, 1) && (forget != obstacle))
+		if(!obstacle.CanPass(mover, mover.loc) && (forget != obstacle))
 			mover.Bump(obstacle, 1)
 			return 0
 	return 1 //Nothing found to block so return success!
@@ -156,7 +156,7 @@
 		spawn(5)
 			if((SP && (SP.loc == src)))
 				if(SP.inertia_dir)
-					step(SP, SP.inertia_dir)
+					SP.Move(get_step(SP, SP.inertia_dir))
 					return
 	if(istype(A, /obj/structure/stool/bed/chair/vehicle/) && src.x > 2 && src.x < (world.maxx - 1) && src.y > 2 && src.y < (world.maxy-1))
 		var/obj/structure/stool/bed/chair/vehicle/JC = A //A bomb!
@@ -208,6 +208,8 @@
 	if (!N)
 		return
 
+	var/initialOpacity = opacity
+
 #ifdef ENABLE_TRI_LEVEL
 // Fuck this, for now - N3X
 ///// Z-Level Stuff ///// This makes sure that turfs are not changed to space when one side is part of a zone
@@ -221,6 +223,10 @@
 					var/list/temp = list()
 					temp += W
 					c.add(temp,3,1) // report the new open space to the zcontroller
+
+					if(opacity != initialOpacity)
+						UpdateAffectingLights()
+
 					return W
 ///// Z-Level Stuff
 #endif
@@ -267,6 +273,10 @@
 			air_master.mark_for_update(src)
 
 		W.levelupdate()
+
+		if(opacity != initialOpacity)
+			UpdateAffectingLights()
+
 		return W
 
 	else
@@ -288,6 +298,10 @@
 			air_master.mark_for_update(src)
 
 		W.levelupdate()
+
+		if(opacity != initialOpacity)
+			UpdateAffectingLights()
+
 		return W
 
 /turf/proc/AddDecal(const/image/decal)
@@ -358,58 +372,9 @@
 				S.air.update_values()
 */
 
-// Replase Proc's
-
-/turf/proc/ReplaceWithSpace()
-	var/old_dir = dir
-	var/turf/space/S = new /turf/space( locate(src.x, src.y, src.z) )
-	S.dir = old_dir
-	return S
-
 /turf/proc/ReplaceWithLattice()
 	src.ChangeTurf(/turf/space)
 	new /obj/structure/lattice( locate(src.x, src.y, src.z) )
-
-/turf/proc/ReplaceWithWall()
-	var/old_icon = icon_state
-	var/turf/simulated/wall/S = new /turf/simulated/wall( locate(src.x, src.y, src.z) )
-	S.icon_old = old_icon
-	S.opacity = 0
-//	S.sd_NewOpacity(1)
-	return S
-
-/turf/proc/ReplaceWithRWall()
-	var/old_icon = icon_state
-	var/turf/simulated/wall/r_wall/S = new /turf/simulated/wall/r_wall( locate(src.x, src.y, src.z) )
-	S.icon_old = old_icon
-	S.opacity = 0
-//	S.sd_NewOpacity(1)
-	return S
-
-/turf/proc/ReplaceWithPlating()
-	var/prior_icon = icon_old
-	var/old_dir = dir
-
-	var/turf/simulated/floor/plating/W = new /turf/simulated/floor/plating( locate(src.x, src.y, src.z) )
-
-	W.RemoveLattice()
-	W.dir = old_dir
-	if(prior_icon) W.icon_state = prior_icon
-	else W.icon_state = "plating"
-	W.opacity = 1
-//	W.sd_SetOpacity(0)
-	W.levelupdate()
-	return W
-
-/turf/proc/ReplaceWithEngineFloor()
-	var/old_dir = dir
-
-	var/turf/simulated/floor/engine/E = new /turf/simulated/floor/engine( locate(src.x, src.y, src.z) )
-
-	E.dir = old_dir
-	E.icon_state = "engine"
-
-// End
 
 /turf/proc/kill_creatures(mob/U = null)//Will kill people/creatures and damage mechs./N
 //Useful to batch-add creatures to the list.

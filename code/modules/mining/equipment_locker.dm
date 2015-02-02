@@ -35,7 +35,7 @@
 	if(istype(W,/obj/item/weapon/card/id))
 		// N3X - Fixes people's IDs getting eaten when a new card is inserted
 		if(istype(inserted_id))
-			user << "<span class='indigo'>There is already an ID card within the machine.</span>"
+			user << "<span class='warning'>There is already an ID card within the machine.</span>"
 			return
 		var/obj/item/weapon/card/id/I = usr.get_active_hand()
 		if(istype(I))
@@ -136,7 +136,7 @@
 					credits = 0
 					usr << "<span class='notice'>Credits transferred.</span>"
 				else
-					usr << "<span class='indigo'>Failed to claim credits.</span>"
+					usr << "<span class='warning'>Failed to claim credits.</span>"
 		else if(href_list["choice"] == "insert")
 			var/obj/item/weapon/card/id/I = usr.get_active_hand()
 			if(istype(I))
@@ -144,14 +144,14 @@
 				I.loc = src
 				inserted_id = I
 			else
-				usr << "<span class='indigo'>No valid ID.</span>"
+				usr << "<span class='warning'>No valid ID.</span>"
 				return 1
 	else if(href_list["release"] && istype(inserted_id))
 		if(check_access(inserted_id))
 			var/release=href_list["release"]
 			var/datum/material/mat = materials.getMaterial(release)
 			if(!mat)
-				usr << "<span class='indigo'>Unable to find material [release]!</span>"
+				usr << "<span class='warning'>Unable to find material [release]!</span>"
 				return 1
 			var/desired = input("How much?","How much [mat.processed_name] to eject?",mat.stored) as num
 			if(desired==0)
@@ -262,7 +262,7 @@
 				usr.drop_item()
 				I.loc = src
 				inserted_id = I
-			else usr << "<span class='indigo'>No valid ID.</span>"
+			else usr << "<span class='warning'>No valid ID.</span>"
 	if(href_list["purchase"])
 		if(istype(inserted_id))
 			var/datum/data/mining_equipment/prize = locate(href_list["purchase"])
@@ -345,7 +345,7 @@
 				user << "<span class='info'>You transfer [points] credits to [C].</span>"
 				points = 0
 			else
-				user << "<span class='indigo'>Unable to transfer credits.</span>"
+				user << "<span class='warning'>Unable to transfer credits.</span>"
 		else
 			user << "<span class='info'>There's no points left on [src].</span>"
 	..()
@@ -483,6 +483,7 @@
 	var/creator = null
 
 /obj/effect/resonance/New()
+	..()
 	var/turf/proj_turf = get_turf(src)
 	if(!istype(proj_turf))
 		return
@@ -719,7 +720,7 @@
 /obj/item/device/mobcapsule/attackby(obj/item/W, mob/user)
 	if(istype(W, /obj/item/weapon/pen))
 		if(user != capsuleowner)
-			user << "<span class='indigo'>The [src.name] flashes briefly in error.</span>"
+			user << "<span class='warning'>The [src.name] flashes briefly in error.</span>"
 			return 0
 		spawn()
 			var/name = sanitize(input("Choose a name for your friend.", "Name your friend", contained_mob.name) as text | null)

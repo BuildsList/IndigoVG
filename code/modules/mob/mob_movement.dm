@@ -40,7 +40,7 @@
 		var/mob/living/carbon/C = usr
 		C.toggle_throw_mode()
 	else
-		usr << "<span class='indigo'>This mob type cannot throw items.</span>"
+		usr << "<span class='warning'>This mob type cannot throw items.</span>"
 	return
 
 
@@ -48,13 +48,13 @@
 	if(iscarbon(usr))
 		var/mob/living/carbon/C = usr
 		if(!C.get_active_hand())
-			usr << "<span class='indigo'> You have nothing to drop in your hand.</span>"
+			usr << "<span class='warning'> You have nothing to drop in your hand.</span>"
 			return
 		drop_item()
 	else if(isMoMMI(usr))
 		var/mob/living/silicon/robot/mommi/M = usr
 		if(!M.get_active_hand())
-			M << "<span class='indigo'> You have nothing to drop or store.</span>"
+			M << "<span class='warning'> You have nothing to drop or store.</span>"
 			return
 		M.uneq_active()
 	else if(isrobot(usr))
@@ -63,7 +63,7 @@
 			return
 		R.uneq_active()
 	else
-		usr << "<span class='indigo'> This mob type cannot drop items.</span>"
+		usr << "<span class='warning'> This mob type cannot drop items.</span>"
 	return
 
 //This gets called when you press the delete button.
@@ -204,7 +204,7 @@
 
 	// /vg/ - Deny clients from moving certain mobs. (Like cluwnes :^)
 	if(mob.deny_client_move)
-		src << "<span class='indigo'>You cannot move this mob.</span>"
+		src << "<span class='warning'>You cannot move this mob.</span>"
 		return
 
 	if(mob.control_object)	Move_object(dir)
@@ -287,8 +287,7 @@
 		mob.delayNextMove(move_delay)
 		//Something with pulling things
 		if(locate(/obj/item/weapon/grab, mob))
-			move_delay = max(move_delay, world.time + 7)
-			mob.delayNextMove(move_delay)
+			mob.delayNextMove(7)
 			var/list/L = mob.ret_grab()
 			if(istype(L, /list))
 				if(L.len == 2)
@@ -350,12 +349,12 @@
 			if(G.state == 2)
 				mob.delayNextMove(10)
 				if(!prob(25))	return 1
-				mob.visible_message("<span class='indigo'> [mob] has broken free of [G.assailant]'s grip!</span>")
+				mob.visible_message("<span class='warning'> [mob] has broken free of [G.assailant]'s grip!</span>")
 				del(G)
 			if(G.state == 3)
 				mob.delayNextMove(10)
 				if(!prob(5))	return 1
-				mob.visible_message("<span class='indigo'> [mob] has broken free of [G.assailant]'s headlock!</span>")
+				mob.visible_message("<span class='warning'> [mob] has broken free of [G.assailant]'s headlock!</span>")
 				del(G)
 	return 0
 
@@ -374,7 +373,7 @@
 				mob << "<span class='sinister'>A dark forcefield prevents you from entering the area.</span>"
 			else
 				if((T && T.holy) && isobserver(mob) && ((mob.invisibility == 0) || (ticker.mode && (mob.mind in ticker.mode.cult))))
-					mob << "<span class='indigo'>You cannot get past holy grounds while you are in this plane of existence!</span>"
+					mob << "<span class='warning'>You cannot get past holy grounds while you are in this plane of existence!</span>"
 				else
 					mob.loc = get_step(mob, direct)
 					mob.dir = direct
