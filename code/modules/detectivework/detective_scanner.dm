@@ -226,7 +226,7 @@
 		clear_forgery()
 		//fingerprint loop
 		while(1)
-			var/print = html_encode(input(usr,"Please enter a custom fingerprint or hit cancel to finish fingerprints") as text|null)
+			var/print = rhtml_encode(input(usr,"Please enter a custom fingerprint or hit cancel to finish fingerprints") as text|null)
 			if(!usr.client)
 				forging = 0
 				break
@@ -234,7 +234,7 @@
 				break
 			customprints[print] = print
 		while(1)
-			var/fiber = html_encode(input(usr,"Please enter a custom fiber/material trace or hit cancel to finish fibers/materials") as text|null)
+			var/fiber = rhtml_encode(input(usr,"Please enter a custom fiber/material trace or hit cancel to finish fibers/materials") as text|null)
 			if(!usr.client)
 				forging = 0
 				break
@@ -242,8 +242,8 @@
 				break
 			customfiber[fiber] = null
 		while(1)
-			var/blood = html_encode(input(usr,"Please enter a custom Blood DNA or hit cancel to finish forging") as text|null)
-			var/bloodtype = html_encode(input(usr,"Please enter a custom Blood Type") as text|null)
+			var/blood = rhtml_encode(input(usr,"Please enter a custom Blood DNA or hit cancel to finish forging") as text|null)
+			var/bloodtype = rhtml_encode(input(usr,"Please enter a custom Blood Type") as text|null)
 			if(!usr.client)
 				forging = 0
 				break
