@@ -1106,8 +1106,9 @@ Pressure: [env.return_pressure()]"}
 	set category = "Debug"
 	set name = "Dump Instance Counts"
 	set desc = "MEMORY PROFILING IS TOO HIGH TECH"
-	var/date_string = time2text(world.realtime, "YYYY/MM-Month/DD-Day")
+	var/date_string = time2text(world.realtime, "YYYY-MM-Month-DD-Day-SS")
 	var/F=file("data/logs/profiling/instances_[date_string].csv")
+	fdel(F)
 	F << "Types,Number of Instances"
 	for(var/key in type_instances)
 		F << "[key],[type_instances[key]]"
@@ -1119,8 +1120,9 @@ Pressure: [env.return_pressure()]"}
 	set category = "Debug"
 	set name = "Dump Machine and Object Profiling"
 
-	var/date_string = time2text(world.realtime, "YYYY/MM-Month/DD-Day")
+	var/date_string = time2text(world.realtime, "YYYY-MM-Month-DD-Day-SS")
 	var/F =file("data/logs/profiling/machine_profiling_[date_string].csv")
+	fdel(F)
 	F << "type,nanoseconds"
 	for(var/typepath in machine_profiling)
 		var/ns = machine_profiling[typepath]
@@ -1141,15 +1143,23 @@ Pressure: [env.return_pressure()]"}
 	set category = "Debug"
 	set name = "Dump Del Profiling"
 
-	var/date_string = time2text(world.realtime, "YYYY/MM-Month/DD-Day")
+	var/date_string = time2text(world.realtime, "YYYY-MM-Month-DD-Day-SS")
 	var/F =file("data/logs/profiling/del_profiling_[date_string].csv")
-
+	fdel(F)
 	F << "type,deletes"
 	for(var/typepath in del_profiling)
 		var/ns = del_profiling[typepath]
 		F << "[typepath],[ns]"
 
 	usr << "\blue Dumped to del_profiling.csv."
+	F =file("data/logs/profiling/gdel_profiling_[date_string].csv")
+	fdel(F)
+	F << "type,soft deletes"
+	for(var/typepath in gdel_profiling)
+		var/ns = gdel_profiling[typepath]
+		F << "[typepath],[ns]"
+
+	usr << "\blue Dumped to gdel_profiling.csv."
 
 /client/proc/gib_money()
 	set category = "Fun"

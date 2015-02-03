@@ -363,5 +363,7 @@ var/global/event/on_unban
 // List of /plugins
 var/global/list/plugins = list()
 
-// Space get this to return for things i guess?
-var/global/datum/gas_mixture/space_gas = new
+// Space get this to return for things i guess?var/global/datum/gas_mixture/space_gas = new
+
+//Announcement intercom
+var/obj/item/device/radio/intercom/announcement_intercom = new(null)

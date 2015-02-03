@@ -44,11 +44,21 @@
 	..()
 
 /atom/movable/Del()
+	if(!ticker || ticker.current_state != 3) return ..()
 	// Pass to Destroy().
 	if(!gcDestroyed)
 		Destroy()
+		if(!("[type]" in del_profiling))
+			del_profiling["[type]"] = 0
 
+		del_profiling["[type]"] += 1
+	else
+		if(!("[type]" in gdel_profiling))
+			gdel_profiling["[type]"] = 0
+
+		gdel_profiling["[type]"] += 1
 	..()
+
 
 // Used in shuttle movement and AI eye stuff.
 // Primarily used to notify objects being moved by a shuttle/bluespace fuckup.
