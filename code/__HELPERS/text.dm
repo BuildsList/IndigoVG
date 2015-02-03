@@ -434,7 +434,16 @@ var/global/list/watt_suffixes = list("W", "KW", "MW", "GW", "TW", "PW", "EW", "Z
 		i++
 	return "[format_num(number)] [watt_suffixes[i]]"
 
-
+proc/sanitize_PDA(var/msg)
+	var/index = findtext(msg, "ÿ")
+	while(index)
+		msg = copytext(msg, 1, index) + "&#1103;" + copytext(msg, index+1)
+		index = findtext(msg, "ÿ")
+	index = findtext(msg, "&#255;")
+	while(index)
+		msg = copytext(msg, 1, index) + "&#1103;" + copytext(msg, index+1)
+		index = findtext(msg, "&#255;")
+	return msg
 
 /proc/rhtml_encode(var/msg)
 	var/list/c = text2list(msg, "ÿ")
