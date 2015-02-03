@@ -102,6 +102,7 @@ var/global/list/organ_damage_overlays = list(
 
 /mob/living/carbon/human/Life()
 	set invisibility = 0
+
 	//set background = 1
 	if(client && client.prefs.toggles & CHAT_DEBUGLOGS)
 		src << "Starting Life() cycle [cycle]"
@@ -318,6 +319,7 @@ var/global/list/organ_damage_overlays = list(
 	if(update_overlays)
 		update_overlays = 0
 		UpdateDamageIcon()
+
 	cycle++
 
 
