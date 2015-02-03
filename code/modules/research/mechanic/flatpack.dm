@@ -23,7 +23,7 @@
 			return 1
 	if(istype(A, /obj/item/weapon/crowbar) && !assembling)
 		if(opening)
-			user << "<span class='indigo'>This is already being opened.</span>"
+			user << "<span class='warning'>This is already being opened.</span>"
 			return 1
 		user <<"<span class='notice'>You begin to open the flatpack...</span>"
 		opening = 1

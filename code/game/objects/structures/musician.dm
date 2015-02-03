@@ -18,6 +18,7 @@
 	var/repeat = 0
 
 /obj/structure/device/piano/New()
+	..()
 	if(prob(50))
 		name = "space minimoog"
 		desc = "This is a minimoog, like a space piano, but more spacey!"
@@ -320,11 +321,12 @@
 	onclose(user, "piano")
 
 /obj/structure/device/piano/Topic(href, href_list)
-
-	if(!in_range(src, usr) || issilicon(usr) || !anchored || !usr.canmove || usr.restrained())
-		usr << browse(null, "window=piano;size=700x300")
-		onclose(usr, "piano")
+	if(..())
 		return
+	if(issilicon(usr) || !anchored || !usr.canmove)
+		return
+
+	usr.set_machine(src)
 
 	if(href_list["newsong"])
 		song = new()
@@ -349,7 +351,7 @@
 				spawn() playsong()
 
 		else if(href_list["newline"])
-			var/newline = rhtml_encode(input("Enter your line: ", "Piano") as text|null)
+			var/newline = html_encode(input("Enter your line: ", "Piano") as text|null)
 			if(!newline)
 				return
 			if(song.lines.len > 50)
@@ -366,7 +368,7 @@
 
 		else if(href_list["modifyline"])
 			var/num = round(text2num(href_list["modifyline"]),1)
-			var/content = rhtml_encode(input("Enter your line: ", "Piano", song.lines[num]) as text|null)
+			var/content = html_encode(input("Enter your line: ", "Piano", song.lines[num]) as text|null)
 			if(!content)
 				return
 			if(length(content) > 50)
@@ -387,7 +389,7 @@
 		else if(href_list["import"])
 			var/t = ""
 			do
-				t = rhtml_encode(input(usr, "Please paste the entire song, formatted:", text("[]", src.name), t)  as message)
+				t = html_encode(input(usr, "Please paste the entire song, formatted:", text("[]", src.name), t)  as message)
 				if (!in_range(src, usr))
 					return
 
@@ -417,10 +419,10 @@
 				song = new()
 				song.lines = lines
 				song.tempo = tempo
-				updateUsrDialog()
+				src.updateUsrDialog()
 
 	add_fingerprint(usr)
-	updateUsrDialog()
+	src.updateUsrDialog()
 	return
 
 /obj/structure/device/piano/attackby(obj/item/O as obj, mob/user as mob)

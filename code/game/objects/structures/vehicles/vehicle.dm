@@ -37,6 +37,7 @@
 	var/vin=null
 
 /obj/structure/stool/bed/chair/vehicle/New()
+	..()
 	processing_objects |= src
 	handle_rotation()
 
@@ -273,21 +274,22 @@
 			hitrider = 1
 			var/act = buckled_mob.bullet_act(Proj)
 			if(act >= 0)
-				visible_message("<span class='indigo'>[buckled_mob.name] is hit by [Proj]!")
+				visible_message("<span class='warning'>[buckled_mob.name] is hit by [Proj]!")
 				if(istype(Proj, /obj/item/projectile/energy))
 					unbuckle()
 			return
 		if(istype(Proj, /obj/item/projectile/energy/electrode))
 			if(prob(25))
-				unbuckle()
-				visible_message("<span class='indigo'>\The [src.name] absorbs the [Proj]")
+				visible_message("<span class='warning'>\The [src.name] absorbs the [Proj]")
 				if(!istype(buckled_mob, /mob/living/carbon/human))
-					return buckled_mob.bullet_act(Proj)
+					buckled_mob.bullet_act(Proj)
 				else
 					var/mob/living/carbon/human/H = buckled_mob
-					return H.electrocute_act(0, src, 1, 0)
+					H.electrocute_act(0, src, 1, 0)
+				unbuckle()
+				return
 	if(!hitrider)
-		visible_message("<span class='indigo'>[Proj] hits \the [nick]!</span>")
+		visible_message("<span class='warning'>[Proj] hits \the [nick]!</span>")
 		if(!Proj.nodamage && Proj.damage_type == BRUTE || Proj.damage_type == BURN)
 			health -= Proj.damage
 		HealthCheck()
@@ -312,6 +314,6 @@
 	density = 0
 	if(buckled_mob)
 		unbuckle()
-	visible_message("<span class='indigo'>\The [nick] explodes!</span>")
+	visible_message("<span class='warning'>\The [nick] explodes!</span>")
 	explosion(src.loc,-1,0,2,7,10)
 	icon_state = "pussywagon_destroyed"

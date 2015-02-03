@@ -192,8 +192,7 @@
 // This adds the basic clock, shuttle recall timer, and malf_ai info to all silicon lifeforms
 /mob/living/silicon/Stat()
 	..()
-	statpanel("Status")
-	if (src.client.statpanel == "Status")
+	if(statpanel("Status"))
 		show_station_time()
 		show_emergency_shuttle_eta()
 		show_system_integrity()
@@ -220,9 +219,9 @@
 			return 0
 
 		visible_message( \
-			"<span class='indigo'>[src] was shocked by the [source]!</span>", \
+			"<span class='warning'>[src] was shocked by the [source]!</span>", \
 			"<span class='danger'>Energy pulse detected, system damaged!</span>", \
-			"<span class='indigo'>You hear a heavy electrical crack.</span>" \
+			"<span class='warning'>You hear a heavy electrical crack.</span>" \
 		)
 
 		if(prob(20))

@@ -69,7 +69,7 @@
 	proc/handle_disabilities()
 		if(disabilities & EPILEPSY)
 			if((prob(1) && paralysis < 10))
-				src << "<span class='indigo'>You have a seizure !</span>"
+				src << "<span class='warning'>You have a seizure !</span>"
 				Paralyse(10)
 		if(disabilities & COUGHING)
 			if((prob(5) && paralysis <= 1))
@@ -192,7 +192,7 @@
 
 		if(breath.temperature > (T0C+66) && !(M_RESIST_HEAT in mutations)) // Hot air hurts :(
 			if(prob(20))
-				src << "<span class='indigo'>You feel a searing heat in your lungs !</span>"
+				src << "<span class='warning'>You feel a searing heat in your lungs !</span>"
 			fire_alert = max(fire_alert, 1)
 		else
 			fire_alert = 0
@@ -267,7 +267,7 @@
 		else
 			if(nutrition > 500)
 				if(prob(5 + round((nutrition - 200) / 2)))
-					src << "<span class='indigo'>You suddenly feel blubbery!</span>"
+					src << "<span class='warning'>You suddenly feel blubbery!</span>"
 					mutations.Add(M_FAT)
 
 		if (nutrition > 0)

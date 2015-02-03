@@ -1,8 +1,12 @@
+
+//////PREPARE GENITALS///////
 /datum/surgery_step/prepare_genitals
-	allowed_tools = list(/obj/item/weapon/retractor = 100, \
-	/obj/item/weapon/crowbar = 75, \
-	/obj/item/weapon/kitchen/utensil/fork = 50, \
-	)
+	allowed_tools = list(
+		/obj/item/weapon/retractor = 100,
+		/obj/item/weapon/crowbar = 75,
+		/obj/item/weapon/kitchen/utensil/fork = 50,
+		)
+
 	priority = 1
 	min_duration = 40
 	max_duration = 60
@@ -21,16 +25,20 @@
 
 /datum/surgery_step/prepare_genitals/fail_step(mob/user, mob/living/carbon/target, target_zone, obj/item/tool, datum/surgery/surgery)
 	//H.gender_ambiguous = 1
-	user.visible_message("<span class='indigo'>[user] accidentally tears [target]'s genitals!</span>")
+	user.visible_message("<span class='warning'>[user] accidentally tears [target]'s genitals!</span>")
 	target.apply_damage(10, BRUTE, "groin", 1)
 	return 1
 
-//reshape_genitals
+
+
+//////RESHAPE GENITALS//////
 /datum/surgery_step/reshape_genitals
-	allowed_tools = list(/obj/item/weapon/scalpel = 100, \
-	/obj/item/weapon/hatchet = 50, \
-	/obj/item/weapon/wirecutters = 35, \
-	)
+	allowed_tools = list(
+		/obj/item/weapon/scalpel = 100,
+		/obj/item/weapon/hatchet = 50,
+		/obj/item/weapon/wirecutters = 35,
+		)
+
 	priority = 10 //Fuck sakes
 	min_duration = 80
 	max_duration = 100
@@ -59,7 +67,7 @@
 
 /datum/surgery_step/reshape_genitals/fail_step(mob/user, mob/living/carbon/target, target_zone, obj/item/tool, datum/surgery/surgery)
 	//H.gender_ambiguous = 1
-	user.visible_message("<span class='indigo'>[user] mutilates [target]'s genitals beyond recognition!</span>")
+	user.visible_message("<span class='warning'>[user] mutilates [target]'s genitals beyond recognition!</span>")
 	target.apply_damage(50, BRUTE, "groin", 1)
 	target.emote("scream", automatic = 1)
 	target.gender = pick(MALE, FEMALE)

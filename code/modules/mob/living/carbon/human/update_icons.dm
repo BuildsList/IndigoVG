@@ -229,7 +229,7 @@ var/global/list/damage_icon_parts = list()
 			if (istype(part, /datum/organ/external/groin) || istype(part, /datum/organ/external/head))
 				temp = part.get_icon(g,fat)
 			else
-				temp = part.get_icon()
+				temp = part.get_icon(g)
 
 			if(part.status & ORGAN_DEAD)
 				temp.ColorTone(necrosis_color_mod)
@@ -487,6 +487,7 @@ var/global/list/damage_icon_parts = list()
 //For legacy support.
 /mob/living/carbon/human/regenerate_icons()
 	..()
+//	world << "Update icon's for [usr]!"
 	if(monkeyizing)		return
 	update_fire(0)
 	update_mutations(0)
@@ -535,7 +536,7 @@ var/global/list/damage_icon_parts = list()
 				drop_from_inventory(w_uniform)
 				return
 		else
-			standing.icon	= 'icons/mob/uniform.dmi'
+			standing.icon	= gender == MALE ? 'icons/mob/uniform.dmi' : 'icons/mob/uniform_f.dmi' // file(gender_clothing(usr,"uniform")) //'icons/mob/uniform.dmi'
 
 		var/obj/item/I = w_uniform
 		if(species.name in I.species_fit) //Allows clothes to display differently for multiple species
@@ -583,7 +584,7 @@ var/global/list/damage_icon_parts = list()
 		wear_id.screen_loc = ui_id	//TODO
 		if(w_uniform && w_uniform:displays_id)
 			var/obj/Overlays/O = obj_overlays[ID_LAYER]
-			O.icon = 'icons/mob/mob.dmi'
+			O.icon = gender == MALE ? 'icons/mob/mob.dmi' : 'icons/mob/mob_f.dmi' //'icons/mob/mob.dmi'
 			O.icon_state = "id"
 			overlays += O
 			obj_overlays[ID_LAYER] = O
@@ -608,7 +609,7 @@ var/global/list/damage_icon_parts = list()
 
 		var/t_state = gloves.item_state
 		if(!t_state)	t_state = gloves.icon_state
-		var/image/standing	= image("icon" = ((gloves.icon_override) ? gloves.icon_override : 'icons/mob/hands.dmi'), "icon_state" = "[t_state]")
+		var/image/standing	= image("icon" = ((gloves.icon_override) ? gloves.icon_override : gender == MALE ? 'icons/mob/hands.dmi' : 'icons/mob/hands_f.dmi'), "icon_state" = "[t_state]") // 'icons/mob/hands.dmi'
 
 		var/obj/item/I = gloves
 		if(species.name in I.species_fit) //Allows clothes to display differently for multiple species
@@ -646,7 +647,7 @@ var/global/list/damage_icon_parts = list()
 	overlays -= obj_overlays[GLASSES_LAYER]
 	overlays -= obj_overlays[GLASSES_OVER_HAIR_LAYER]
 	if(glasses)
-		var/image/standing = image("icon" = ((glasses.icon_override) ? glasses.icon_override : 'icons/mob/eyes.dmi'), "icon_state" = "[glasses.icon_state]")
+		var/image/standing = image("icon" = ((glasses.icon_override) ? glasses.icon_override : gender == MALE ? 'icons/mob/eyes.dmi' : 'icons/mob/eyes_f.dmi'), "icon_state" = "[glasses.icon_state]") // 'icons/mob/eyes.dmi'
 
 		var/obj/item/I = glasses
 		if(species.name in I.species_fit) //Allows clothes to display differently for multiple species
@@ -678,7 +679,7 @@ var/global/list/damage_icon_parts = list()
 
 	overlays -= obj_overlays[EARS_LAYER]
 	if(ears)
-		var/image/standing = image("icon" = ((ears.icon_override) ? ears.icon_override : 'icons/mob/ears.dmi'), "icon_state" = "[ears.icon_state]")
+		var/image/standing = image("icon" = ((ears.icon_override) ? ears.icon_override : gender == MALE ? 'icons/mob/ears.dmi' : 'icons/mob/ears_f.dmi'), "icon_state" = "[ears.icon_state]") // 'icons/mob/ears.dmi'
 
 		var/obj/item/I = ears
 		if(species.name in I.species_fit) //Allows clothes to display differently for multiple species
@@ -699,7 +700,7 @@ var/global/list/damage_icon_parts = list()
 	overlays -= obj_overlays[SHOES_LAYER]
 	if(shoes)
 		var/obj/Overlays/O = obj_overlays[SHOES_LAYER]
-		O.icon = ((shoes.icon_override) ? shoes.icon_override : 'icons/mob/feet.dmi')
+		O.icon = ((shoes.icon_override) ? shoes.icon_override : gender == MALE ? 'icons/mob/feet.dmi' : 'icons/mob/feet_f.dmi') // 'icons/mob/feet.dmi'
 		O.icon_state = shoes.icon_state
 		//var/image/standing	= image("icon" = ((shoes.icon_override) ? shoes.icon_override : 'icons/mob/feet.dmi'), "icon_state" = "[shoes.icon_state]")
 
@@ -728,7 +729,7 @@ var/global/list/damage_icon_parts = list()
 		var/t_state = s_store.item_state
 		if(!t_state)	t_state = s_store.icon_state
 		var/obj/Overlays/O = obj_overlays[SUIT_STORE_LAYER]
-		O.icon = 'icons/mob/belt_mirror.dmi'
+		O.icon = gender == MALE ? 'icons/mob/belt_mirror.dmi' : 'icons/mob/belt_mirror_f.dmi' // 'icons/mob/belt_mirror.dmi'
 		O.icon_state = t_state
 		overlays += O
 		obj_overlays[SUIT_STORE_LAYER] = O
@@ -749,7 +750,7 @@ var/global/list/damage_icon_parts = list()
 		if(istype(head,/obj/item/clothing/head/kitty))
 			standing	= image("icon" = head:mob)
 		else
-			standing	= image("icon" = ((head.icon_override) ? head.icon_override : 'icons/mob/head.dmi'), "icon_state" = "[head.icon_state]")
+			standing	= image("icon" = ((head.icon_override) ? head.icon_override : 'icons/mob/head.dmi'), "icon_state" = "[head.icon_state]") // 'icons/mob/head.dmi'
 
 		var/obj/item/I = head
 		if(species.name in I.species_fit) //Allows clothes to display differently for multiple species
@@ -776,7 +777,7 @@ var/global/list/damage_icon_parts = list()
 		belt.screen_loc = ui_belt	//TODO
 		var/t_state = belt.item_state
 		if(!t_state)	t_state = belt.icon_state
-		var/image/standing = image("icon" = ((belt.icon_override) ? belt.icon_override : 'icons/mob/belt.dmi'), "icon_state" = "[t_state]")
+		var/image/standing = image("icon" = ((belt.icon_override) ? belt.icon_override : gender == MALE ? 'icons/mob/belt.dmi' : 'icons/mob/belt_f.dmi'), "icon_state" = "[t_state]") // 'icons/mob/belt.dmi'
 
 		var/obj/item/I = belt
 		if(species.name in I.species_fit) //Allows clothes to display differently for multiple species
@@ -799,7 +800,7 @@ var/global/list/damage_icon_parts = list()
 		wear_suit.screen_loc = ui_oclothing	//TODO
 		var/obj/Overlays/O = obj_overlays[SUIT_LAYER]
 		O.overlays.len = 0
-		var/image/standing	= image("icon" = ((wear_suit.icon_override) ? wear_suit.icon_override : 'icons/mob/suit.dmi'), "icon_state" = "[wear_suit.icon_state]")
+		var/image/standing	= image("icon" = ((wear_suit.icon_override) ? wear_suit.icon_override : gender == MALE ? 'icons/mob/suit.dmi' : 'icons/mob/suit_f.dmi'), "icon_state" = "[wear_suit.icon_state]") // 'icons/mob/suit.dmi'
 
 		if( istype(wear_suit, /obj/item/clothing/suit/straight_jacket) )
 			drop_from_inventory(handcuffed)
@@ -843,7 +844,7 @@ var/global/list/damage_icon_parts = list()
 		var/obj/Overlays/O = obj_overlays[FACEMASK_LAYER]
 		O.overlays.len = 0
 		wear_mask.screen_loc = ui_mask	//TODO
-		var/image/standing	= image("icon" = ((wear_mask.icon_override) ? wear_mask.icon_override : 'icons/mob/mask.dmi'), "icon_state" = "[wear_mask.icon_state]")
+		var/image/standing	= image("icon" = ((wear_mask.icon_override) ? wear_mask.icon_override : gender == MALE ? 'icons/mob/mask.dmi' : 'icons/mob/mask_f.dmi'), "icon_state" = "[wear_mask.icon_state]") // 'icons/mob/mask.dmi'
 
 		var/obj/item/I = wear_mask
 		if(species.name in I.species_fit) //Allows clothes to display differently for multiple species
@@ -870,7 +871,7 @@ var/global/list/damage_icon_parts = list()
 	overlays -= obj_overlays[BACK_LAYER]
 	if(back)
 		back.screen_loc = ui_back	//TODO
-		var/image/standing	= image("icon" = ((back.icon_override) ? back.icon_override : 'icons/mob/back.dmi'), "icon_state" = "[back.icon_state]")
+		var/image/standing	= image("icon" = ((back.icon_override) ? back.icon_override : gender == MALE ? 'icons/mob/back.dmi' : 'icons/mob/back_f.dmi'), "icon_state" = "[back.icon_state]") // 'icons/mob/back.dmi'
 
 		var/obj/item/I = back
 		if(species.name in I.species_fit) //Allows clothes to display differently for multiple species
@@ -903,7 +904,7 @@ var/global/list/damage_icon_parts = list()
 		drop_l_hand()
 		stop_pulling()	//TODO: should be handled elsewhere
 		var/obj/Overlays/O = obj_overlays[HANDCUFF_LAYER]
-		O.icon = 'icons/mob/mob.dmi'
+		O.icon = gender == MALE ? 'icons/mob/mob.dmi' : 'icons/mob/mob_f.dmi' // 'icons/mob/mob.dmi'
 		O.icon_state = "handcuff1"
 		overlays += O
 		obj_overlays[HANDCUFF_LAYER] = O
@@ -917,7 +918,7 @@ var/global/list/damage_icon_parts = list()
 	overlays -= obj_overlays[LEGCUFF_LAYER]
 	if(legcuffed)
 		var/obj/Overlays/O = obj_overlays[LEGCUFF_LAYER]
-		O.icon = 'icons/mob/mob.dmi'
+		O.icon = gender == MALE ? 'icons/mob/mob.dmi' : 'icons/mob/mob_f.dmi' // 'icons/mob/mob.dmi'
 		O.icon_state = "legcuff1"
 		overlays += O
 		obj_overlays[LEGCUFF_LAYER] = O
@@ -1023,3 +1024,11 @@ var/global/list/damage_icon_parts = list()
 
 	var/image/face_lying_image = new /image(icon = face_lying)
 	return face_lying_image
+
+/*
+/mob/living/carbon/human/proc/gender_clothing(var/mob/user, var/item)
+	var/g = ""
+	if(user.gender == FEMALE)	g = "_f"
+	var/result = "icons/mob/[item][g].dmi"
+	return result
+*/

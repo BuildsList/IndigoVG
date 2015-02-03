@@ -57,18 +57,18 @@
 				user.show_message(text("<span class='notice'>You [] the service panel.</span>", (src.open ? "open" : "close")))
 			return
 		if ((istype(W, /obj/item/device/multitool)) && (src.open == 1)&& (!src.l_hacking))
-			user.show_message(text("<span class='indigo'>Now attempting to reset internal memory, please hold.</span>"), 1)
+			user.show_message(text("<span class='warning'>Now attempting to reset internal memory, please hold.</span>"), 1)
 			src.l_hacking = 1
 			if (do_after(usr, 100))
 				if (prob(40))
 					src.l_setshort = 1
 					src.l_set = 0
-					user.show_message(text("<span class='indigo'>Internal memory reset.  Please give it a few seconds to reinitialize.</span>"), 1)
+					user.show_message(text("<span class='warning'>Internal memory reset.  Please give it a few seconds to reinitialize.</span>"), 1)
 					sleep(80)
 					src.l_setshort = 0
 					src.l_hacking = 0
 				else
-					user.show_message(text("<span class='indigo'>Unable to reset internal memory.</span>"), 1)
+					user.show_message(text("<span class='warning'>Unable to reset internal memory.</span>"), 1)
 					src.l_hacking = 0
 			else	src.l_hacking = 0
 			return
@@ -158,7 +158,7 @@
 
 /obj/item/weapon/storage/secure/briefcase/attack_hand(mob/user as mob)
 	if ((src.loc == user) && (src.locked == 1))
-		usr << "<span class='indigo'>[src] is locked and cannot be opened!</span>"
+		usr << "<span class='warning'>[src] is locked and cannot be opened!</span>"
 	else if ((src.loc == user) && (!src.locked))
 		playsound(get_turf(src), "rustle", 50, 1, -5)
 		if (user.s_active)

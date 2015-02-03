@@ -50,7 +50,7 @@ var/list/spells = typesof(/obj/effect/proc_holder/spell) //needed for the badmin
 /obj/effect/proc_holder/spell/proc/cast_check(skipcharge = 0,mob/user = usr) //checks if the spell can be cast based on its settings; skipcharge is used when an additional cast_check is called inside the spell
 
 	if(!(src in user.spell_list))
-		user << "<span class='indigo'>You shouldn't have this spell! Something's wrong.</span>"
+		user << "<span class='warning'>You shouldn't have this spell! Something's wrong.</span>"
 		return 0
 
 	if(usr.z == 2 && !centcomm_cancast) //Certain spells are not allowed on the centcomm zlevel
@@ -59,7 +59,7 @@ var/list/spells = typesof(/obj/effect/proc_holder/spell) //needed for the badmin
 	if(istype(usr, /mob/living/simple_animal))
 		var/mob/living/simple_animal/SA = usr
 		if(SA.purge)
-			SA << "<span class='indigo'>The nullrod's power interferes with your own!</span>"
+			SA << "<span class='warning'>The nullrod's power interferes with your own!</span>"
 			return 0
 
 	if(!skipcharge)
@@ -183,7 +183,7 @@ var/list/spells = typesof(/obj/effect/proc_holder/spell) //needed for the badmin
 			spell.anchored = 1
 			spell.density = 0
 			spawn(overlay_lifespan)
-				del(spell)
+				qdel(spell)
 	return valid_targets
 
 /obj/effect/proc_holder/spell/proc/after_cast(list/targets)

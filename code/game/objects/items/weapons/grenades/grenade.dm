@@ -15,7 +15,7 @@
 
 /obj/item/weapon/grenade/proc/clown_check(var/mob/living/user)
 	if((M_CLUMSY in user.mutations) && prob(50))
-		user << "<span class='indigo'>Huh? How does this thing work?</span>"
+		user << "<span class='warning'>Huh? How does this thing work?</span>"
 
 		activate(user)
 		add_fingerprint(user)
@@ -29,7 +29,7 @@
 	if (istype(target, /obj/item/weapon/storage)) return ..() // Trying to put it in a full container
 	if (istype(target, /obj/item/weapon/gun/grenadelauncher)) return ..()
 	if((user.get_active_hand() == src) && (!active) && (clown_check(user)) && target.loc != src.loc)
-		user << "<span class='indigo'>You prime the [name]! [det_time/10] seconds!</span>"
+		user << "<span class='warning'>You prime the [name]! [det_time/10] seconds!</span>"
 		active = 1
 		icon_state = initial(icon_state) + "_active"
 		playsound(loc, 'sound/weapons/armbomb.ogg', 75, 1, -3)
@@ -48,7 +48,7 @@
 	if(det_time > 1)
 		user << "<span class='info'>The timer is set to [det_time/10] seconds.</span>"
 		return
-	user << "<span class='indigo'>\The [src] is set for instant detonation.</span>"
+	user << "<span class='warning'>\The [src] is set for instant detonation.</span>"
 
 
 /obj/item/weapon/grenade/attack_self(mob/user as mob)

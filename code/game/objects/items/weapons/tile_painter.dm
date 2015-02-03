@@ -455,7 +455,7 @@ var/global/list/paint_variants = list(
 	var/turf/simulated/floor/test = get_turf(A) //it should be the simulated floor type
 	//world.log << "[src]:  selected=[selected.type]"
 	if(!selected.validate(test))
-		user << "<span class='indigo'>An error indicator on [src] flicks on for a moment. Perhaps you're using it on the wrong floor type?</span>"
+		user << "<span class='warning'>An error indicator on [src] flicks on for a moment. Perhaps you're using it on the wrong floor type?</span>"
 		return 0
 
 	var/pdesc = ""

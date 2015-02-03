@@ -162,7 +162,7 @@ var/bomb_set
 
 	if (!usr || usr.stat || usr.lying) return
 	if (!ishuman(usr))
-		usr << "<span class='indigo'>You don't have the dexterity to do this!</span>"
+		usr << "<span class='warning'>You don't have the dexterity to do this!</span>"
 		return
 
 	if (src.deployable)
@@ -217,7 +217,7 @@ var/bomb_set
 					if (src.timing == -1.0)
 						return
 					if (src.safety)
-						usr << "<span class='indigo'>The safety is still on.</span>"
+						usr << "<span class='warning'>The safety is still on.</span>"
 						return
 					src.timing = !( src.timing )
 					if (src.timing)
@@ -238,15 +238,15 @@ var/bomb_set
 
 					if(removal_stage == 5)
 						src.anchored = 0
-						visible_message("<span class='indigo'>\The [src] makes a highly unpleasant crunching noise. It looks like the anchoring bolts have been cut.</span>")
+						visible_message("<span class='warning'>\The [src] makes a highly unpleasant crunching noise. It looks like the anchoring bolts have been cut.</span>")
 						return
 
 					src.anchored = !( src.anchored )
 					if(src.anchored)
-						visible_message("<span class='indigo'>With a steely snap, bolts slide out of [src] and anchor it to the flooring.</span>")
+						visible_message("<span class='warning'>With a steely snap, bolts slide out of [src] and anchor it to the flooring.</span>")
 						playsound(src,'sound/effects/bolt.ogg', 70, 1)
 					else
-						visible_message("<span class='indigo'>The anchoring bolts slide back into the depths of [src].</span>")
+						visible_message("<span class='warning'>The anchoring bolts slide back into the depths of [src].</span>")
 
 		src.add_fingerprint(usr)
 		for(var/mob/M in viewers(1, src))

@@ -83,7 +83,7 @@
 
 	//repair a bit of damage
 	if(health != maxHealth && prob(3))
-		src.visible_message("<span class='indigo'>  \icon[src] [src] shudders and shakes as some of it's damaged systems come back online.</span>")
+		src.visible_message("<span class='warning'>  \icon[src] [src] shudders and shakes as some of it's damaged systems come back online.</span>")
 		var/datum/effect/effect/system/spark_spread/s = new /datum/effect/effect/system/spark_spread
 		s.set_up(3, 1, src)
 		s.start()
@@ -97,7 +97,7 @@
 
 	//sometimes our targetting sensors malfunction, and we attack anyone nearby
 	if(prob(disabled ? 0 : 1) && hostile == 0)
-		src.visible_message("<span class='indigo'> \icon[src] [src] suddenly lights up, and additional targeting vanes slide into place.</span>")
+		src.visible_message("<span class='warning'> \icon[src] [src] suddenly lights up, and additional targeting vanes slide into place.</span>")
 		hostile = 1
 		hostile_time = rand(20,35)
 	else if(hostile == 1)
@@ -127,15 +127,15 @@
 			if(prob(50))
 				src.visible_message("<span class='notice'> \icon[src] [src] suddenly shuts down!</span>")
 			else
-				src.visible_message("<span class='indigo'> \icon[src] [src] suddenly lies still and quiet.")
+				src.visible_message("<span class='warning'> \icon[src] [src] suddenly lies still and quiet.")
 			disabled = rand(20, 40)
 			walk(src,0)
 
 	if(exploding && prob(20))
 		if(prob(50))
-			src.visible_message("<span class='indigo'> \icon[src] [src] begins to spark and shake violenty!</span>")
+			src.visible_message("<span class='warning'> \icon[src] [src] begins to spark and shake violenty!</span>")
 		else
-			src.visible_message("<span class='indigo'> \icon[src] [src] sparks and shakes like it's about to explode!</span>")
+			src.visible_message("<span class='warning'> \icon[src] [src] sparks and shakes like it's about to explode!</span>")
 		var/datum/effect/effect/system/spark_spread/s = new /datum/effect/effect/system/spark_spread
 		s.set_up(3, 1, src)
 		s.start()

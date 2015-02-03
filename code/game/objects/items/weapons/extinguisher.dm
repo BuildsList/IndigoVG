@@ -58,7 +58,7 @@
 		else
 			user << "<span class='info'>Nothing</span>"
 	for(var/thing in src)
-		user << "<span class='indigo'>\A [thing] is jammed into the nozzle!</span>"
+		user << "<span class='warning'>\A [thing] is jammed into the nozzle!</span>"
 
 /obj/item/weapon/extinguisher/attack_self(mob/user as mob)
 	safety = !safety
@@ -127,7 +127,7 @@
 			return
 	if (!safety && !is_open_container())
 		if (src.reagents.total_volume < 1)
-			usr << "<span class='indigo'>\The [src] is empty.</span>"
+			usr << "<span class='warning'>\The [src] is empty.</span>"
 			return
 
 		if (world.time < src.last_use + 20)
@@ -235,7 +235,7 @@
 
 	if (!safety && !is_open_container())
 		if (src.reagents.total_volume < 1)
-			usr << "<span class='indigo'>\The [src] is empty."
+			usr << "<span class='warning'>\The [src] is empty."
 			return
 
 		if (world.time < src.last_use + 20)
@@ -278,6 +278,7 @@
 		for(var/a=0, a<5, a++)
 			spawn(0)
 				var/datum/reagents/R = new/datum/reagents(5)
+				R.my_atom = src
 				reagents.trans_to_holder(R,1)
 				var/obj/effect/effect/foam/fire/W = new /obj/effect/effect/foam/fire( get_turf(src) , R)
 				var/turf/my_target = pick(the_targets)

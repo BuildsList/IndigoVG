@@ -85,10 +85,10 @@
 	if(!health)
 		spawn(0)
 			if(occupant)
-				occupant << "<big><span class='indigo'>Critical damage to the vessel detected, core explosion imminent!</span></big>"
+				occupant << "<big><span class='warning'>Critical damage to the vessel detected, core explosion imminent!</span></big>"
 				for(var/i = 10, i >= 0; --i)
 					if(occupant)
-						occupant << "<span class='indigo'>[i]</span>"
+						occupant << "<span class='warning'>[i]</span>"
 					if(i == 0)
 						explosion(loc, 2, 4, 8)
 					sleep(10)
@@ -102,7 +102,7 @@
 			if(H)
 				H.loc = get_turf(src)
 				H.ex_act(severity + 1)
-				H << "<span class='indigo'>You are forcefully thrown from \the [src]!</span>"
+				H << "<span class='warning'>You are forcefully thrown from \the [src]!</span>"
 			del(ion_trail)
 			del(src)
 		if(2)
@@ -129,7 +129,7 @@
 		if(!hatch_open)
 			return ..()
 		if(!equipment_system)
-			user << "<span class='indigo'>The pod has no equipment datum, yell at pomf</span>"
+			user << "<span class='warning'>The pod has no equipment datum, yell at pomf</span>"
 			return
 		if(istype(W, /obj/item/device/spacepod_equipment/weaponry))
 			if(equipment_system.weapon_system)
@@ -151,7 +151,7 @@
 	if(!hatch_open)
 		return ..()
 	if(!equipment_system || !istype(equipment_system))
-		user << "<span class='indigo'>The pod has no equpment datum, or is the wrong type, yell at pomf.</span>"
+		user << "<span class='warning'>The pod has no equpment datum, or is the wrong type, yell at pomf.</span>"
 		return
 	var/list/possible = list()
 	if(battery)
@@ -177,7 +177,7 @@
 				SPE.my_atom = null
 				equipment_system.weapon_system = null
 			else
-				user << "<span class='indigo'>You need an open hand to do that.</span>"
+				user << "<span class='warning'>You need an open hand to do that.</span>"
 		/*
 		if("engine system")
 			SPE = equipment_system.engine_system
@@ -185,14 +185,14 @@
 				user << "<span class='notice'>You remove \the [SPE] from the equipment system.</span>"
 				equipment_system.engine_system = null
 			else
-				user << "<span class='indigo'>You need an open hand to do that.</span>"
+				user << "<span class='warning'>You need an open hand to do that.</span>"
 		if("shield system")
 			SPE = equipment_system.shield_system
 			if(user.put_in_any_hand_if_possible(SPE))
 				user << "<span class='notice'>You remove \the [SPE] from the equipment system.</span>"
 				equipment_system.shield_system = null
 			else
-				user << "<span class='indigo'>You need an open hand to do that.</span>"
+				user << "<span class='warning'>You need an open hand to do that.</span>"
 		*/
 
 	return
@@ -227,7 +227,7 @@
 	set popup_menu = 0
 	if(usr!=src.occupant)
 		return
-	use_internal_tank = !use_internal_tank
+	src.use_internal_tank = !src.use_internal_tank
 	src.occupant << "<span class='notice'>Now taking air from [use_internal_tank?"internal airtank":"environment"].</span>"
 	return
 
@@ -347,7 +347,7 @@
 
 	if(usr != src.occupant)
 		return
-	inertia_dir = 0 // engage reverse thruster and power down pod
+	src.inertia_dir = 0 // engage reverse thruster and power down pod
 	src.occupant.loc = src.loc
 	src.occupant = null
 	usr << "<span class='notice'>You climb out of the pod</span>"
@@ -408,9 +408,10 @@
 		return
 
 /obj/spacepod/Move(NewLoc, Dir = 0, step_x = 0, step_y = 0)
-	..()
-	if(dir == 1 || dir == 4)
-		src.loc.Entered(src)
+	var/oldloc = src.loc
+	..(NewLoc, Dir)
+	if(dir)
+		src.loc.Entered(src, oldloc)
 /obj/spacepod/proc/Process_Spacemove(var/check_drift = 0, mob/user)
 	var/dense_object = 0
 	if(!user)
@@ -447,18 +448,19 @@
 					inertia_dir = 0
 					moveship = 0
 		if(moveship)
-			step(src, direction)
+			if(!step(src, direction))
+				Move(get_step(src,direction), direction)
 			if(istype(src.loc, /turf/space))
 				inertia_dir = direction
 	else
 		if(!battery)
-			user << "<span class='indigo'>No energy cell detected.</span>"
+			user << "<span class='warning'>No energy cell detected.</span>"
 		else if(battery.charge < 3)
-			user << "<span class='indigo'>Not enough charge left.</span>"
+			user << "<span class='warning'>Not enough charge left.</span>"
 		else if(!health)
-			user << "<span class='indigo'>She's dead, Jim</span>"
+			user << "<span class='warning'>She's dead, Jim</span>"
 		else
-			user << "<span class='indigo'>Unknown error has occurred, yell at pomf.</span>"
+			user << "<span class='warning'>Unknown error has occurred, yell at pomf.</span>"
 		return 0
 	battery.charge = max(0, battery.charge - 3)
 

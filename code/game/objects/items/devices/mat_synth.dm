@@ -21,23 +21,23 @@
 
 	var/obj/item/stack/sheet/active_material = /obj/item/stack/sheet/metal
 	var/list/materials_scanned = list(	"metal" = /obj/item/stack/sheet/metal,
-										"glass" = /obj/item/stack/sheet/glass,
-										"reinforced glass" = /obj/item/stack/sheet/rglass,
+										"glass" = /obj/item/stack/sheet/glass/glass,
+										"reinforced glass" = /obj/item/stack/sheet/glass/rglass,
 										"plasteel" = /obj/item/stack/sheet/plasteel)
 	var/matter = 0
 
 /obj/item/device/material_synth/robot //MoMMI version, has more materials
 	materials_scanned = list(	"plasma glass" = /obj/item/stack/sheet/glass/plasmaglass,
-								"reinforced plasma glass" = /obj/item/stack/sheet/rglass/plasmarglass,
+								"reinforced plasma glass" = /obj/item/stack/sheet/glass/plasmarglass,
 								"metal" = /obj/item/stack/sheet/metal,
-								"glass" = /obj/item/stack/sheet/glass,
-								"reinforced glass" = /obj/item/stack/sheet/rglass,
+								"glass" = /obj/item/stack/sheet/glass/glass,
+								"reinforced glass" = /obj/item/stack/sheet/glass/rglass,
 								"plasteel" = /obj/item/stack/sheet/plasteel)
 
 /obj/item/device/material_synth/robot/cyborg //Cyborg version, has less materials and the ability to make tiles & rods (as borgs can't do it themselves)
 	materials_scanned = list(	"metal" = /obj/item/stack/sheet/metal,
-								"glass" = /obj/item/stack/sheet/glass,
-								"reinforced glass" = /obj/item/stack/sheet/rglass,
+								"glass" = /obj/item/stack/sheet/glass/glass,
+								"reinforced glass" = /obj/item/stack/sheet/glass/rglass,
 								"floor tiles" = /obj/item/stack/tile/plasteel,
 								"metal rods" = /obj/item/stack/rods)
 
@@ -95,7 +95,7 @@
 					R.hud_used.update_robot_modules_display()
 					return
 				else
-					R << "<span class='indigo'>You can't make that much [material_type] without shutting down!</span>"
+					R << "<span class='warning'>You can't make that much [material_type] without shutting down!</span>"
 					return
 
 				return
@@ -150,7 +150,7 @@
 				var/obj/item/device/spawn_item = pick(typesof(/obj/item/device) - /obj/item/device) //we make any kind of device. It's a surprise!
 				user.visible_message("<span class='rose'>\The [src] in [user]'s hands appears to be trying to synthesize... \a [initial(spawn_item.name)]?</span>",
 									 "You hear a loud popping noise.")
-				user <<"<span class='indigo'>\The [src] pops and fizzles in your hands, before creating... \a [initial(spawn_item.name)]?</span>"
+				user <<"<span class='warning'>\The [src] pops and fizzles in your hands, before creating... \a [initial(spawn_item.name)]?</span>"
 				sleep(10)
 				new spawn_item(get_turf(src))
 				matter -= matter_rng
@@ -173,7 +173,7 @@
 		else
 			active_material = null
 	else
-		user << "<span class='indigo'>ERROR: NO MATERIAL DATA FOUND</span>"
+		user << "<span class='warning'>ERROR: NO MATERIAL DATA FOUND</span>"
 		return 0
 	create_material(user, active_material)
 

@@ -16,8 +16,8 @@ var/global/list/autolathe_recipes = list( \
 		new /obj/item/clothing/head/welding(), \
 		new /obj/item/weapon/stock_parts/console_screen(), \
 		new /obj/item/stack/sheet/metal(), \
-		new /obj/item/stack/sheet/glass(), \
-		new /obj/item/stack/sheet/rglass(), \
+		new /obj/item/stack/sheet/glass/glass(), \
+		new /obj/item/stack/sheet/glass/rglass(), \
 		new /obj/item/stack/rods(), \
 		new /obj/item/weapon/rcd_ammo(), \
 		new /obj/item/weapon/kitchenknife(), \
@@ -161,7 +161,7 @@ var/global/list/autolathe_recipes_hidden = list( \
 		wires_win(user,50)
 		return
 	if(src.disabled)
-		user << "<span class='indigo'>You press the button, but nothing happens.</span>"
+		user << "<span class='warning'>You press the button, but nothing happens.</span>"
 		return
 	regular_win(user)
 	return
@@ -170,27 +170,27 @@ var/global/list/autolathe_recipes_hidden = list( \
 	if(stat)
 		return 1
 	if(busy)
-		user << "<span class='indigo'>\The [src] is busy. Please wait for the completion of previous operation.</span>"
+		user << "<span class='warning'>\The [src] is busy. Please wait for the completion of previous operation.</span>"
 		return 1
 	if(..())
 		return 1
 	if(isrobot(user))
 		if(!isMoMMI(user))
-			user << "<span class='indigo'>\The [src] refuses your inbuilt module.</span>"
+			user << "<span class='warning'>\The [src] refuses your inbuilt module.</span>"
 			return 1
 		else
 			var/mob/living/silicon/robot/mommi/M = user
 			if(M.is_in_modules(O, permit_sheets=1))
-				user << "<span class='indigo'>\The [src] refuses your inbuilt module.</span>"
+				user << "<span class='warning'>\The [src] refuses your inbuilt module.</span>"
 				return 1
 	if (src.m_amount + O.m_amt > max_m_amount)
-		user << "<span class='indigo'>\The [src] is full. Please remove metal from \the [src] in order to insert more.</span>"
+		user << "<span class='warning'>\The [src] is full. Please remove metal from \the [src] in order to insert more.</span>"
 		return 1
 	if (src.g_amount + O.g_amt > max_g_amount)
-		user << "<span class='indigo'>\The [src] is full. Please remove glass from \the [src] in order to insert more.</span>"
+		user << "<span class='warning'>\The [src] is full. Please remove glass from \the [src] in order to insert more.</span>"
 		return 1
 	if (O.m_amt == 0 && O.g_amt == 0)
-		user << "<span class='indigo'>This object does not contain significant amounts of metal or glass, or cannot be accepted by \the [src] due to size or hazardous materials.</span>"
+		user << "<span class='warning'>This object does not contain significant amounts of metal or glass, or cannot be accepted by \the [src] due to size or hazardous materials.</span>"
 		return
 	/*
 		if (istype(O, /obj/item/weapon/grab) && src.hacked)
@@ -225,7 +225,7 @@ var/global/list/autolathe_recipes_hidden = list( \
 	src.g_amount += g_amt * amount
 	user << "You insert [amount] sheet[amount>1 ? "s" : ""] to \the [src]."
 	if (O && O.loc == src)
-		del(O)
+		qdel(O)
 	busy = 0
 	src.updateUsrDialog()
 
@@ -235,7 +235,7 @@ var/global/list/autolathe_recipes_hidden = list( \
 			var/obj/item/stack/sheet/metal/G = new /obj/item/stack/sheet/metal(src.loc)
 			G.amount = round(m_amount / 3750)
 		if(g_amount >= 3750)
-			var/obj/item/stack/sheet/glass/G = new /obj/item/stack/sheet/glass(src.loc)
+			var/obj/item/stack/sheet/glass/glass/G = new /obj/item/stack/sheet/glass/glass(src.loc)
 			G.amount = round(g_amount / 3750)
 		return 1
 	return -1
@@ -319,10 +319,10 @@ var/global/list/autolathe_recipes_hidden = list( \
 			var/temp_wire = href_list["wire"]
 			if(href_list["act"] == "pulse")
 				if (!istype(usr.get_active_hand(), /obj/item/device/multitool))
-					usr << "<span class='indigo'>You need a multitool!</span>"
+					usr << "<span class='warning'>You need a multitool!</span>"
 				else
 					if(src.wires[temp_wire])
-						usr << "<span class='indigo'>You can't pulse a cut wire.</span>"
+						usr << "<span class='warning'>You can't pulse a cut wire.</span>"
 					else
 						if(src.hack_wire == temp_wire && !emagged)
 							src.hacked = !src.hacked
@@ -337,7 +337,7 @@ var/global/list/autolathe_recipes_hidden = list( \
 							spawn(100) src.shocked = !src.shocked
 			if(href_list["act"] == "wire")
 				if (!istype(usr.get_active_hand(), /obj/item/weapon/wirecutters))
-					usr << "<span class='indigo'>You need wirecutters!</span>"
+					usr << "<span class='warning'>You need wirecutters!</span>"
 				else
 					wires[temp_wire] = !wires[temp_wire]
 					if(src.hack_wire == temp_wire && !emagged)
@@ -349,7 +349,7 @@ var/global/list/autolathe_recipes_hidden = list( \
 						src.shocked = !src.shocked
 						src.shock(usr,50)
 	else
-		usr << "<span class='indigo'>\The [src] is busy. Please wait for the completion of previous operation.</span>"
+		usr << "<span class='warning'>\The [src] is busy. Please wait for the completion of previous operation.</span>"
 	src.updateUsrDialog()
 	return
 

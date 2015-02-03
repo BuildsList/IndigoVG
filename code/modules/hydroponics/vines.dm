@@ -44,6 +44,7 @@
 		if(/obj/item/weapon/twohanded/fireaxe) qdel(src)
 		if(/obj/item/weapon/hatchet) qdel(src)
 		if(/obj/item/weapon/melee/energy) qdel(src)
+		if(/obj/item/weapon/pickaxe/plasmacutter) qdel(src)
 
 		// Less effective weapons
 		if(/obj/item/weapon/wirecutters)
@@ -96,19 +97,19 @@
 					buckled_mob.visible_message(\
 						"<span class='notice'>[user.name] frees [buckled_mob.name] from [src].</span>",\
 						"<span class='notice'>[user.name] frees you from [src].</span>",\
-						"<span class='indigo'>You hear shredding and ripping.</span>")
+						"<span class='warning'>You hear shredding and ripping.</span>")
 				else
 					buckled_mob.visible_message(\
 						"<span class='notice'>[buckled_mob.name] struggles free of [src].</span>",\
 						"<span class='notice'>You untangle [src] from around yourself.</span>",\
-						"<span class='indigo'>You hear shredding and ripping.</span>")
+						"<span class='warning'>You hear shredding and ripping.</span>")
 			unbuckle()
 		else
 			var/text = pick("rips","tears","pulls")
 			user.visible_message(\
 				"<span class='notice'>[user.name] [text] at [src].</span>",\
 				"<span class='notice'>You [text] at [src].</span>",\
-				"<span class='indigo'>You hear shredding and ripping.</span>")
+				"<span class='warning'>You hear shredding and ripping.</span>")
 	return
 
 /obj/effect/plantsegment/proc/grow()
@@ -194,7 +195,7 @@
 		SetLuminosity(0)
 
 	// Update flower/product overlay.
-	overlays.Cut()
+	overlays.len = 0
 	if(age >= seed.maturation)
 		if(prob(20) && seed.products && seed.products.len && !harvest && ((age-lastproduce) > seed.production))
 			harvest = 1
@@ -384,6 +385,8 @@
 		growth_queue -= SV
 
 		SV.life()
+
+		if(!SV) continue
 
 		if(SV.energy < 2) //If tile isn't fully grown
 			var/chance

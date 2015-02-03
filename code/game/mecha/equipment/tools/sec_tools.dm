@@ -177,7 +177,7 @@
 			if (thiscell["timer"] <= 0)
 				J.go_out(thiscell)
 			else if(thiscell["timer"] == 1)
-				J.occupant_message("<span class='indigo'>[thiscell["mob"]] will be ejected in 3 seconds!</span>")
+				J.occupant_message("<span class='warning'>[thiscell["mob"]] will be ejected in 3 seconds!</span>")
 	J.chassis.use_power(J.energy_drain)
 	J.update_equip_info()
 	return

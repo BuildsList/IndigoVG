@@ -596,7 +596,7 @@ var/list/compatible_mobs = list(/mob/living/carbon/human, /mob/living/carbon/mon
 		mob.equip_to_slot(magichead, slot_wear_mask)
 	if(!mob.wear_mask)
 		mob.equip_to_slot(magichead, slot_wear_mask)
-	mob << "<span class='indigo'>You feel a little horse!</span>"
+	mob << "<span class='warning'>You feel a little horse!</span>"
 
 
 /obj/item/clothing/mask/horsehead/magic
@@ -631,9 +631,10 @@ var/list/compatible_mobs = list(/mob/living/carbon/human, /mob/living/carbon/mon
 		mob.reagents.add_reagent("dermaline", 4)
 	mob.emote("me",1,"exhales slowly.")
 
-	var/datum/organ/external/chest/chest = H.get_organ("chest")
-	for(var/datum/organ/internal/I in chest.internal_organs)
-		I.damage = 0
+	if(ishuman(H))
+		var/datum/organ/external/chest/chest = H.get_organ("chest")
+		for(var/datum/organ/internal/I in chest.internal_organs)
+			I.damage = 0
 
 
 ////////////////////////STAGE 2/////////////////////////////////
@@ -730,7 +731,7 @@ var/list/compatible_mobs = list(/mob/living/carbon/human, /mob/living/carbon/mon
 	if(istype(mob, /mob/living/carbon/human))
 		var/mob/living/carbon/human/H = mob
 		if(H.species.name == "Human" && !(H.f_style == "Full Beard"))
-			H << "<span class='indigo'>Your chin and neck itch!.</span>"
+			H << "<span class='warning'>Your chin and neck itch!.</span>"
 			spawn(50)
 				H.f_style = "Full Beard"
 				H.update_hair()
@@ -826,19 +827,19 @@ var/list/compatible_mobs = list(/mob/living/carbon/human, /mob/living/carbon/mon
 	name = "Itching"
 	stage = 1
 /datum/disease2/effect/itching/activate(var/mob/living/carbon/mob,var/multiplier)
-	mob << "<span class='indigo'>Your skin itches!</span>"
+	mob << "<span class='warning'>Your skin itches!</span>"
 
 /datum/disease2/effect/drained
 	name = "Drained Feeling"
 	stage = 1
 /datum/disease2/effect/drained/activate(var/mob/living/carbon/mob,var/multiplier)
-	mob << "<span class='indigo'>You feel drained.</span>"
+	mob << "<span class='warning'>You feel drained.</span>"
 
 /datum/disease2/effect/eyewater
 	name = "Watery Eyes"
 	stage = 1
 /datum/disease2/effect/eyewater/activate(var/mob/living/carbon/mob,var/multiplier)
-	mob << "<span class='indigo'>Your eyes sting and water!</SPAN>"
+	mob << "<SPAN CLASS='warning'>Your eyes sting and water!</SPAN>"
 
 /datum/disease2/effect/wheeze
 	name = "Wheezing"

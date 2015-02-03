@@ -67,7 +67,7 @@
 		upgrade_finished = -1
 		return
 	if(stat & (NOPOWER|BROKEN) || !anchored)
-		occupant << "<span class='indigo'>Upgrade interrupted due to power failure, movement lock is released.</span>"
+		occupant << "<span class='warning'>Upgrade interrupted due to power failure, movement lock is released.</span>"
 		upgrading = 0
 		upgrade_finished = -1
 		return

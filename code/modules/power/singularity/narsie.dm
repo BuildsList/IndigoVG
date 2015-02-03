@@ -425,7 +425,7 @@ var/global/mr_clean_targets = list(
 		if(M.stat == CONSCIOUS)
 			if(M.flags & INVULNERABLE)
 				continue
-			M << "<span class='indigo'> You take a moment to admire [src.name] hard at work...</span>"
+			M << "<span class='warning'> You take a moment to admire [src.name] hard at work...</span>"
 			M.apply_effect(3, STUN)
 
 /obj/machinery/singularity/narsie/large/clean/update_icon()

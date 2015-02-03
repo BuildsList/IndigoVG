@@ -11,11 +11,11 @@ client/proc/antag_madness(var/mob/M in mob_list)
 		return
 
 	if(!M.mind)
-		usr << "<span class='indigo'>That mob has no mind.</span>"
+		usr << "<span class='warning'>That mob has no mind.</span>"
 		return
 
 	if(!ishuman(M) && !ismonkey(M))
-		usr << "<span class='indigo'>Only humans and monkeys can become overpowered antags.</span>"
+		usr << "<span class='warning'>Only humans and monkeys can become overpowered antags.</span>"
 		return
 
 	var/list/role_list = list(

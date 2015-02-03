@@ -359,7 +359,7 @@
 		onlearned(user)
 
 /obj/item/weapon/spellbook/oneuse/proc/recoil(mob/user as mob)
-	user.visible_message("<span class='indigo'>[src] glows in a black light!</span>")
+	user.visible_message("<span class='warning'>[src] glows in a black light!</span>")
 
 /obj/item/weapon/spellbook/oneuse/proc/onlearned(mob/user as mob)
 	used = 1
@@ -377,7 +377,7 @@
 /obj/item/weapon/spellbook/oneuse/fireball/recoil(mob/user as mob)
 	..()
 	explosion(user.loc, -1, 0, 2, 3, 0, flame_range = 2)
-	del(src)
+	qdel(src)
 
 /obj/item/weapon/spellbook/oneuse/smoke
 	spell = /obj/effect/proc_holder/spell/targeted/smoke
@@ -401,7 +401,7 @@
 
 /obj/item/weapon/spellbook/oneuse/blind/recoil(mob/user as mob)
 	..()
-	user <<"<span class='indigo'>You go blind!</span>"
+	user <<"<span class='warning'>You go blind!</span>"
 	user.eye_blind = 10
 
 /obj/item/weapon/spellbook/oneuse/mindswap
@@ -423,7 +423,7 @@
 		stored_swap = null
 	if(!stored_swap)
 		stored_swap = user
-		user <<"<span class='indigo'>For a moment you feel like you don't even know who you are anymore.</span>"
+		user <<"<span class='warning'>For a moment you feel like you don't even know who you are anymore.</span>"
 		return
 	if(stored_swap == user)
 		user <<"<span class='notice'>You stare at the book some more, but there doesn't seem to be anything else to learn...</span>"
@@ -455,8 +455,8 @@
 		for(var/V in user.mind.special_verbs)
 			user.verbs += V
 
-	stored_swap <<"<span class='indigo'>You're suddenly somewhere else... and someone else?!</span>"
-	user <<"<span class='indigo'>Suddenly you're staring at [src] again... where are you, who are you?!</span>"
+	stored_swap <<"<span class='warning'>You're suddenly somewhere else... and someone else?!</span>"
+	user <<"<span class='warning'>Suddenly you're staring at [src] again... where are you, who are you?!</span>"
 	stored_swap = null
 
 /obj/item/weapon/spellbook/oneuse/forcewall
@@ -467,7 +467,7 @@
 
 /obj/item/weapon/spellbook/oneuse/forcewall/recoil(mob/user as mob)
 	..()
-	user <<"<span class='indigo'>You suddenly feel very solid!</span>"
+	user <<"<span class='warning'>You suddenly feel very solid!</span>"
 	var/obj/structure/closet/statue/S = new /obj/structure/closet/statue(user.loc, user)
 	S.timer = 30
 	user.drop_item()
@@ -481,7 +481,7 @@
 
 /obj/item/weapon/spellbook/oneuse/knock/recoil(mob/user as mob)
 	..()
-	user <<"<span class='indigo'>You're knocked down!</span>"
+	user <<"<span class='warning'>You're knocked down!</span>"
 	user.Weaken(20)
 
 /obj/item/weapon/spellbook/oneuse/horsemask
@@ -499,7 +499,7 @@
 		magichead.voicechange = 1	//NEEEEIIGHH
 		user.drop_from_inventory(user.wear_mask)
 		user.equip_to_slot_if_possible(magichead, slot_wear_mask, 1, 1)
-		del(src)
+		qdel(src)
 	else
 		user <<"<span class='notice'>I say thee neigh</span>"
 
@@ -511,5 +511,5 @@
 
 /obj/item/weapon/spellbook/oneuse/charge/recoil(mob/user as mob)
 	..()
-	user <<"<span class='indigo'>[src] suddenly feels very warm!</span>"
+	user <<"<span class='warning'>[src] suddenly feels very warm!</span>"
 	empulse(src, 1, 1)

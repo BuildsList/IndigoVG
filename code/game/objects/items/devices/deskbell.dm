@@ -274,7 +274,7 @@
 				if(istype(W,/obj/item/weapon/cable_coil))
 					var/obj/item/weapon/cable_coil/C=W
 					user.visible_message(
-						"<span class='indigo'>[user.name] has added cables to \the [src]!</span>",
+						"<span class='warning'>[user.name] has added cables to \the [src]!</span>",
 						"You add cables to \the [src].")
 					playsound(get_turf(src), 'sound/items/Deconstruct.ogg', 50, 1)
 					C.use(1)
@@ -282,16 +282,16 @@
 					update_icon()
 					return
 				if(istype(W,/obj/item/device/assembly/signaler))
-					user << "<span class='indigo'>You must add wires first.</span>"
+					user << "<span class='warning'>You must add wires first.</span>"
 					return
 			if(1)
 				if(istype(W,/obj/item/weapon/wirecutters))
 					if(has_signaler)
-						user << "<span class='indigo'>You must remove the signaler first.</span>"
+						user << "<span class='warning'>You must remove the signaler first.</span>"
 						return
 					new /obj/item/weapon/cable_coil(get_turf(src),1)
 					user.visible_message(
-						"<span class='indigo'>[user.name] cut the cables.</span>",
+						"<span class='warning'>[user.name] cut the cables.</span>",
 						"You cut the cables.")
 					build_step--
 					update_icon()

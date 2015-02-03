@@ -48,8 +48,8 @@
 /obj/structure/grille/attack_hand(mob/user as mob)
 	user.delayNextAttack(8)
 	playsound(loc, 'sound/effects/grillehit.ogg', 80, 1)
-	user.visible_message("<span class='indigo'>[user] kicks [src].</span>", \
-						 "<span class='indigo'>You kick [src].</span>", \
+	user.visible_message("<span class='warning'>[user] kicks [src].</span>", \
+						 "<span class='warning'>You kick [src].</span>", \
 						 "You hear twisting metal.")
 
 	if(shock(user, 70))
@@ -64,8 +64,8 @@
 	if(istype(user, /mob/living/carbon/alien/larva))	return
 	user.delayNextAttack(8)
 	playsound(loc, 'sound/effects/grillehit.ogg', 80, 1)
-	user.visible_message("<span class='indigo'>[user] mangles [src].</span>", \
-						 "<span class='indigo'>You mangle [src].</span>", \
+	user.visible_message("<span class='warning'>[user] mangles [src].</span>", \
+						 "<span class='warning'>You mangle [src].</span>", \
 						 "You hear twisting metal.")
 
 	if(!shock(user, 70))
@@ -77,8 +77,8 @@
 	if(!istype(user, /mob/living/carbon/slime/adult))	return
 	user.delayNextAttack(8)
 	playsound(loc, 'sound/effects/grillehit.ogg', 80, 1)
-	user.visible_message("<span class='indigo'>[user] smashes against [src].</span>", \
-						 "<span class='indigo'>You smash against [src].</span>", \
+	user.visible_message("<span class='warning'>[user] smashes against [src].</span>", \
+						 "<span class='warning'>You smash against [src].</span>", \
 						 "You hear twisting metal.")
 
 	health -= rand(2,3)
@@ -90,8 +90,8 @@
 	if(M.melee_damage_upper == 0)	return
 
 	playsound(loc, 'sound/effects/grillehit.ogg', 80, 1)
-	M.visible_message("<span class='indigo'>[M] smashes against [src].</span>", \
-					  "<span class='indigo'>You smash against [src].</span>", \
+	M.visible_message("<span class='warning'>[M] smashes against [src].</span>", \
+					  "<span class='warning'>You smash against [src].</span>", \
 					  "You hear twisting metal.")
 
 	health -= M.melee_damage_upper
@@ -131,7 +131,7 @@
 			return
 
 //window placing begin
-	else if( istype(W,/obj/item/stack/sheet/rglass) || istype(W,/obj/item/stack/sheet/glass))
+	else if(istype(W,/obj/item/stack/sheet/glass))
 		var/dir_to_set = 1
 		if(loc == user.loc)
 			dir_to_set = user.dir
@@ -161,19 +161,8 @@
 				if(WINDOW.dir == dir_to_set)//checking this for a 2nd time to check if a window was made while we were waiting.
 					user << "<span class='notice'>There is already a window facing this way there.</span>"
 					return
-			var/obj/structure/window/WD
-			if(istype(W,/obj/item/stack/sheet/glass)) //Creates anything under glass tree
-				var/obj/item/stack/sheet/glass/G = W
-				if(!ispath(G.created_window))
-					WD = new/obj/structure/window/basic(loc,0) //normal window
-				else
-					WD = new G.created_window(loc,0)
-			else if (istype(W,/obj/item/stack/sheet/rglass)) //Creates anything under rglass tree
-				var/obj/item/stack/sheet/rglass/G = W
-				if(!ispath(G.created_window))
-					WD = new/obj/structure/window/reinforced(loc,0) //reinforced window
-				else
-					WD = new G.created_window(loc,0)
+			var/obj/item/stack/sheet/glass/glass/G = W
+			var/obj/structure/window/WD = new G.created_window(loc,0)
 			WD.dir = dir_to_set
 			WD.ini_dir = dir_to_set
 			WD.anchored = 0

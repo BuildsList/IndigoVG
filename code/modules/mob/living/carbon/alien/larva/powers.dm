@@ -12,7 +12,7 @@
 		visible_message("<span class='danger'>[src] scurries to the ground !</span>", "<span class='alien'>You are now hiding.</span>")
 	else
 		layer = MOB_LAYER
-		visible_message("<span class='indigo'>[src] slowly peeks up from the ground...</span>", "<span class='alien'>You have stopped hiding.</span>")
+		visible_message("<span class='warning'>[src] slowly peeks up from the ground...</span>", "<span class='alien'>You have stopped hiding.</span>")
 
 /mob/living/carbon/alien/larva/verb/evolve()
 	set name = "Evolve"
@@ -48,5 +48,5 @@
 		playsound(get_turf(src), 'sound/effects/evolve.ogg', 40, 1)
 		return
 	else
-		src << "<span class='indigo'>You are not fully grown yet.</span>"
+		src << "<span class='warning'>You are not fully grown yet.</span>"
 		return

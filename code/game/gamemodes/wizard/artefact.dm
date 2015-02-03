@@ -35,9 +35,9 @@
 	if(charged == 1)
 		new /obj/effect/rend(get_turf(usr))
 		charged = 0
-		visible_message("<span class='indigo'><B>[src] hums with power as [usr] deals a blow to reality itself!</B></span>")
+		visible_message("<span class='warning'><B>[src] hums with power as [usr] deals a blow to reality itself!</B></span>")
 	else
-		user << "<span class='indigo'>The unearthly energies that powered the blade are now dormant.</span>"
+		user << "<span class='warning'>The unearthly energies that powered the blade are now dormant.</span>"
 
 
 
@@ -49,9 +49,9 @@
 	if(charged)
 		new /obj/effect/rend/cow(get_turf(usr))
 		charged = 0
-		visible_message("<span class='indigo'><B>[src] hums with power as [usr] deals a blow to hunger itself!</B></span>")
+		visible_message("<span class='warning'><B>[src] hums with power as [usr] deals a blow to hunger itself!</B></span>")
 	else
-		user << "<span class='indigo'>The unearthly energies that powered the blade are now dormant.</span>"
+		user << "<span class='warning'>The unearthly energies that powered the blade are now dormant.</span>"
 
 /obj/effect/rend/cow
 	desc = "Reverberates with the sound of ten thousand moos."
@@ -70,7 +70,7 @@
 
 /obj/effect/rend/cow/attackby(obj/item/I as obj, mob/user as mob)
 	if(istype(I, /obj/item/weapon/nullrod))
-		visible_message("<span class='indigo'><b>[I] strikes a blow against \the [src], banishing it!</b></span>")
+		visible_message("<span class='warning'><b>[I] strikes a blow against \the [src], banishing it!</b></span>")
 		spawn(1)
 			del src
 		return
@@ -93,7 +93,7 @@
 
 /obj/item/weapon/scrying/attack_self(mob/user as mob)
 	user << "<span class='notice'>You can see...everything!</span>"
-	visible_message("<span class='indigo'><B>[usr] stares into [src], their eyes glazing over.</B></span>")
+	visible_message("<span class='warning'><B>[usr] stares into [src], their eyes glazing over.</B></span>")
 	user.ghostize(1)
 	return
 
@@ -130,7 +130,7 @@
 
 /obj/item/weapon/staff/necro/attack_self(mob/user)
 	if(next_change > world.timeofday)
-		user << "<span class='indigo'>You must wait longer to decide on a minion type.</span>"
+		user << "<span class='warning'>You must wait longer to decide on a minion type.</span>"
 		return
 	/*if(raisetype < FAITHLESS)
 		raisetype = !raisetype

@@ -138,8 +138,8 @@
 	else if (usr.a_intent == "hurt")
 		user.delayNextAttack(8) // not so polite
 		playsound(get_turf(src), 'sound/effects/glassknock.ogg', 80, 1)
-		usr.visible_message("<span class='indigo'>[usr.name] bangs against the [src.name]!</span>", \
-							"<span class='indigo'>You bang against the [src.name]!</span>", \
+		usr.visible_message("<span class='warning'>[usr.name] bangs against the [src.name]!</span>", \
+							"<span class='warning'>You bang against the [src.name]!</span>", \
 							"You hear a banging sound.")
 	else
 		user.delayNextAttack(10)
@@ -199,7 +199,7 @@
 					M.apply_damage(7)
 					damage = 7
 					hit(10)
-					visible_message("<span class='indigo'>[user] slams [M] against \the [src]!</span>")
+					visible_message("<span class='warning'>[user] slams [M] against \the [src]!</span>")
 				if(2)
 					if (prob(50))
 						M.Weaken(1)
@@ -255,7 +255,7 @@
 			if(do_after(user,40))
 				if(!user || !src) return
 				visible_message("<span class='notice'>[user] dismantles \the [src].</span>")
-				new /obj/item/stack/sheet/glass(get_turf(src))
+				new /obj/item/stack/sheet/glass/glass(get_turf(src))
 				qdel(src)
 		else
 			user << "Need more welding fuel!"

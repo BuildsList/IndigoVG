@@ -105,7 +105,7 @@ obj/machinery/gibber/New()
 	src.overlays += image('icons/obj/kitchen.dmi', "grjam")
 
 /obj/machinery/gibber/update_icon()
-	overlays.Cut()
+	overlays.len = 0
 	if (dirty)
 		src.overlays += image('icons/obj/kitchen.dmi', "grbloody")
 	if(stat & (NOPOWER|BROKEN))
@@ -128,13 +128,13 @@ obj/machinery/gibber/New()
 	if(stat & (NOPOWER|BROKEN))
 		return
 	if(!anchored)
-		user << "<span class='indigo'>[src] must be anchored first!</span>"
+		user << "<span class='warning'>[src] must be anchored first!</span>"
 		return
 	if(operating)
-		user << "<span class='indigo'>[src] is locked and running</span>"
+		user << "<span class='warning'>[src] is locked and running</span>"
 		return
 	if(!(src.occupant))
-		user << "<span class='indigo'>[src] is empty!</span>"
+		user << "<span class='warning'>[src] is empty!</span>"
 		return
 	else
 		src.startgibbing(user)
@@ -142,16 +142,16 @@ obj/machinery/gibber/New()
 // OLD /obj/machinery/gibber/attackby(obj/item/weapon/grab/G as obj, mob/user as mob)
 /obj/machinery/gibber/proc/handleGrab(obj/item/weapon/grab/G as obj, mob/user as mob)
 	if(!anchored)
-		user << "<span class='indigo'>[src] must be anchored first!</span>"
+		user << "<span class='warning'>[src] must be anchored first!</span>"
 		return
 	if(src.occupant)
-		user << "<span class='indigo'>[src] is full! Empty it first.</span>"
+		user << "<span class='warning'>[src] is full! Empty it first.</span>"
 		return
 	if (!( istype(G, /obj/item/weapon/grab)) || !(istype(G.affecting, /mob/living/carbon/human)))
-		user << "<span class='indigo'>This item is not suitable for [src]!</span>"
+		user << "<span class='warning'>This item is not suitable for [src]!</span>"
 		return
 	if(G.affecting.abiotic(1))
-		user << "<span class='indigo'>Subject may not have abiotic items on.</span>"
+		user << "<span class='warning'>Subject may not have abiotic items on.</span>"
 		return
 
 	user.visible_message("\red [user] starts to put [G.affecting] into the gibber!")
@@ -171,13 +171,13 @@ obj/machinery/gibber/New()
 	if(target != user || !istype(user, /mob/living/carbon/human) || user.stat || user.weakened || user.stunned || user.paralysis || user.buckled || get_dist(user, src) > 1)
 		return
 	if(!anchored)
-		user << "<span class='indigo'>[src] must be anchored first!</span>"
+		user << "<span class='warning'>[src] must be anchored first!</span>"
 		return
 	if(src.occupant)
-		user << "<span class='indigo'>[src] is full! Empty it first.</span>"
+		user << "<span class='warning'>[src] is full! Empty it first.</span>"
 		return
 	if(user.abiotic(1))
-		user << "<span class='indigo'>Subject may not have abiotic items on.</span>"
+		user << "<span class='warning'>Subject may not have abiotic items on.</span>"
 		return
 
 	src.add_fingerprint(user)

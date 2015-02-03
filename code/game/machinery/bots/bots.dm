@@ -49,7 +49,7 @@
 	if(locked)
 		locked = 0
 		emagged = 1
-		user << "<span class='indigo'>You bypass [src]'s controls.</span>"
+		user << "<span class='warning'>You bypass [src]'s controls.</span>"
 	if(!locked && open)
 		emagged = 2
 
@@ -57,7 +57,7 @@
 	..()
 	if (src.health < maxhealth)
 		if (src.health > maxhealth/3)
-			user << "<span class='indigo'>[src]'s parts look loose.</span>"
+			user << "<span class='warning'>[src]'s parts look loose.</span>"
 		else
 			user << "<span class='danger'>[src]'s parts look very loose!</span>"
 

@@ -319,7 +319,7 @@
 
 /obj/machinery/clonepod/crowbarDestroy(mob/user)
 	if (occupant)
-		user << "<span class='indigo'>You cannot disassemble this [src], it's occupado.</span>"
+		user << "<span class='warning'>You cannot disassemble this [src], it's occupado.</span>"
 		return
 	return..()
 
@@ -327,12 +327,12 @@
 /obj/machinery/clonepod/attackby(obj/item/weapon/W as obj, mob/user as mob)
 	if (istype(W, /obj/item/weapon/card/id)||istype(W, /obj/item/device/pda))
 		if (!src.check_access(W))
-			user << "<span class='indigo'>Access Denied.</span>"
+			user << "<span class='warning'>Access Denied.</span>"
 			return
 		if ((!src.locked) || (isnull(src.occupant)))
 			return
 		if ((src.occupant.health < -20) && (src.occupant.stat != 2))
-			user << "<span class='indigo'>Access Refused.</span>"
+			user << "<span class='warning'>Access Refused.</span>"
 			return
 		else
 			src.locked = 0

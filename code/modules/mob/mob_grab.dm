@@ -55,6 +55,10 @@
 
 /obj/item/weapon/grab/process()
 	confirm()
+	if(!assailant)
+		affecting = null
+		qdel(src)
+		return
 
 	if(assailant.client)
 		assailant.client.screen -= hud
@@ -122,7 +126,7 @@
 	if(state < GRAB_AGGRESSIVE)
 		if(!allow_upgrade)
 			return
-		assailant.visible_message("<span class='indigo'>[assailant] has grabbed [affecting] aggressively (now hands)!</span>")
+		assailant.visible_message("<span class='warning'>[assailant] has grabbed [affecting] aggressively (now hands)!</span>")
 		state = GRAB_AGGRESSIVE
 		icon_state = "grabbed1"
 	else
@@ -130,7 +134,7 @@
 			if(isslime(affecting))
 				assailant << "<span class='notice'>You squeeze [affecting], but nothing interesting happens.</span>"
 				return
-			assailant.visible_message("<span class='indigo'>[assailant] has reinforced \his grip on [affecting] (now neck)!</span>")
+			assailant.visible_message("<span class='warning'>[assailant] has reinforced \his grip on [affecting] (now neck)!</span>")
 			state = GRAB_NECK
 			icon_state = "grabbed+1"
 			if(!affecting.buckled)
@@ -165,7 +169,7 @@
 
 					affecting.losebreath += 1
 				else
-					assailant.visible_message("<span class='indigo'>[assailant] was unable to tighten \his grip on [affecting]'s neck!</span>")
+					assailant.visible_message("<span class='warning'>[assailant] was unable to tighten \his grip on [affecting]'s neck!</span>")
 					hud.icon_state = "disarm/kill"
 					state = GRAB_NECK
 

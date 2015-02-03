@@ -87,18 +87,18 @@
 			M.LAssailant = user
 
 		for(var/mob/O in viewers(world.view, user))
-			O.show_message(text("<span class='indigo'>[] has been splashed with something by []!</span>", target, user), 1)
+			O.show_message(text("<span class='warning'>[] has been splashed with something by []!</span>", target, user), 1)
 		src.reagents.reaction(target, TOUCH)
 		spawn(5) src.reagents.clear_reagents()
 		return
 	else if(istype(target, /obj/structure/reagent_dispensers)) //A dispenser. Transfer FROM it TO us.
 
 		if(!target.reagents.total_volume && target.reagents)
-			user << "<span class='indigo'>[target] is empty.</span>"
+			user << "<span class='warning'>[target] is empty.</span>"
 			return
 
 		if(reagents.total_volume >= reagents.maximum_volume)
-			user << "<span class='indigo'>[src] is full.</span>"
+			user << "<span class='warning'>[src] is full.</span>"
 			return
 
 		var/trans = target.reagents.trans_to(src, target:amount_per_transfer_from_this)
@@ -106,11 +106,11 @@
 
 	else if(target.is_open_container() && target.reagents) //Something like a glass. Player probably wants to transfer TO it.
 		if(!reagents.total_volume)
-			user << "<span class='indigo'>[src] is empty.</span>"
+			user << "<span class='warning'>[src] is empty.</span>"
 			return
 
 		if(target.reagents.total_volume >= target.reagents.maximum_volume)
-			user << "<span class='indigo'>[target] is full.</span>"
+			user << "<span class='warning'>[target] is full.</span>"
 			return
 
 		var/trans = src.reagents.trans_to(target, amount_per_transfer_from_this)
@@ -150,7 +150,7 @@
 	if(istype(W, /obj/item/weapon/pen) || istype(W, /obj/item/device/flashlight/pen))
 		var/tmp_label = sanitize(input(user, "Enter a label for [src.name]","Label",src.label_text))
 		if(length(tmp_label) > 10)
-			user << "<span class='indigo'>The label can be at most 10 characters long.</span>"
+			user << "<span class='warning'>The label can be at most 10 characters long.</span>"
 		else
 			user << "<span class='notice'>You set the label to \"[tmp_label]\".</span>"
 			src.label_text = tmp_label
@@ -187,7 +187,7 @@
 		update_icon()
 
 	update_icon()
-		overlays.Cut()
+		overlays.len = 0
 
 		if(reagents.total_volume)
 			var/image/filling = image('icons/obj/reagentfillings.dmi', src, "[icon_state]10")

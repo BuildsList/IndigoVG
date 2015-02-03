@@ -33,7 +33,7 @@
 				user << "<span class='rose'>You unlock the [src.name]!</span>"
 				return
 		else
-			user << "<span class='indigo'>Access Denied</span>"
+			user << "<span class='warning'>Access Denied</span>"
 	else if((istype(W, /obj/item/weapon/card/emag)||istype(W, /obj/item/weapon/melee/energy/blade)) && !src.broken)
 		broken = 1
 		locked = 0
@@ -54,13 +54,13 @@
 	if(!locked)
 		..()
 	else
-		user << "<span class='indigo'>Its locked!</span>"
+		user << "<span class='warning'>Its locked!</span>"
 	return
 
 
 /obj/item/weapon/storage/lockbox/show_to(mob/user as mob)
 	if(locked)
-		user << "<span class='indigo'>Its locked!</span>"
+		user << "<span class='warning'>Its locked!</span>"
 	else
 		..()
 	return

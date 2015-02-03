@@ -327,27 +327,27 @@
 			var/obj/item/device/fuse_bomb/admin/B = new /obj/item/device/fuse_bomb/admin(buckled_mob)
 			spawnedbombs += B
 			buckled_mob.equip_to_slot_or_del(B, slot_r_hand)
-			buckled_mob << "<span class='indigo'>Lit and throw!</span>"
+			buckled_mob << "<span class='warning'>Lit and throw!</span>"
 			buckled_mob.update_inv_r_hand()
 		else if(!(buckled_mob.l_hand))
 			var/obj/item/device/fuse_bomb/admin/B = new /obj/item/device/fuse_bomb/admin(buckled_mob)
 			spawnedbombs += B
 			buckled_mob.equip_to_slot_or_del(B, slot_l_hand)
-			buckled_mob << "<span class='indigo'>Lit and throw!</span>"
+			buckled_mob << "<span class='warning'>Lit and throw!</span>"
 			buckled_mob.update_inv_l_hand()
 	for(var/mob/living/carbon/C in passengers)
 		if(!(C.r_hand))
 			var/obj/item/device/fuse_bomb/admin/B = new /obj/item/device/fuse_bomb/admin(C)
 			spawnedbombs += B
 			C.equip_to_slot_or_del(B, slot_r_hand)
-			C << "<span class='indigo'>Our benefactors have provided you with a bomb. Lit and throw!</span>"
+			C << "<span class='warning'>Our benefactors have provided you with a bomb. Lit and throw!</span>"
 			distributed++
 			C.update_inv_r_hand()
 		else if(!(C.l_hand))
 			var/obj/item/device/fuse_bomb/admin/B = new /obj/item/device/fuse_bomb/admin(C)
 			spawnedbombs += B
 			C.equip_to_slot_or_del(B, slot_l_hand)
-			C << "<span class='indigo'>Our benefactors have provided you with a bomb. Lit and throw!</span>"
+			C << "<span class='warning'>Our benefactors have provided you with a bomb. Lit and throw!</span>"
 			distributed++
 			C.update_inv_l_hand()
 
@@ -391,13 +391,13 @@
 			var/obj/item/weapon/gun/energy/laser/admin/L = new /obj/item/weapon/gun/energy/laser/admin(buckled_mob)
 			spawnedlasers += L
 			buckled_mob.equip_to_slot_or_del(L, slot_r_hand)
-			buckled_mob << "<span class='indigo'>Spray and /pray!</span>"
+			buckled_mob << "<span class='warning'>Spray and /pray!</span>"
 			buckled_mob.update_inv_r_hand()
 		else if(!(buckled_mob.l_hand))
 			var/obj/item/weapon/gun/energy/laser/admin/L = new /obj/item/weapon/gun/energy/laser/admin(buckled_mob)
 			spawnedlasers += L
 			buckled_mob.equip_to_slot_or_del(L, slot_l_hand)
-			buckled_mob << "<span class='indigo'>Spray and /pray!</span>"
+			buckled_mob << "<span class='warning'>Spray and /pray!</span>"
 			buckled_mob.update_inv_l_hand()
 
 	for(var/mob/living/carbon/C in passengers)
@@ -405,14 +405,14 @@
 			var/obj/item/weapon/gun/energy/laser/admin/L = new /obj/item/weapon/gun/energy/laser/admin(C)
 			spawnedlasers += L
 			C.equip_to_slot_or_del(L, slot_r_hand)
-			C << "<span class='indigo'>Our benefactors have provided you with an infinite laser gun. Spray and /pray!</span>"
+			C << "<span class='warning'>Our benefactors have provided you with an infinite laser gun. Spray and /pray!</span>"
 			distributed++
 			C.update_inv_r_hand()
 		else if(!(C.l_hand))
 			var/obj/item/weapon/gun/energy/laser/admin/L = new /obj/item/weapon/gun/energy/laser/admin(C)
 			spawnedlasers += L
 			C.equip_to_slot_or_del(L, slot_l_hand)
-			C << "<span class='indigo'>Our benefactors have provided you with an infinite laser gun. Spray and /pray!</span>"
+			C << "<span class='warning'>Our benefactors have provided you with an infinite laser gun. Spray and /pray!</span>"
 			distributed++
 			C.update_inv_l_hand()
 
@@ -497,7 +497,7 @@
 		if(istype(S,/obj/item/weapon/shard/plasma))
 			new/obj/item/stack/sheet/glass/plasmaglass(S.loc)
 		else
-			new/obj/item/stack/sheet/glass(S.loc)
+			new/obj/item/stack/sheet/glass/glass(S.loc)
 		qdel(S)
 
 /obj/structure/stool/bed/chair/vehicle/adminbus/proc/Teleportation(mob/bususer)
@@ -540,7 +540,7 @@
 
 	if(passengers.len == 0)
 		flick("icon_tdobs-flick",bususer.gui_icons.adminbus_tdobs)
-		bususer << "<span class='indigo'>There are no passengers to send.</span>"
+		bususer << "<span class='warning'>There are no passengers to send.</span>"
 		return
 
 	bususer.gui_icons.adminbus_tdobs.icon_state = "icon_tdobs-push"
@@ -594,7 +594,7 @@
 
 	if(passengers.len == 0)
 		flick("icon_tdarena-flick",bususer.gui_icons.adminbus_tdarena)
-		bususer << "<span class='indigo'>There are no passengers to send.</span>"
+		bususer << "<span class='warning'>There are no passengers to send.</span>"
 		return
 
 	bususer.gui_icons.adminbus_tdarena.icon_state = "icon_tdarena-push"
@@ -624,7 +624,7 @@
 
 	if(passengers.len == 0)
 		flick("icon_tdgreen-flick",bususer.gui_icons.adminbus_tdgreen)
-		bususer << "<span class='indigo'>There are no passengers to send.</span>"
+		bususer << "<span class='warning'>There are no passengers to send.</span>"
 		return
 
 	bususer.gui_icons.adminbus_tdgreen.icon_state = "icon_tdgreen-push"
@@ -647,7 +647,7 @@
 
 	if(passengers.len == 0)
 		flick("icon_tdred-flick",bususer.gui_icons.adminbus_tdred)
-		bususer << "<span class='indigo'>There are no passengers to send.</span>"
+		bususer << "<span class='warning'>There are no passengers to send.</span>"
 		return
 
 	bususer.gui_icons.adminbus_tdred.icon_state = "icon_tdred-push"
@@ -834,7 +834,7 @@
 
 	if(passengers.len == 0)
 		flick("icon_home-flick",bususer.gui_icons.adminbus_home)
-		bususer << "<span class='indigo'>There are no passengers to send.</span>"
+		bususer << "<span class='warning'>There are no passengers to send.</span>"
 		return
 
 	bususer.gui_icons.adminbus_home.icon_state = "icon_home-push"
@@ -859,7 +859,7 @@
 
 	if(passengers.len == 0)
 		flick("icon_antag-flick",bususer.gui_icons.adminbus_antag)
-		bususer << "<span class='indigo'>There are no passengers to make antag.</span>"
+		bususer << "<span class='warning'>There are no passengers to make antag.</span>"
 		return
 
 	bususer.gui_icons.adminbus_antag.icon_state = "icon_antag-push"

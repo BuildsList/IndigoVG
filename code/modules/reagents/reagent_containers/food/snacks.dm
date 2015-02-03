@@ -56,7 +56,7 @@
 	if(istype(M, /mob/living/carbon))
 		if(M == user)								//If you're eating it yourself.
 			if(!M:hasmouth)
-				user << "<span class='indigo'>Oh god where's your mouth?!</span>"
+				user << "<span class='warning'>Oh god where's your mouth?!</span>"
 				return 0
 			var/fullness = M.nutrition + (M.reagents.get_reagent_amount("nutriment") * 25)
 			if(wrapped)
@@ -211,6 +211,7 @@
 /obj/item/weapon/reagent_containers/food/snacks/attack_animal(mob/M)
 	if(isanimal(M))
 		if(iscorgi(M))
+			M.delayNextAttack(10)
 			if(bitecount >= 4)
 				M.visible_message("[M] [pick("burps from enjoyment", "yaps for more", "woofs twice", "looks at the area where \the [src] was")].","<span class=\"notice\">You swallow up the last part of \the [src].")
 				playsound(src.loc,'sound/items/eatfood.ogg', rand(10,50), 1)
@@ -225,6 +226,7 @@
 				playsound(src.loc,'sound/items/eatfood.ogg', rand(10,50), 1)
 				bitecount++
 		else if(ismouse(M))
+			M.delayNextAttack(10)
 			var/mob/living/simple_animal/mouse/N = M
 			N << text("<span class='notice'>You nibble away at [src].</span>")
 			if(prob(50))
@@ -481,35 +483,22 @@
 			name = "Frosted Jelly Donut"
 			reagents.add_reagent("sprinkles", 2)
 
+// Eggs
 /obj/item/weapon/reagent_containers/food/snacks/egg
 	name = "egg"
 	desc = "An egg!"
 	icon_state = "egg"
-	New()
+
+/obj/item/weapon/reagent_containers/food/snacks/egg/New()
 		..()
 		reagents.add_reagent("nutriment", 1)
 
-	throw_impact(atom/hit_atom)
+/obj/item/weapon/reagent_containers/food/snacks/egg/throw_impact(atom/hit_atom)
 		..()
 		new/obj/effect/decal/cleanable/egg_smudge(src.loc)
 		src.reagents.reaction(hit_atom, TOUCH)
-		src.visible_message("<span class='indigo'>[src.name] has been squashed.</span>","<span class='indigo'>You hear a smack.</span>")
+		src.visible_message("<span class='warning'>[src.name] has been squashed.</span>","<span class='warning'>You hear a smack.</span>")
 		del(src)
-
-	attackby(obj/item/weapon/W as obj, mob/user as mob)
-		if(istype( W, /obj/item/toy/crayon ))
-			var/obj/item/toy/crayon/C = W
-			var/clr = C.colourName
-
-			if(!(clr in list("blue", "green", "mime", "orange", "purple", "rainbow", "red", "yellow")))
-				usr << "<span class='notice'>[src] refuses to take on this colour!</span>"
-				return
-
-			usr << "<span class='notice'>You colour [src] [clr].</span>"
-			icon_state = "egg-[clr]"
-			_color = clr
-		else
-			..()
 
 /obj/item/weapon/reagent_containers/food/snacks/egg/blue
 	icon_state = "egg-blue"
@@ -542,6 +531,35 @@
 /obj/item/weapon/reagent_containers/food/snacks/egg/yellow
 	icon_state = "egg-yellow"
 	_color = "yellow"
+
+/obj/item/weapon/reagent_containers/food/snacks/egg/attackby(obj/item/weapon/W as obj, mob/user as mob)
+	if (istype(W, /obj/item/weapon/reagent_containers/food/snacks/flour))
+		new /obj/item/weapon/reagent_containers/food/snacks/dough(src)
+		user << "You make some dough."
+		del(W)
+		del(src)
+	else if (istype(W, /obj/item/toy/crayon))
+		var/obj/item/toy/crayon/C = W
+		var/clr = C.colourName
+
+		if(!(clr in list("blue", "green", "mime", "orange", "purple", "rainbow", "red", "yellow")))
+			usr << "<span class='notice'>[src] refuses to take on this colour!</span>"
+			return
+
+		usr << "<span class='notice'>You colour [src] [clr].</span>"
+		icon_state = "egg-[clr]"
+		_color = clr
+	else
+		..()
+
+/obj/item/weapon/reagent_containers/food/snacks/flour/attackby(obj/item/weapon/W as obj, mob/user as mob)
+	if (istype(W, /obj/item/weapon/reagent_containers/food/snacks/egg))
+		new /obj/item/weapon/reagent_containers/food/snacks/dough(src)
+		user << "You make some dough."
+		del(W)
+		del(src)
+	else
+		..()
 
 /obj/item/weapon/reagent_containers/food/snacks/friedegg
 	name = "fried egg"
@@ -1138,7 +1156,7 @@
 		bitesize = 0.1 //this snack is supposed to be eating during looooong time. And this it not dinner food! --rastaf0
 	On_Consume()
 		if(prob(unpopped))	//lol ...what's the point? << AINT SO POINTLESS NO MORE
-			usr << "<span class='indigo'>You bite down on an un-popped kernel, and it hurts your teeth!</span>"
+			usr << "<span class='warning'>You bite down on an un-popped kernel, and it hurts your teeth!</span>"
 			unpopped = max(0, unpopped-1)
 			reagents.add_reagent("sacid",0.1) //only a little tingle.
 		..()
@@ -1616,7 +1634,7 @@
 
 	proc/Expand()
 		for(var/mob/M in viewers(src,7))
-			M << "<span class='indigo'>\The [src] expands!</span>"
+			M << "<span class='warning'>\The [src] expands!</span>"
 		new monkey_type(get_turf(src))
 		del(src)
 
@@ -2664,7 +2682,7 @@
 		boxes -= box
 
 		user.put_in_hands( box )
-		user << "<span class='indigo'>You remove the topmost [src] from your hand.</span>"
+		user << "<span class='warning'>You remove the topmost [src] from your hand.</span>"
 		box.update_icon()
 		update_icon()
 		return
@@ -2705,21 +2723,21 @@
 
 				user << "<span class='notice'>You put the [box] ontop of the [src]!</span>"
 			else
-				user << "<span class='indigo'>The stack is too high!</span>"
+				user << "<span class='warning'>The stack is too high!</span>"
 		else
-			user << "<span class='indigo'>Close the [box] first!</span>"
+			user << "<span class='warning'>Close the [box] first!</span>"
 
 		return
 
 	if(istype(I,/obj/item/weapon/reagent_containers/food/snacks/sliceable/pizza/)) // Long ass fucking object name
-		if(src.pizza) user << "<span class='indigo'>[src] already has a pizza in it.</span>"
+		if(src.pizza) user << "<span class='warning'>[src] already has a pizza in it.</span>"
 		else if(src.open)
 			user.drop_item()
 			I.loc = src
 			src.pizza = I
 			src.update_icon()
 			user << "<span class='notice'>You put [I] in [src].</span>"
-		else user << "<span class='indigo'>Open [src] first.</span>"
+		else user << "<span class='warning'>Open [src] first.</span>"
 		return
 
 	if( istype(I, /obj/item/weapon/pen/) )
@@ -2755,6 +2773,7 @@
 	boxtag = "Mushroom Special"
 
 /obj/item/pizzabox/meat/New()
+	. = ..()
 	pizza = new /obj/item/weapon/reagent_containers/food/snacks/sliceable/pizza/meatpizza(src)
 	boxtag = "Meatlover's Supreme"
 
@@ -2924,7 +2943,7 @@
                 update_icon()
 
         update_icon()
-                overlays.Cut()
+                overlays.len = 0
                 var/image/filling = image('icons/obj/kitchen.dmi', src, "icecream_color")
                 filling.icon += mix_color_from_reagents(reagents.reagent_list)
                 overlays += filling
@@ -2976,22 +2995,6 @@
 ///////////////////////////////////////////
 // new old food stuff from bs12
 ///////////////////////////////////////////
-
-// Flour + egg = dough
-/obj/item/weapon/reagent_containers/food/snacks/flour/attackby(obj/item/weapon/W as obj, mob/user as mob)
-	if(istype(W,/obj/item/weapon/reagent_containers/food/snacks/egg))
-		new /obj/item/weapon/reagent_containers/food/snacks/dough(src)
-		user << "You make some dough."
-		del(W)
-		del(src)
-
-// Egg + flour = dough
-/obj/item/weapon/reagent_containers/food/snacks/egg/attackby(obj/item/weapon/W as obj, mob/user as mob)
-	if(istype(W,/obj/item/weapon/reagent_containers/food/snacks/flour))
-		new /obj/item/weapon/reagent_containers/food/snacks/dough(src)
-		user << "You make some dough."
-		del(W)
-		del(src)
 
 /obj/item/weapon/reagent_containers/food/snacks/dough
 	name = "dough"

@@ -99,7 +99,7 @@
 		//var/obj/item/found = locate(tool_state) in src.module.modules
 		if(is_in_modules(tool_state))
 			if((tool_state in contents) && (tool_state in src.module.modules))
-				src << "<span class='indigo'>This item cannot be dropped.</span>"
+				src << "<span class='warning'>This item cannot be dropped.</span>"
 				return 0
 		if(client)
 			client.screen -= tool_state
@@ -380,7 +380,7 @@
 		if(equip_to_slot(W, slot))
 			update_items()
 		else
-			src << "<span class='indigo'>You are unable to equip that.</span>"
+			src << "<span class='warning'>You are unable to equip that.</span>"
 
 // Quickly equip a hat by pressing "e"
 /mob/living/silicon/robot/mommi/verb/quick_equip()
@@ -404,5 +404,5 @@
 		if(M.equip_to_slot(I, slot_head))
 			update_items()
 		else
-			M << "<span class='indigo'>You are unable to equip that.</span>"
+			M << "<span class='warning'>You are unable to equip that.</span>"
 

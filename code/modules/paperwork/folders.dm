@@ -26,7 +26,7 @@
 	icon_state = "folder_white"
 
 /obj/item/weapon/folder/update_icon()
-	overlays.Cut()
+	overlays.len = 0
 	if(contents.len)
 		overlays += "folder_paper"
 	return
@@ -65,14 +65,14 @@
 		if(href_list["remove"])
 			var/obj/item/P = locate(href_list["remove"])
 			if(!(istype(P, /obj/item/weapon/paper)) && !(istype(P, /obj/item/weapon/photo)))
-				var/message = "<span class='indigo'>[usr]([usr.key]) has tried to remove something other than a paper/photo from a folder.<span>"
+				var/message = "<span class='warning'>[usr]([usr.key]) has tried to remove something other than a paper/photo from a folder.<span>"
 				message_admins(message)
 				message += "[P]"
 				log_game(message)
 				admin_log.Add(message)
 				return
 			if(!(P in src.contents))
-				var/message = "<span class='indigo'>[usr]([usr.key]) has tried to remove a paper/photo from a folder that didn't contain it.<span>"
+				var/message = "<span class='warning'>[usr]([usr.key]) has tried to remove a paper/photo from a folder that didn't contain it.<span>"
 				message_admins(message)
 				message += "[P]"
 				log_game(message)

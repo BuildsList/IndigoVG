@@ -82,7 +82,7 @@ var/image/contamination_overlay = image('icons/effects/contamination.dmi')
 		return
 	var/datum/organ/internal/eyes/E = internal_organs_by_name["eyes"]
 	if(E)
-		if(prob(20)) src << "<span class='indigo'>Your eyes burn!</span>"
+		if(prob(20)) src << "<span class='warning'>Your eyes burn!</span>"
 		E.damage += 2.5
 		eye_blurry = min(eye_blurry+1.5,50)
 		if (prob(max(0,E.damage - 15) + 1) && !eye_blind)

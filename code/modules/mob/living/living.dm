@@ -641,8 +641,8 @@
 			if(C.handcuffed)
 				C.delayNextAttack(100)
 				C.delayNextSpecial(100)
-				C.visible_message("<span class='indigo'>[C] attempts to unbuckle themself!</span>",
-								  "<span class='indigo'>You attempt to unbuckle yourself. (This will take around two minutes and you need to stand still).</span>")
+				C.visible_message("<span class='warning'>[C] attempts to unbuckle themself!</span>",
+								  "<span class='warning'>You attempt to unbuckle yourself. (This will take around two minutes and you need to stand still).</span>")
 				spawn(0)
 					if(do_after(usr, 1200))
 						if(!C.buckled)
@@ -651,7 +651,7 @@
 										  "<span class='notice'>You successfully unbuckle yourself.</span>")
 						C.buckled.manual_unbuckle(C)
 					else
-						C << "<span class='indigo'>Your unbuckling attempt was interrupted.</span>"
+						C << "<span class='warning'>Your unbuckling attempt was interrupted.</span>"
 		else
 			L.buckled.manual_unbuckle(L)
 
@@ -675,7 +675,7 @@
 		//okay, so the closet is either welded or locked... resist!!!
 		L.delayNext(DELAY_ALL,100)
 		L.visible_message("<span class='danger'>The [C] begins to shake violenty!</span>",
-						  "<span class='indigo'>You lean on the back of [C] and start pushing the door open (this will take about [breakout_time] minutes).</span>")
+						  "<span class='warning'>You lean on the back of [C] and start pushing the door open (this will take about [breakout_time] minutes).</span>")
 		spawn(0)
 			if(do_after(usr,breakout_time * 60 * 10)) //minutes * 60seconds * 10deciseconds
 				if(!C || !L || L.stat != CONSCIOUS || L.loc != C || C.opened) //closet/user destroyed OR user dead/unconcious OR user no longer in closet OR closet opened
@@ -724,7 +724,7 @@
 			CM.fire_stacks -= 5
 			CM.weakened = 5
 			CM.visible_message("<span class='danger'>[CM] rolls on the floor, trying to put themselves out!</span>",
-							   "<span class='indigo'>You stop, drop, and roll!</span>")
+							   "<span class='warning'>You stop, drop, and roll!</span>")
 			if(fire_stacks <= 0)
 				CM.visible_message("<span class='danger'>[CM] has successfully extinguished themselves!</span>",
 								   "<span class='notice'>You extinguish yourself.</span>")
@@ -734,7 +734,7 @@
 			CM.delayNext(DELAY_ALL,100)
 			if(isalienadult(CM) || (M_HULK in usr.mutations))//Don't want to do a lot of logic gating here.
 				CM.visible_message("<span class='danger'>[CM] is trying to break the handcuffs!</span>",
-								   "<span class='indigo'>You attempt to break your handcuffs. (This will take around five seconds and you will need to stand still).</span>")
+								   "<span class='warning'>You attempt to break your handcuffs. (This will take around five seconds and you will need to stand still).</span>")
 				spawn(0)
 					if(do_after(CM, 50))
 						if(!CM.handcuffed || CM.buckled)
@@ -746,7 +746,7 @@
 						CM.handcuffed = null
 						CM.update_inv_handcuffed()
 					else
-						CM << "<span class='indigo'>Your cuff breaking attempt was interrupted.</span>"
+						CM << "<span class='warning'>Your cuff breaking attempt was interrupted.</span>"
 
 
 			else
@@ -755,7 +755,7 @@
 				if(!(breakouttime))
 					breakouttime = 1200 //Default
 				CM.visible_message("<span class='danger'>[CM] attempts to remove [HC]!</span>",
-								   "<span class='indigo'>You attempt to remove [HC]. (This will take around [(breakouttime)/600] minutes and you need to stand still).</span>")
+								   "<span class='warning'>You attempt to remove [HC]. (This will take around [(breakouttime)/600] minutes and you need to stand still).</span>")
 				spawn(0)
 					if(do_after(CM, breakouttime))
 						if(!CM.handcuffed || CM.buckled)
@@ -766,13 +766,13 @@
 						CM.handcuffed = null
 						CM.update_inv_handcuffed()
 					else
-						CM << "<span class='indigo'>Your uncuffing attempt was interrupted.</span>"
+						CM << "<span class='warning'>Your uncuffing attempt was interrupted.</span>"
 
 		else if(CM.legcuffed && CM.canmove && CM.special_delayer.blocked())
 			CM.delayNext(DELAY_ALL,100)
 			if(isalienadult(CM) || (M_HULK in usr.mutations))//Don't want to do a lot of logic gating here.
 				CM.visible_message("<span class='danger'>[CM] is trying to break the legcuffs!</span>",
-								   "<span class='indigo'>You attempt to break your legcuffs. (This will take around five seconds and you need to stand still).</span>")
+								   "<span class='warning'>You attempt to break your legcuffs. (This will take around five seconds and you need to stand still).</span>")
 				spawn(0)
 					if(do_after(CM, 50))
 						if(!CM.legcuffed || CM.buckled)
@@ -784,14 +784,14 @@
 						CM.legcuffed = null
 						CM.update_inv_legcuffed()
 					else
-						CM << "<span class='indigo'>Your legcuffing breaking attempt was interrupted.</span>"
+						CM << "<span class='warning'>Your legcuffing breaking attempt was interrupted.</span>"
 			else
 				var/obj/item/weapon/legcuffs/HC = CM.legcuffed
 				var/breakouttime = HC.breakouttime
 				if(!(breakouttime))
 					breakouttime = 1200 //Default
 				CM.visible_message("<span class='danger'>[CM] attempts to remove [HC]!</span>",
-								   "<span class='indigo'>You attempt to remove [HC]. (This will take around [(breakouttime)/600] minutes and you need to stand still).</span>")
+								   "<span class='warning'>You attempt to remove [HC]. (This will take around [(breakouttime)/600] minutes and you need to stand still).</span>")
 				spawn(0)
 					if(do_after(CM, breakouttime))
 						if(!CM.legcuffed || CM.buckled)
@@ -802,7 +802,7 @@
 						CM.legcuffed = null
 						CM.update_inv_legcuffed()
 					else
-						CM << "<span class='indigo'>Your unlegcuffing attempt was interrupted.</span>"
+						CM << "<span class='warning'>Your unlegcuffing attempt was interrupted.</span>"
 /mob/living/verb/lay_down()
 	set name = "Rest"
 	set category = "IC"

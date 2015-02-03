@@ -129,7 +129,7 @@ var/shuttle_call/shuttle_calls[0]
 		if("announce")
 			if(src.authenticated==2 && !issilicon(usr))
 				if(message_cooldown)	return
-				var/input = stripped_input(usr, "Please choose a message to announce to the station crew.", "What?")
+				var/input = sanitize_russian(stripped_input(usr, "Please choose a message to announce to the station crew.", "What?"))
 				if(!input || !(usr in view(1,src)))
 					return
 				captain_announce(input)//This should really tell who is, IE HoP, CE, HoS, RD, Captain
@@ -143,7 +143,7 @@ var/shuttle_call/shuttle_calls[0]
 			if(src.authenticated)
 				var/response = alert("Are you sure you wish to call the shuttle?", "Confirm", "Yes", "No")
 				if(response == "Yes")
-					var/justification = stripped_input(usr, "Please input a concise justification for the shuttle call. Note that failure to properly justify a shuttle call may lead to recall or termination", "Nanotrasen Anti-Comdom Systems")
+					var/justification = sanitize_russian(stripped_input(usr, "Please input a concise justification for the shuttle call. Note that failure to properly justify a shuttle call may lead to recall or termination", "Nanotrasen Anti-Comdom Systems"))
 					if(!justification || !(usr in view(1,src)))
 						return
 					call_shuttle_proc(usr, justification)
@@ -206,13 +206,13 @@ var/shuttle_call/shuttle_calls[0]
 		if("MessageCentcomm")
 			if(src.authenticated==2)
 				if(centcomm_message_cooldown)
-					usr << "\red Arrays recycling.  Please stand by."
+					usr << "\red Сервера перегружены. Пожалуйста подождите." // Arrays recycling.  Please stand by.
 					return
-				var/input = stripped_input(usr, "Please choose a message to transmit to Centcomm via quantum entanglement.  Please be aware that this process is very expensive, and abuse will lead to... termination.  Transmission does not guarantee a response. There is a 30 second delay before you may send another message, be clear, full and concise.", "To abort, send an empty message.", "")
+				var/input = sanitize_russian(stripped_input(usr, "Please choose a message to transmit to Centcomm via quantum entanglement.  Please be aware that this process is very expensive, and abuse will lead to... termination.  Transmission does not guarantee a response. There is a 30 second delay before you may send another message, be clear, full and concise.", "To abort, send an empty message.", ""))
 				if(!input || !(usr in view(1,src)))
 					return
 				Centcomm_announce(input, usr)
-				usr << "\blue Message transmitted."
+				usr << "\blue Сообщение успешно передано."
 				log_say("[key_name(usr)] (@[usr.x],[usr.y],[usr.z]) has sent a bluespace message to Centcomm: [input]")
 				centcomm_message_cooldown = 1
 				spawn(300)//10 minute cooldown
@@ -224,13 +224,13 @@ var/shuttle_call/shuttle_calls[0]
 		if("MessageSyndicate")
 			if((src.authenticated==2) && (src.emagged))
 				if(centcomm_message_cooldown)
-					usr << "\red Arrays recycling.  Please stand by."
+					usr << "\red Сервера перегружены. Пожалуйста подождите." // Arrays recycling.  Please stand by.
 					return
-				var/input = stripped_input(usr, "Please choose a message to transmit to \[ABNORMAL ROUTING CORDINATES\] via quantum entanglement.  Please be aware that this process is very expensive, and abuse will lead to... termination. Transmission does not guarantee a response. There is a 30 second delay before you may send another message, be clear, full and concise.", "To abort, send an empty message.", "")
+				var/input = sanitize_russian(stripped_input(usr, "Please choose a message to transmit to \[ABNORMAL ROUTING CORDINATES\] via quantum entanglement.  Please be aware that this process is very expensive, and abuse will lead to... termination. Transmission does not guarantee a response. There is a 30 second delay before you may send another message, be clear, full and concise.", "To abort, send an empty message.", ""))
 				if(!input || !(usr in view(1,src)))
 					return
 				Syndicate_announce(input, usr)
-				usr << "\blue Message transmitted."
+				usr << "\blue Сообщение успешно передано."
 				log_say("[key_name(usr)] (@[usr.x],[usr.y],[usr.z]) has sent a bluespace message to the syndicate: [input]")
 				centcomm_message_cooldown = 1
 				spawn(300)//10 minute cooldown
@@ -238,7 +238,7 @@ var/shuttle_call/shuttle_calls[0]
 			setMenuState(usr,COMM_SCREEN_MAIN)
 
 		if("RestoreBackup")
-			usr << "Backup routing data restored!"
+			usr << "Восстановление резервных данных маршрутизации успешно завершено!" // Backup routing data restored
 			src.emagged = 0
 			setMenuState(usr,COMM_SCREEN_MAIN)
 
@@ -257,7 +257,7 @@ var/shuttle_call/shuttle_calls[0]
 		return
 
 	if (!(src.z in list(STATION_Z, CENTCOMM_Z)))
-		user << "\red <b>Unable to establish a connection</b>: \black You're too far away from the station!"
+		user << "\red <b>Невозможно наладить св&#255;зь</b>: \black Вы слишком далеко от станции!" // <b>Unable to establish a connection</b>: \black You're too far away from the station!
 		return
 
 	ui_interact(user)

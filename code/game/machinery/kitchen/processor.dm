@@ -140,13 +140,13 @@
 
 /obj/machinery/processor/attackby(var/obj/item/O as obj, var/mob/user as mob)
 	if(src.processing)
-		user << "<span class='indigo'>[src] is already processing!</span>"
+		user << "<span class='warning'>[src] is already processing!</span>"
 		return 1
 
 	if(..())
 		return 1
 	if(src.contents.len > 0) //TODO: several items at once? several different items?
-		user << "<span class='indigo'>Something is already in [src]</span>."
+		user << "<span class='warning'>Something is already in [src]</span>."
 		return 1
 	var/what = O
 	if (istype(O, /obj/item/weapon/grab))
@@ -155,7 +155,7 @@
 
 	var/datum/food_processor_process/P = select_recipe(what)
 	if (!P)
-		user << "<span class='indigo'>This probably won't blend.</span>"
+		user << "<span class='warning'>This probably won't blend.</span>"
 		return 1
 	user.visible_message("<span class='notice'>[user] puts [what] into [src].</span>", \
 		"You put [what] into the [src].")
@@ -167,13 +167,13 @@
 	if (src.stat != 0) //NOPOWER etc
 		return
 	if(!anchored)
-		user << "<span class='indigo'>[src] must be anchored first!</span>"
+		user << "<span class='warning'>[src] must be anchored first!</span>"
 		return
 	if(src.processing)
-		user << "<span class='indigo'>[src] is already processing!</span>"
+		user << "<span class='warning'>[src] is already processing!</span>"
 		return 1
 	if(src.contents.len == 0)
-		user << "<span class='indigo'>[src] is empty!</span>"
+		user << "<span class='warning'>[src] is empty!</span>"
 		return 1
 	for(var/O in src.contents)
 		var/datum/food_processor_process/P = select_recipe(O)

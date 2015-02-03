@@ -27,7 +27,7 @@
 			on = 0
 			updateicon()
 			SetLuminosity(0)
-			src.visible_message("<span class='indigo'>[src] shuts down due to lack of power!</span>")
+			src.visible_message("<span class='warning'>[src] shuts down due to lack of power!</span>")
 			return
 
 /obj/machinery/floodlight/attack_hand(mob/user as mob)

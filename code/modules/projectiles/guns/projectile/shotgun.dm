@@ -129,4 +129,4 @@
 				slot_flags |= SLOT_BELT		//but you can wear it on your belt (poorly concealed under a trenchcoat, ideally)
 				name = "sawn-off shotgun"
 				desc = "Omar's coming!"
-				user << "<span class='indigo'>You shorten the barrel of \the [src]!</span>"
+				user << "<span class='warning'>You shorten the barrel of \the [src]!</span>"

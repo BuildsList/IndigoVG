@@ -4,7 +4,7 @@
 	if (src.stat == DEAD)
 		msg += "<span class='deadsay'>It appears to be powered-down.</span>\n"
 	else
-		msg += "<span class='indigo'>"
+		msg += "<span class='warning'>"
 		if (src.getBruteLoss())
 			if (src.getBruteLoss() < 30)
 				msg += "It looks slightly dented.\n"

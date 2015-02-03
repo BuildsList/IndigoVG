@@ -129,12 +129,12 @@
 			for(var/mob/M in range(tmob, 1))
 				if(tmob.pinned.len ||  ((M.pulling == tmob && ( tmob.restrained() && !( M.restrained() ) && M.stat == 0)) || locate(/obj/item/weapon/grab, tmob.grabbed_by.len)) )
 					if ( !(world.time % 5) )
-						src << "<span class='indigo'>[tmob] is restrained, you cannot push past</span>"
+						src << "<span class='warning'>[tmob] is restrained, you cannot push past</span>"
 					now_pushing = 0
 					return
 				if( tmob.pulling == M && ( M.restrained() && !( tmob.restrained() ) && tmob.stat == 0) )
 					if ( !(world.time % 5) )
-						src << "<span class='indigo'>[tmob] is restraining [M], you cannot push past</span>"
+						src << "<span class='warning'>[tmob] is restraining [M], you cannot push past</span>"
 					now_pushing = 0
 					return
 
@@ -208,20 +208,19 @@
 
 /mob/living/carbon/human/Stat()
 	..()
-	statpanel("Status")
 
-	stat(null, "Intent: [a_intent]")
-	stat(null, "Move Mode: [m_intent]")
-	if(ticker && ticker.mode && ticker.mode.name == "AI malfunction")
-		if(ticker.mode:malf_mode_declared)
-			stat(null, "Time left: [max(ticker.mode:AI_win_timeleft/(ticker.mode:apcs/3), 0)]")
-	if(emergency_shuttle)
-		if(emergency_shuttle.online && emergency_shuttle.location < 2)
-			var/timeleft = emergency_shuttle.timeleft()
-			if (timeleft)
-				stat(null, "ETA-[(timeleft / 60) % 60]:[add_zero(num2text(timeleft % 60), 2)]")
+	if(statpanel("Status"))
+		stat(null, "Intent: [a_intent]")
+		stat(null, "Move Mode: [m_intent]")
+		if(ticker && ticker.mode && ticker.mode.name == "AI malfunction")
+			if(ticker.mode:malf_mode_declared)
+				stat(null, "Time left: [max(ticker.mode:AI_win_timeleft/(ticker.mode:apcs/3), 0)]")
+		if(emergency_shuttle)
+			if(emergency_shuttle.online && emergency_shuttle.location < 2)
+				var/timeleft = emergency_shuttle.timeleft()
+				if (timeleft)
+					stat(null, "ETA-[(timeleft / 60) % 60]:[add_zero(num2text(timeleft % 60), 2)]")
 
-	if (client.statpanel == "Status")
 		if (internal)
 			if (!internal.air_contents)
 				del(internal)
@@ -236,10 +235,10 @@
 		if (istype(wear_suit, /obj/item/clothing/suit/space/space_ninja)&&wear_suit:s_initialized)
 			stat("Energy Charge", round(wear_suit:cell:charge/100))
 
-	if(istype(loc, /obj/spacepod)) // Spacdpods!
-		var/obj/spacepod/S = loc
-		stat("Spacepod Charge", "[istype(S.battery) ? "[(S.battery.charge / S.battery.maxcharge) * 100]" : "No cell detected"]")
-		stat("Spacepod Integrity", "[!S.health ? "0" : "[(S.health / initial(S.health)) * 100]"]%")
+		if(istype(loc, /obj/spacepod)) // Spacdpods!
+			var/obj/spacepod/S = loc
+			stat("Spacepod Charge", "[istype(S.battery) ? "[(S.battery.charge / S.battery.maxcharge) * 100]" : "No cell detected"]")
+			stat("Spacepod Integrity", "[!S.health ? "0" : "[(S.health / initial(S.health)) * 100]"]%")
 
 /mob/living/carbon/human/ex_act(severity)
 	if(flags & INVULNERABLE)
@@ -334,7 +333,7 @@
 	if(stat == DEAD)
 		return
 
-	show_message("<span class='indigo'>The blob attacks you!</span>")
+	show_message("<span class='warning'>The blob attacks you!</span>")
 	var/dam_zone = pick("chest", "l_hand", "r_hand", "l_leg", "r_leg")
 	var/datum/organ/external/affecting = get_organ(ran_zone(dam_zone))
 	apply_damage(rand(30,40), BRUTE, affecting, run_armor_check(affecting, "melee"))
@@ -345,7 +344,7 @@
 		return
 	for(var/mob/M in viewers(src, null))
 		if ((M.client && !( M.blinded )))
-			M.show_message("<span class='indigo'>[src] has been hit by [O]</span>", 1)
+			M.show_message("<span class='warning'>[src] has been hit by [O]</span>", 1)
 	if (health > 0)
 		var/datum/organ/external/affecting = get_organ(pick("chest", "chest", "chest", "head"))
 		if(!affecting)	return
@@ -761,7 +760,7 @@
 		for(var/thingsa in ourlist)
 
 		if(slot in ourlist)
-			usr << "<span class='indigo'>You can't reach that. Something is covering it.</span>"
+			usr << "<span class='warning'>You can't reach that. Something is covering it.</span>"
 			return
 		else
 			if(isanimal(usr)) return //Animals can't do that
@@ -798,7 +797,7 @@
 
 				else if(!pickpocket)
 					// Display a warning if the user mocks up
-					src << "<span class='indigo'>You feel your ID being fumbled with!</span>"
+					src << "<span class='warning'>You feel your ID being fumbled with!</span>"
 			else
 				spawn( 0 )
 					O.process()
@@ -836,7 +835,7 @@
 
 		else if(!pickpocket)
 				// Display a warning if the user mocks up
-			src << "<span class='indigo'>You feel your [pocket_side] pocket being fumbled with!</span>"
+			src << "<span class='warning'>You feel your [pocket_side] pocket being fumbled with!</span>"
 	else if (href_list["refresh"])
 		if((machine)&&(in_range(src, usr)))
 			show_inv(machine)
@@ -881,7 +880,7 @@
 												U.handle_regular_hud_updates()
 
 			if(!modified)
-				usr << "<span class='indigo'>Unable to locate a data core entry for this person.</span>"
+				usr << "<span class='warning'>Unable to locate a data core entry for this person.</span>"
 	else if (href_list["secrecord"])
 		if(hasHUD(usr,"security"))
 			var/perpname = "wot"
@@ -910,7 +909,7 @@
 								read = 1
 
 			if(!read)
-				usr << "<span class='indigo'>Unable to locate a data core entry for this person.</span>"
+				usr << "<span class='warning'>Unable to locate a data core entry for this person.</span>"
 	else if (href_list["secrecordComment"])
 		if(hasHUD(usr,"security"))
 			var/perpname = "wot"
@@ -939,7 +938,7 @@
 								usr << "<a href='?src=\ref[src];secrecordadd=`'>\[Add comment\]</a>"
 
 			if(!read)
-				usr << "<span class='indigo'>Unable to locate a data core entry for this person.</span>"
+				usr << "<span class='warning'>Unable to locate a data core entry for this person.</span>"
 	else if (href_list["secrecordadd"])
 		if(hasHUD(usr,"security"))
 			var/perpname = "wot"
@@ -994,7 +993,7 @@
 									R.fields["p_stat"] = setmedical
 									modified = 1
 									if(PDA_Manifest.len)
-										PDA_Manifest.Cut()
+										PDA_Manifest.len = 0
 
 									spawn()
 										if(istype(usr,/mob/living/carbon/human))
@@ -1005,7 +1004,7 @@
 											U.handle_regular_hud_updates()
 
 			if(!modified)
-				usr << "<span class='indigo'>Unable to locate a data core entry for this person.</span>"
+				usr << "<span class='warning'>Unable to locate a data core entry for this person.</span>"
 	else if (href_list["medrecord"])
 		if(hasHUD(usr,"medical"))
 			var/perpname = "wot"
@@ -1035,7 +1034,7 @@
 								read = 1
 
 			if(!read)
-				usr << "<span class='indigo'>Unable to locate a data core entry for this person.</span>"
+				usr << "<span class='warning'>Unable to locate a data core entry for this person.</span>"
 	else if (href_list["medrecordComment"])
 		if(hasHUD(usr,"medical"))
 			var/perpname = "wot"
@@ -1064,7 +1063,7 @@
 								usr << "<a href='?src=\ref[src];medrecordadd=`'>\[Add comment\]</a>"
 
 			if(!read)
-				usr << "<span class='indigo'>Unable to locate a data core entry for this person.</span>"
+				usr << "<span class='warning'>Unable to locate a data core entry for this person.</span>"
 	else if (href_list["medrecordadd"])
 		if(hasHUD(usr,"medical"))
 			var/perpname = "wot"
@@ -1184,7 +1183,7 @@
 
 /mob/living/carbon/human/proc/play_xylophone()
 	if(!src.xylophone)
-		visible_message("<span class='indigo'>[src] begins playing his ribcage like a xylophone. It's quite spooky.</span>","<span class='notice'>You begin to play a spooky refrain on your ribcage.</span>","<span class='notice'>You hear a spooky xylophone melody.</span>")
+		visible_message("<span class='warning'>[src] begins playing his ribcage like a xylophone. It's quite spooky.</span>","<span class='notice'>You begin to play a spooky refrain on your ribcage.</span>","<span class='notice'>You hear a spooky xylophone melody.</span>")
 		var/song = pick('sound/effects/xylophone1.ogg','sound/effects/xylophone2.ogg','sound/effects/xylophone3.ogg')
 		playsound(loc, song, 50, 1, -1)
 		xylophone = 1
@@ -1202,9 +1201,9 @@
 				Stun(5)
 
 				if(hairball)
-					src.visible_message("<span class='indigo'>[src] hacks up a hairball!</span>","<span class='indigo'>You hack up a hairball!</span>")
+					src.visible_message("<span class='warning'>[src] hacks up a hairball!</span>","<span class='warning'>You hack up a hairball!</span>")
 				else
-					src.visible_message("<span class='indigo'>[src] throws up!</span>","<span class='indigo'>You throw up!</span>")
+					src.visible_message("<span class='warning'>[src] throws up!</span>","<span class='warning'>You throw up!</span>")
 				playsound(loc, 'sound/effects/splat.ogg', 50, 1)
 
 				var/turf/location = loc
@@ -1294,7 +1293,7 @@
 	regenerate_icons()
 	check_dna()
 
-	visible_message("<span class='notice'>\The [src] morphs and changes [get_visible_gender() == MALE ? "his" : get_visible_gender() == FEMALE ? "her" : "their"] appearance!</span>", "<span class='notice'>You change your appearance!</span>", "<span class='indigo'>Oh, god!  What the hell was that?  It sounded like flesh getting squished and bone ground into a different shape!</span>")
+	visible_message("<span class='notice'>\The [src] morphs and changes [get_visible_gender() == MALE ? "his" : get_visible_gender() == FEMALE ? "her" : "their"] appearance!</span>", "<span class='notice'>You change your appearance!</span>", "<span class='warning'>Oh, god!  What the hell was that?  It sounded like flesh getting squished and bone ground into a different shape!</span>")
 /mob/living/carbon/human/proc/can_mind_interact(mob/M)
 	if(!ishuman(M)) return 0 //Can't see non humans with your fancy human mind.
 	var/turf/temp_turf = get_turf(M)
@@ -1349,7 +1348,7 @@
 		return
 
 	if(istype(l_hand, /obj/item/tk_grab) || istype(r_hand, /obj/item/tk_grab/))
-		src << "<span class='indigo'>Your mind is too busy with that telekinetic grab.</span>"
+		src << "<span class='warning'>Your mind is too busy with that telekinetic grab.</span>"
 		remoteview_target = null
 		reset_view(0)
 		return
@@ -1368,7 +1367,7 @@
 	var/mob/target = input ("Who do you want to project your mind to ?") as mob in creatures
 
 	if(istype(l_hand, /obj/item/tk_grab) || istype(r_hand, /obj/item/tk_grab/))
-		src << "<span class='indigo'>Your mind is too busy with that telekinetic grab.</span>"
+		src << "<span class='warning'>Your mind is too busy with that telekinetic grab.</span>"
 		remoteview_target = null
 		reset_view(0)
 		return
@@ -1401,7 +1400,7 @@
 		if (!O.amputated)
 			O.status &= ~ORGAN_DESTROYED
 			O.destspawn = 0
-		O.wounds.Cut()
+		O.wounds.len = 0
 		O.heal_damage(1000,1000,1,1)
 
 	var/datum/organ/external/head/h = organs_by_name["head"]
@@ -1537,9 +1536,9 @@
 			if(O == selection)
 				affected = organ
 	if(self)
-		src << "<span class='indigo'>You attempt to get a good grip on the [selection] in your [affected.display_name] with bloody fingers.</span>"
+		src << "<span class='warning'>You attempt to get a good grip on the [selection] in your [affected.display_name] with bloody fingers.</span>"
 	else
-		U << "<span class='indigo'>You attempt to get a good grip on the [selection] in [S]'s [affected.display_name] with bloody fingers.</span>"
+		U << "<span class='warning'>You attempt to get a good grip on the [selection] in [S]'s [affected.display_name] with bloody fingers.</span>"
 
 	if(istype(U,/mob/living/carbon/human/)) U.bloody_hands(S)
 
@@ -1550,9 +1549,9 @@
 		return
 
 	if(self)
-		visible_message("<span class='indigo'><b>[src] rips [selection] out of their [affected.display_name] in a welter of blood.</b></span>","<span class='indigo'><b>You rip [selection] out of your [affected] in a welter of blood.</b></span>")
+		visible_message("<span class='warning'><b>[src] rips [selection] out of their [affected.display_name] in a welter of blood.</b></span>","<span class='warning'><b>You rip [selection] out of your [affected] in a welter of blood.</b></span>")
 	else
-		visible_message("<span class='indigo'><b>[usr] rips [selection] out of [src]'s [affected.display_name] in a welter of blood.</b></span>","<span class='indigo'><b>[usr] rips [selection] out of your [affected] in a welter of blood.</b></span>")
+		visible_message("<span class='warning'><b>[usr] rips [selection] out of [src]'s [affected.display_name] in a welter of blood.</b></span>","<span class='warning'><b>[usr] rips [selection] out of your [affected] in a welter of blood.</b></span>")
 
 	selection.loc = get_turf(src)
 	affected.implants -= selection
@@ -1596,11 +1595,11 @@
 				var/msg = null
 				switch(rand(1,3))
 					if(1)
-						msg ="<span class='indigo'>A spike of pain jolts your [organ.display_name] as you bump [O] inside.</span>"
+						msg ="<span class='warning'>A spike of pain jolts your [organ.display_name] as you bump [O] inside.</span>"
 					if(2)
-						msg ="<span class='indigo'>Your movement jostles [O] in your [organ.display_name] painfully.</span>"
+						msg ="<span class='warning'>Your movement jostles [O] in your [organ.display_name] painfully.</span>"
 					if(3)
-						msg ="<span class='indigo'>[O] in your [organ.display_name] twists painfully as you move.</span>"
+						msg ="<span class='warning'>[O] in your [organ.display_name] twists painfully as you move.</span>"
 				src << msg
 
 				organ.take_damage(rand(1,3), 0, 0)
@@ -1629,7 +1628,7 @@
 	if(src.pulse)
 		usr << "<span class='notice'>[self ? "You have a" : "[src] has a"] pulse! Counting...</span>"
 	else
-		usr << "<span class='indigo'>[src] has no pulse!</span>"	//it is REALLY UNLIKELY that a dead person would check his own pulse
+		usr << "<span class='warning'>[src] has no pulse!</span>"	//it is REALLY UNLIKELY that a dead person would check his own pulse
 		return
 
 	usr << "Don't move until counting is finished."
@@ -1679,26 +1678,26 @@
 		verbs -= /mob/living/carbon/human/proc/bloody_doodle
 
 	if (src.gloves)
-		src << "<span class='indigo'>Your [src.gloves] are getting in the way.</span>"
+		src << "<span class='warning'>Your [src.gloves] are getting in the way.</span>"
 		return
 
 	var/turf/simulated/T = src.loc
 	if (!istype(T)) //to prevent doodling out of mechs and lockers
-		src << "<span class='indigo'>You cannot reach the floor.</span>"
+		src << "<span class='warning'>You cannot reach the floor.</span>"
 		return
 
 	var/direction = input(src,"Which way?","Tile selection") as anything in list("Here","North","South","East","West")
 	if (direction != "Here")
 		T = get_step(T,text2dir(direction))
 	if (!istype(T))
-		src << "<span class='indigo'>You cannot doodle there.</span>"
+		src << "<span class='warning'>You cannot doodle there.</span>"
 		return
 
 	var/num_doodles = 0
 	for (var/obj/effect/decal/cleanable/blood/writing/W in T)
 		num_doodles++
 	if (num_doodles > 4)
-		src << "<span class='indigo'>There is no space to write on!</span>"
+		src << "<span class='warning'>There is no space to write on!</span>"
 		return
 
 	var/max_length = bloody_hands * 30 //tweeter style
@@ -1711,7 +1710,7 @@
 
 		if (length(message) > max_length)
 			message += "-"
-			src << "<span class='indigo'>You ran out of blood to write with!</span>"
+			src << "<span class='warning'>You ran out of blood to write with!</span>"
 
 		var/obj/effect/decal/cleanable/blood/writing/W = new(T)
 		W.basecolor = (hand_blood_color) ? hand_blood_color : "#A10808"

@@ -204,6 +204,6 @@ Thus, the two variables affect pump operation are set in New():
 			"[user] unfastens \the [src].", \
 			"\blue You have unfastened \the [src].", \
 			"You hear ratchet.")
-		investigation_log(I_ATMOS,"was <span class='indigo'>REMOVED</span> by [key_name(usr)]")
+		investigation_log(I_ATMOS,"was <span class='warning'>REMOVED</span> by [key_name(usr)]")
 		new /obj/item/pipe(loc, make_from=src)
 		del(src)

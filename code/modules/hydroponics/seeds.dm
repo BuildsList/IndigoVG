@@ -32,7 +32,7 @@
 	if(seed && !seed.roundstart)
 		user << "It's tagged as variety <span class='info'>#[seed.uid].</span>"
 	else
-		user << "Plant Yield: <span class='info'>[(seed.yield != -1) ? seed.yield : "<span class='indigo'> ERROR</span>"]</span>"
+		user << "Plant Yield: <span class='info'>[(seed.yield != -1) ? seed.yield : "<span class='warning'> ERROR</span>"]</span>"
 		user << "Plant Potency: <span class='info'>[(seed.potency != -1) ? seed.potency : "<span class='warning> ERROR</span>"]</span>"
 
 /obj/item/seeds/cutting
@@ -53,8 +53,7 @@
 	seed.uid = seed_types.len + 1
 	seed.name = "[seed.uid]"
 	seed_types[seed.name] = seed
-
-	update_seed()
+	..()
 
 /obj/item/seeds/replicapod
 	seed_type = "diona"

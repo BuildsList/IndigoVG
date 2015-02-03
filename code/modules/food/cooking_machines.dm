@@ -124,12 +124,12 @@ var/global/ingredientLimit = 10
 
 /obj/machinery/cooking/attackby(obj/item/I,mob/user)
 	if(src.active)
-		user << "<span class='indigo'>[src.name] is currently busy.</span>"
+		user << "<span class='warning'>[src.name] is currently busy.</span>"
 		return
 	else if(..())
 		return 1
 	else if(istype(user,/mob/living/silicon))
-		user << "<span class='indigo'>That's a terrible idea.</span>"
+		user << "<span class='warning'>That's a terrible idea.</span>"
 		return
 	else
 
@@ -175,7 +175,7 @@ var/global/ingredientLimit = 10
 		spawn() src.cook(.)
 		user << "<span class='notice'>You add the [I.name] to the [src.name].</span>"
 		return 1
-	else user << "<span class='indigo'>You can't put that in the [src.name]. \n[.]</span>"
+	else user << "<span class='warning'>You can't put that in the [src.name]. \n[.]</span>"
 	return 0
 
 /obj/machinery/cooking/proc/transfer_reagents_to_food(var/obj/item/I)

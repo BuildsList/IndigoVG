@@ -37,10 +37,10 @@
 				del(temppart)
 				return TRUE
 		if(!istype(loc,/turf))
-			user << "<span class='indigo'>You can't assemble the MoMMI, \the [src] has to be standing on the ground (or a table) to be perfectly precise.</span>"
+			user << "<span class='warning'>You can't assemble the MoMMI, \the [src] has to be standing on the ground (or a table) to be perfectly precise.</span>"
 			return TRUE
 		if(!brainmob)
-			user << "<span class='indigo'>What are you doing oh god put the brain back in.</span>"
+			user << "<span class='warning'>What are you doing oh god put the brain back in.</span>"
 			return TRUE
 		if(!brainmob.key)
 			var/ghost_can_reenter = 0
@@ -53,13 +53,13 @@
 				user << "<span class='notice'>\The [src] indicates that their mind is completely unresponsive; there's no point.</span>"
 				return TRUE
 		if(brainmob.stat == DEAD)
-			user << "<span class='indigo'>Yeah, good idea. Give something deader than the pizza in your fridge legs.  Mom would be so proud.</span>"
+			user << "<span class='warning'>Yeah, good idea. Give something deader than the pizza in your fridge legs.  Mom would be so proud.</span>"
 			return TRUE
 		if(brainmob.mind in ticker.mode.head_revolutionaries)
-			user << "<span class='indigo'>The [src]'s firmware lets out a shrill sound, and flashes 'Abnormal Memory Engram'. It refuses to accept the brain.</span>"
+			user << "<span class='warning'>The [src]'s firmware lets out a shrill sound, and flashes 'Abnormal Memory Engram'. It refuses to accept the brain.</span>"
 			return TRUE
 		if(jobban_isbanned(brainmob, "Cyborg"))
-			user << "<span class='indigo'>This brain does not seem to fit.</span>"
+			user << "<span class='warning'>This brain does not seem to fit.</span>"
 			return TRUE
 		//canmove = 0
 		icon = null
@@ -87,7 +87,7 @@
 			var/cc=contents_count(t)
 			if(cc<mommi_assembly_parts[t])
 				if(!brainmob)
-					user << "<span class='indigo'>Why are you sticking robot legs on an empty [src], you idiot?</span>"
+					user << "<span class='warning'>Why are you sticking robot legs on an empty [src], you idiot?</span>"
 					return TRUE
 				contents += O
 				user.drop_item()
@@ -95,7 +95,7 @@
 				user << "<span class='notice'>You successfully add \the [O] to the contraption,</span>"
 				return TRUE
 			else if(cc==mommi_assembly_parts[t])
-				user << "<span class='indigo'>You have enough of these.</span>"
+				user << "<span class='warning'>You have enough of these.</span>"
 				return TRUE
 	return FALSE
 
@@ -104,7 +104,7 @@
 		return
 	if(istype(O,/obj/item/organ/brain) && !brainmob) //Time to stick a brain in it --NEO
 		if(!O:brainmob)
-			user << "<span class='indigo'>You aren't sure where this brain came from, but you're pretty sure it's a useless brain.</span>"
+			user << "<span class='warning'>You aren't sure where this brain came from, but you're pretty sure it's a useless brain.</span>"
 			return
 		for(var/mob/V in viewers(src, null))
 			V.show_message(text("<span class='notice'>[user] sticks \a [O] into \the [src].</span>"))
@@ -134,7 +134,7 @@
 			locked = !locked
 			user << "<span class='notice'>You [locked ? "lock" : "unlock"] \the [src].</span>"
 		else
-			user << "<span class='indigo'>Access denied.</span>"
+			user << "<span class='warning'>Access denied.</span>"
 		return
 	if(brainmob)
 		O.attack(brainmob, user)//Oh noooeeeee
@@ -144,9 +144,9 @@
 	//TODO: ORGAN REMOVAL UPDATE. Make the brain remain in the MMI so it doesn't lose organ data.
 /obj/item/device/mmi/attack_self(mob/user as mob)
 	if(!brainmob)
-		user << "<span class='indigo'>You upend \the [src], but there's nothing in it."
+		user << "<span class='warning'>You upend \the [src], but there's nothing in it."
 	else if(locked)
-		user << "<span class='indigo'>You upend \the [src], but the brain is clamped into place."
+		user << "<span class='warning'>You upend \the [src], but the brain is clamped into place."
 	else
 		user << "<span class='notice'>You upend \the [src], spilling the brain onto the floor.</span>"
 		var/obj/item/organ/brain/brain = new(user.loc)
@@ -163,7 +163,7 @@
 	brainmob = new(src)
 	brainmob.name = H.real_name
 	brainmob.real_name = H.real_name
-	if(H.dna)
+	if(istype(H) && H.dna)
 		brainmob.dna = H.dna.Clone()
 	brainmob.container = src
 
@@ -241,6 +241,6 @@
 		else if(!src.brainmob.client)
 			user << "<span class='notice'>It appears to be lost in its own thoughts</span>" //closed game window
 		else if(!src.brainmob.key)
-			user << "<span class='indigo'>It seems to be in a deep dream-state</span>" //ghosted
+			user << "<span class='warning'>It seems to be in a deep dream-state</span>" //ghosted
 	user << "<span class='info'>*---------*</span>"
-	user << "<span class='info'>It's interface is [locked ? "unlocked" : "locked"] </span>"
+	user << "<span class='info'>It's interface is [locked ? "locked" : "unlocked"] </span>"

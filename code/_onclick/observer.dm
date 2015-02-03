@@ -19,7 +19,7 @@
 			usr << "<span class='sinister'>A dark forcefield prevents you from entering the area.<span>"
 		else
 			if(targetloc.holy && ((src.invisibility == 0) || (src.mind in ticker.mode.cult)))
-				usr << "<span class='indigo'>These are sacred grounds, you cannot go there!</span>"
+				usr << "<span class='warning'>These are sacred grounds, you cannot go there!</span>"
 			else
 				loc = targetloc
 

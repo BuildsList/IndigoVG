@@ -67,7 +67,7 @@
 	if(tank)
 		user << "<span class='info'>The tank dial reads [tank.air_contents.return_pressure()] kPa.</span>"
 	else
-		user << "<span class='indigo'>Nothing is attached to the tank valve!</span>"
+		user << "<span class='warning'>Nothing is attached to the tank valve!</span>"
 
 /obj/item/weapon/storage/pneumatic/afterattack(atom/target as mob|obj|turf|area, mob/living/user as mob|obj, flag, params)
 	if (istype(target, /obj/item/weapon/storage/backpack ))

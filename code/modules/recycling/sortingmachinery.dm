@@ -34,7 +34,7 @@
 	else if(istype(W, /obj/item/weapon/pen))
 		var/str = copytext(sanitize(input(usr,"Label text?","Set label","")),1,MAX_NAME_LEN)
 		if(!str || !length(str))
-			usr << "<span class='indigo'>Invalid text.</span>"
+			usr << "<span class='warning'>Invalid text.</span>"
 			return
 		for(var/mob/M in viewers())
 			M << "<span class='notice'>[user] labels [src] as [str].</span>"
@@ -78,7 +78,7 @@
 	else if(istype(W, /obj/item/weapon/pen))
 		var/str = copytext(sanitize(input(usr,"Label text?","Set label","")),1,MAX_NAME_LEN)
 		if(!str || !length(str))
-			usr << "<span class='indigo'>Invalid text.</span>"
+			usr << "<span class='warning'>Invalid text.</span>"
 			return
 		for(var/mob/M in viewers())
 			M << "<span class='notice'>[user] labels [src] as [str].</span>"
@@ -283,8 +283,6 @@
 		M.loc = src
 	//src.flush() This spams audio like fucking crazy.
 	// Instead, we queue up for the next process.
-	if(!(src in processing_objects))
-		processing_objects.Add(src)
 	doFlushIn=5 // Ticks, adjust if delay is too long or too short
 	num_contents++
 

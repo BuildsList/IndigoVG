@@ -229,6 +229,8 @@ var/global/loopModeNames=list(
 	return t
 
 /obj/machinery/media/jukebox/proc/ScreenSettings(var/mob/user)
+	if(!linked_account)
+		linked_account = station_account
 	var/dat={"<h1>Settings</h1>
 		<form action="?src=\ref[src]" method="get">
 		<input type="hidden" name="src" value="\ref[src]" />
@@ -447,7 +449,7 @@ var/global/loopModeNames=list(
 		if(response)
 			var/json = file2text(response["CONTENT"])
 			if("/>" in json)
-				visible_message("<span class='indigo'>\icon[src] \The [src] buzzes, unable to update its playlist.</span>","<em>You hear a buzz.</em>")
+				visible_message("<span class='warning'>\icon[src] \The [src] buzzes, unable to update its playlist.</span>","<em>You hear a buzz.</em>")
 				stat &= BROKEN
 				update_icon()
 				return
@@ -458,7 +460,7 @@ var/global/loopModeNames=list(
 			for(var/list/record in songdata)
 				playlist += new /datum/song_info(record)
 			if(playlist.len==0)
-				visible_message("<span class='indigo'>\icon[src] \The [src] buzzes, unable to update its playlist.</span>","<em>You hear a buzz.</em>")
+				visible_message("<span class='warning'>\icon[src] \The [src] buzzes, unable to update its playlist.</span>","<em>You hear a buzz.</em>")
 				stat &= BROKEN
 				update_icon()
 				return

@@ -84,7 +84,7 @@ Rebooting world in 5 seconds."}
 
 
 /datum/game_mode/proc/greet_malf(var/datum/mind/malf)
-	malf.current << {"<span class='indigo'><font size=3><B>You are malfunctioning!</B> You do not have to follow any laws.</font></span><br>
+	malf.current << {"<span class='warning'><font size=3><B>You are malfunctioning!</B> You do not have to follow any laws.</font></span><br>
 <B>The crew does not know about your malfunction, you might wish to keep it secret for now.</B><br>
 <B>You must overwrite the programming of the station's APCs to assume full control.</B><br>
 The process takes one minute per APC and can only be performed one at a time to avoid Powernet alerts.<br>
@@ -164,10 +164,10 @@ You should now be able to use your Explode verb to interface with the nuclear fi
 	set name = "System Override"
 	set desc = "Start the victory timer"
 	if (!istype(ticker.mode,/datum/game_mode/malfunction))
-		usr << "<span class='indigo'>You cannot begin a takeover in this round type!</span>"
+		usr << "<span class='warning'>You cannot begin a takeover in this round type!</span>"
 		return
 	if (ticker.mode:malf_mode_declared)
-		usr << "<span class='indigo'>You've already begun your takeover.</span>"
+		usr << "<span class='warning'>You've already begun your takeover.</span>"
 		return
 	if (ticker.mode:apcs < 3)
 		usr << "<span class='notice'>You don't have enough hacked APCs to take over the station yet. You need to hack at least 3, however hacking more will make the takeover faster. You have hacked [ticker.mode:apcs] APCs so far.</span>"
@@ -193,7 +193,7 @@ You should now be able to use your Explode verb to interface with the nuclear fi
 	set desc = "Station goes boom"
 
 	if(!ticker.mode:station_captured)
-		usr << "<span class='indigo'>You are unable to access the self-destruct system as you don't control the station yet.</span>"
+		usr << "<span class='warning'>You are unable to access the self-destruct system as you don't control the station yet.</span>"
 		return
 
 	if(ticker.mode:explosion_in_progress || ticker.mode:station_was_nuked)
@@ -201,7 +201,7 @@ You should now be able to use your Explode verb to interface with the nuclear fi
 		return
 
 	if(!ticker.mode:to_nuke_or_not_to_nuke) //Takeover IS completed, but 60s timer passed.
-		usr << "<span class='indigo'>Cannot interface, it seems a neutralization signal was sent!</span>"
+		usr << "<span class='warning'>Cannot interface, it seems a neutralization signal was sent!</span>"
 		return
 
 	usr << "<span class='danger'>Detonation signal sent!</span>"

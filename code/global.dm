@@ -62,7 +62,7 @@ var/GLASSESBLOCK = 0
 var/EPILEPSYBLOCK = 0
 var/TWITCHBLOCK = 0
 var/NERVOUSBLOCK = 0
-var/MONKEYBLOCK = 50 // Monkey block will always be the DNA_SE_LENGTH
+var/MONKEYBLOCK = 54 // Monkey block will always be the DNA_SE_LENGTH
 
 var/BLOCKADD = 0
 var/DIFFMUT = 0
@@ -218,6 +218,9 @@ var/list/ninjastart = list()
 var/list/cardinal = list( NORTH, SOUTH, EAST, WEST )
 var/list/alldirs = list(NORTH, SOUTH, EAST, WEST, NORTHEAST, NORTHWEST, SOUTHEAST, SOUTHWEST)
 
+
+var/global/universal_cult_chat = 0 //if set to 1, even human cultists can use cultchat
+
 var/datum/station_state/start_state = null
 var/datum/configuration/config = null
 
@@ -268,9 +271,9 @@ var/list/awaydestinations = list()	//a list of landmarks that the warpgate can t
 
 	// MySQL configuration
 
-var/sqladdress = "127.0.0.1"
+var/sqladdress = "localhost"
 var/sqlport = "3306"
-var/sqldb = "indigo"
+var/sqldb = "tgstation"
 var/sqllogin = "root"
 var/sqlpass = ""
 
@@ -287,7 +290,7 @@ var/sqllogging = 0 // Should we log deaths, population stats, etc?
 	// Forum MySQL configuration (for use with forum account/key authentication)
 	// These are all default values that will load should the forumdbconfig.txt
 	// file fail to read for whatever reason.
-/*
+
 var/forumsqladdress = "localhost"
 var/forumsqlport = "3306"
 var/forumsqldb = "tgstation"
@@ -295,7 +298,7 @@ var/forumsqllogin = "root"
 var/forumsqlpass = ""
 var/forum_activated_group = "2"
 var/forum_authenticated_group = "10"
-*/
+
 	// For FTP requests. (i.e. downloading runtime logs.)
 	// However it'd be ok to use for accessing attack logs and such too, which are even laggier.
 var/fileaccess_timer = 0
@@ -304,7 +307,7 @@ var/custom_event_msg = null
 //Database connections
 //A connection is established on world creation. Ideally, the connection dies when the server restarts (After feedback logging.).
 var/DBConnection/dbcon = new()	//Feedback database (New database)
-//var/DBConnection/dbcon_old = new()	//Tgstation database (Old database) - See the files in the SQL folder for information what goes where.
+var/DBConnection/dbcon_old = new()	//Tgstation database (Old database) - See the files in the SQL folder for information what goes where.
 
 #define MIDNIGHT_ROLLOVER		864000	//number of deciseconds in a day
 
@@ -360,3 +363,5 @@ var/global/event/on_unban
 // List of /plugins
 var/global/list/plugins = list()
 
+// Space get this to return for things i guess?
+var/global/datum/gas_mixture/space_gas = new

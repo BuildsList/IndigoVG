@@ -120,13 +120,13 @@
 			if(M.zone_sel && M.zone_sel.selecting == "head" && src != M)
 				if(M.mind && M.mind.vampire && (M.mind in ticker.mode.vampires) && !M.mind.vampire.draining)
 					if(src.check_body_part_coverage(MOUTH))
-						M << "<span class='indigo'>Remove their mask!</span>"
+						M << "<span class='warning'>Remove their mask!</span>"
 						return 0
 					if(M.check_body_part_coverage(MOUTH))
-						M << "<span class='indigo'>Remove your mask!</span>"
+						M << "<span class='warning'>Remove your mask!</span>"
 						return 0
 					if(mind && mind.vampire && (mind in ticker.mode.vampires))
-						M << "<span class='indigo'>Your fangs fail to pierce [src.name]'s cold flesh.</span>"
+						M << "<span class='warning'>Your fangs fail to pierce [src.name]'s cold flesh.</span>"
 						return 0
 					//we're good to suck the blood, blaah
 					M.handle_bloodsucking(src)

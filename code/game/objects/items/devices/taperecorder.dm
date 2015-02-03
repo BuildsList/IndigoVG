@@ -60,10 +60,10 @@
 		if(emagged == 0)
 			emagged = 1
 			recording = 0
-			user << "<span class='indigo'>PZZTTPFFFT</span>"
+			user << "<span class='warning'>PZZTTPFFFT</span>"
 			icon_state = "taperecorderidle"
 		else
-			user << "<span class='indigo'>It is already emagged!</span>"
+			user << "<span class='warning'>It is already emagged!</span>"
 
 /obj/item/device/taperecorder/proc/explode()
 	var/turf/T = get_turf(loc)
@@ -133,14 +133,14 @@
 	if(usr.stat)
 		return
 	if(emagged == 1)
-		usr << "<span class='indigo'>The tape recorder makes a scratchy noise.</span>"
+		usr << "<span class='warning'>The tape recorder makes a scratchy noise.</span>"
 		return
 	if(recording == 1 || playing == 1)
 		usr << "<span class='notice'>You can't clear the memory while playing or recording!</span>"
 		return
 	else
-		if(storedinfo)	storedinfo.Cut()
-		if(timestamp)	timestamp.Cut()
+		if(storedinfo)	storedinfo.len = 0
+		if(timestamp)	timestamp.len = 0
 		timerecorded = 0
 		usr << "<span class='notice'>Memory cleared.</span>"
 		return

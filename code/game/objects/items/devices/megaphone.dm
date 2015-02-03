@@ -15,16 +15,16 @@
 /obj/item/device/megaphone/attack_self(mob/living/user as mob)
 	if (user.client)
 		if(user.client.prefs.muted & MUTE_IC)
-			src << "<span class='indigo'>You cannot speak in IC (muted).</span>"
+			src << "<span class='warning'>You cannot speak in IC (muted).</span>"
 			return
 	if(!ishuman(user) && (!isrobot(user) || isMoMMI(user))) //Non-humans can't use it, borgs can, mommis can't
-		user << "<span class='indigo'>You don't know how to use this!</span>"
+		user << "<span class='warning'>You don't know how to use this!</span>"
 		return
 	if(ishuman(user) && (user:miming || user:silent)) //Humans get their muteness checked
-		user << "<span class='indigo'>You find yourself unable to speak at all.</span>"
+		user << "<span class='warning'>You find yourself unable to speak at all.</span>"
 		return
 	if(spamcheck)
-		user << "<span class='indigo'>\The [src] needs to recharge!</span>"
+		user << "<span class='warning'>\The [src] needs to recharge!</span>"
 		return
 
 	var/message = copytext(sanitize(input(user, "Shout a message?", "Megaphone", null)  as text),1,MAX_MESSAGE_LEN)
@@ -38,7 +38,7 @@
 					O.show_message("<B>[user]</B> broadcasts, <FONT size=3>\"[pick(insultmsg)]\"</FONT>",2) // 2 stands for hearable message
 				insults--
 			else
-				user << "<span class='indigo'>*BZZZZzzzzzt*</span>"
+				user << "<span class='warning'>*BZZZZzzzzzt*</span>"
 		else
 			for(var/mob/O in (viewers(user)))
 				O.show_message("<B>[user]</B> broadcasts, <FONT size=3>\"[message]\"</FONT>",2) // 2 stands for hearable message
@@ -50,7 +50,7 @@
 
 /obj/item/device/megaphone/attackby(obj/item/I, mob/user)
 	if(istype(I, /obj/item/weapon/card/emag) && !emagged)
-		user << "<span class='indigo'>You overload \the [src]'s voice synthesizer.</span>"
+		user << "<span class='warning'>You overload \the [src]'s voice synthesizer.</span>"
 		emagged = 1
 		insults = rand(1, 3)//to prevent dickflooding
 		return

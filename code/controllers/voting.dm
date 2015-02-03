@@ -46,17 +46,17 @@ var/global/datum/controller/vote/vote = new()
 				if(C)
 					C << browse(vote.interface(C),"window=vote;can_close=0")
 
-			//voting.Cut()
+			//voting.len = 0
 
 /datum/controller/vote/proc/reset()
 	initiator = null
 	time_remaining = 0
 	mode = null
 	question = null
-	choices.Cut()
-	voted.Cut()
-	voting.Cut()
-	current_votes.Cut()
+	choices.len = 0
+	voted.len = 0
+	voting.len = 0
+	current_votes.len = 0
 
 /datum/controller/vote/proc/get_result()
 	//get the highest number of votes
@@ -197,10 +197,10 @@ var/global/datum/controller/vote/vote = new()
 				question = "End the shift?"
 				choices.Add("Initiate Crew Transfer", "Continue The Round")
 			if("custom")
-				question = rhtml_encode(input(usr,"What is the vote for?") as text|null)
+				question = html_encode(input(usr,"What is the vote for?") as text|null)
 				if(!question)	return 0
 				for(var/i=1,i<=10,i++)
-					var/option = capitalize(rhtml_encode(input(usr,"Please enter an option or hit cancel to finish") as text|null))
+					var/option = capitalize(html_encode(input(usr,"Please enter an option or hit cancel to finish") as text|null))
 					if(!option || mode || !usr.client)	break
 					choices.Add(option)
 			if("map")

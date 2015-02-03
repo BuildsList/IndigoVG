@@ -24,13 +24,13 @@
 	else
 		return
 	if(!(parts & flag))
-		user << "<span class='indigo'>This kit has no parts for this modification left.</span>"
+		user << "<span class='warning'>This kit has no parts for this modification left.</span>"
 		return
 	if(istype(O,to_type))
 		user << "<span class='notice'>[O] is already modified.</span>"
 		return
 	if(!isturf(O.loc))
-		user << "<span class='indigo'>[O] must be safely placed on the ground for modification.</span>"
+		user << "<span class='warning'>[O] must be safely placed on the ground for modification.</span>"
 		return
 	playsound(user.loc, 'sound/items/Screwdriver.ogg', 100, 1)
 	var/N = new to_type(O.loc)

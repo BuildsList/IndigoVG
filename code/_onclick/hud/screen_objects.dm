@@ -198,7 +198,7 @@
 	return 1
 
 /obj/screen/zone_sel/update_icon()
-	overlays.Cut()
+	overlays.len = 0
 	overlays += image('icons/mob/zone_sel.dmi', "[selecting]")
 
 
@@ -649,7 +649,7 @@
 				if(!C.purge)
 					C.harvesterune()
 				else
-					C << "<span class='indigo'>The nullrod's power interferes with your own!</span>"
+					C << "<span class='warning'>The nullrod's power interferes with your own!</span>"
 
 		if("breakdoor")
 			if(isconstruct(usr))
@@ -657,7 +657,7 @@
 				if(!C.purge)
 					C.harvesterknock()
 				else
-					C << "<span class='indigo'>The nullrod's power interferes with your own!</span>"
+					C << "<span class='warning'>The nullrod's power interferes with your own!</span>"
 
 		if("harvest")
 			if(isconstruct(usr))
@@ -665,7 +665,7 @@
 				if(!C.purge)
 					C.harvesterharvest()
 				else
-					C << "<span class='indigo'>The nullrod's power interferes with your own!</span>"
+					C << "<span class='warning'>The nullrod's power interferes with your own!</span>"
 
 ////////////ADMINBUS HUD ICONS////////////
 		if("Delete Bus")

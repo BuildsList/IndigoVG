@@ -239,15 +239,13 @@ var/global/borer_chem_types = typesof(/datum/borer_chem) - /datum/borer_chem
 
 /mob/living/simple_animal/borer/Stat()
 	..()
-	statpanel("Status")
+	if(statpanel("Status"))
+		if(emergency_shuttle)
+			if(emergency_shuttle.online && emergency_shuttle.location < 2)
+				var/timeleft = emergency_shuttle.timeleft()
+				if (timeleft)
+					stat(null, "ETA-[(timeleft / 60) % 60]:[add_zero(num2text(timeleft % 60), 2)]")
 
-	if(emergency_shuttle)
-		if(emergency_shuttle.online && emergency_shuttle.location < 2)
-			var/timeleft = emergency_shuttle.timeleft()
-			if (timeleft)
-				stat(null, "ETA-[(timeleft / 60) % 60]:[add_zero(num2text(timeleft % 60), 2)]")
-
-	if (client.statpanel == "Status")
 		stat("Chemicals", chemicals)
 
 // VERBS!
@@ -384,19 +382,19 @@ var/global/borer_chem_types = typesof(/datum/borer_chem) - /datum/borer_chem
 	set desc = "Push some chemicals into your host's bloodstream."
 
 	if(!host)
-		src << "<span class='indigo'>You are not inside a host body.</span>"
+		src << "<span class='warning'>You are not inside a host body.</span>"
 		return
 
 	if(stat)
-		src << "<span class='indigo'>You cannot secrete chemicals in your current state.</span>"
+		src << "<span class='warning'>You cannot secrete chemicals in your current state.</span>"
 		return
 
 	if(controlling)
-		src << "<span class='indigo'>You're too busy controlling your host.</span>"
+		src << "<span class='warning'>You're too busy controlling your host.</span>"
 		return
 
 	if(host.stat==DEAD)
-		src << "<span class='indigo'>You cannot do that in your host's current state.</span>"
+		src << "<span class='warning'>You cannot do that in your host's current state.</span>"
 		return
 
 	var/chemID = input("Select a chemical to secrete.", "Chemicals") in avail_chems|null
@@ -410,7 +408,7 @@ var/global/borer_chem_types = typesof(/datum/borer_chem) - /datum/borer_chem
 		max_amount = round(chemicals / chem.cost)
 
 	if(max_amount==0)
-		src << "<span class='indigo'>You don't have enough energy to even synthesize one unit!</span>"
+		src << "<span class='warning'>You don't have enough energy to even synthesize one unit!</span>"
 		return
 
 	var/units = input("Enter dosage in units.\n\nMax: [max_amount]\nCost: [chem.cost]/unit","Chemicals") as num
@@ -418,11 +416,11 @@ var/global/borer_chem_types = typesof(/datum/borer_chem) - /datum/borer_chem
 	units = round(units)
 
 	if(units < 1)
-		src << "<span class='indigo'>You cannot synthesize this little.</span>"
+		src << "<span class='warning'>You cannot synthesize this little.</span>"
 		return
 
 	if(chemicals < chem.cost*units)
-		src << "<span class='indigo'>You don't have enough energy to synthesize this much!</span>"
+		src << "<span class='warning'>You don't have enough energy to synthesize this much!</span>"
 		return
 
 
@@ -439,11 +437,11 @@ var/global/borer_chem_types = typesof(/datum/borer_chem) - /datum/borer_chem
 	set desc = "Slither out of your host."
 
 	if(!host)
-		src << "<span class='indigo'>You are not inside a host body.</span>"
+		src << "<span class='warning'>You are not inside a host body.</span>"
 		return
 
 	if(stat)
-		src << "<span class='indigo'>You cannot leave your host in your current state.</span>"
+		src << "<span class='warning'>You cannot leave your host in your current state.</span>"
 		return
 
 	if(!src)
@@ -456,7 +454,7 @@ var/global/borer_chem_types = typesof(/datum/borer_chem) - /datum/borer_chem
 		if(!host || !src) return
 
 		if(src.stat)
-			src << "<span class='indigo'>You cannot abandon [host] in your current state.</span>"
+			src << "<span class='warning'>You cannot abandon [host] in your current state.</span>"
 			return
 
 		src << "<span class='info'>You wiggle out of [host]'s ear and plop to the ground.</span>"

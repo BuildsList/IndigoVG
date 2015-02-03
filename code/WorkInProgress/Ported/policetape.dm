@@ -60,7 +60,7 @@
 	if(icon_state == "[icon_base]_start")
 		start = get_turf(src)
 		if(istype(start,/turf/space))
-			usr << "<span class='indigo'>You can't place [src] in space</span>"
+			usr << "<span class='warning'>You can't place [src] in space</span>"
 			return
 		usr << "<span class='notice'>You place the first end of [src].</span>"
 		icon_state = "[icon_base]_stop"
@@ -68,7 +68,7 @@
 		icon_state = "[icon_base]_start"
 		end = get_turf(src)
 		if(istype(end,/turf/space))
-			usr << "<span class='indigo'>You can't place [src] in space</span>"
+			usr << "<span class='warning'>You can't place [src] in space</span>"
 			return
 		if(start.y != end.y && start.x != end.x || start.z != end.z)
 			usr << "<span class='notice'>[src] can only be laid in a straight line.</span>"
@@ -98,7 +98,7 @@
 						break
 			cur = get_step_towards(cur,end)
 		if (!can_place)
-			usr << "<span class='indigo'>You can't run [src] through that!</span>"
+			usr << "<span class='warning'>You can't run [src] through that!</span>"
 			return
 
 		cur = start
@@ -113,7 +113,7 @@
 			cur = get_step_towards(cur,end)
 	//is_blocked_turf(var/turf/T)
 		usr << "<span class='notice'>You finish placing [src].</span>"
-		user.visible_message("<span class='indigo'>[user] finishes placing [src].</span>") //Now you know who to whack with a stun baton
+		user.visible_message("<span class='warning'>[user] finishes placing [src].</span>") //Now you know who to whack with a stun baton
 
 /obj/item/taperoll/afterattack(atom/target, mob/user, proximity_flag, click_parameters)
 	if(proximity_flag == 0) // not adjacent
@@ -176,7 +176,7 @@
 	if(user.a_intent == "help" && ((!is_sharp(W) && src.allowed(user))))
 		user << "<span class='notice'>You can't break [src] with that!</span>"
 		return
-	user.visible_message("<span class='indigo'>[user] breaks [src]!</span>")
+	user.visible_message("<span class='warning'>[user] breaks [src]!</span>")
 
 	var/dir[2]
 	var/icon_dir = src.icon_state

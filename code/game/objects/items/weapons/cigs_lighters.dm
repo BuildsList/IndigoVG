@@ -144,7 +144,7 @@ CIGARETTE PACKETS ARE IN FANCY.DM
 	else if(istype(W, /obj/item/weapon/melee/energy/sword))
 		var/obj/item/weapon/melee/energy/sword/S = W
 		if(S.active)
-			light("<span class='indigo'>[user] raises their [W], lighting their [name]. Holy fucking shit.</span>")
+			light("<span class='warning'>[user] raises their [W], lighting their [name]. Holy fucking shit.</span>")
 
 	else if(istype(W, /obj/item/device/assembly/igniter))
 		light("<span class='notice'>[user] fiddles with [W], and manages to light their [name].</span>")
@@ -167,7 +167,7 @@ CIGARETTE PACKETS ARE IN FANCY.DM
 		if(glass.reagents.has_reagent("sacid") || glass.reagents.has_reagent("pacid"))
 			new src.type_butt(location)
 			processing_objects.Remove(src)
-			user << "<span class='indigo'>Half of the [name] dissolves with a nasty fizzle.</span>"
+			user << "<span class='warning'>Half of the [name] dissolves with a nasty fizzle.</span>"
 			user.drop_item()
 			del(src)
 			return
@@ -208,7 +208,7 @@ CIGARETTE PACKETS ARE IN FANCY.DM
 
 		reagents.handle_reactions()
 		// This ain't ready yet.
-		//overlays.Cut()
+		//overlays.len = 0
 		//overlays += image('icons/mob/mask.dmi',overlay_on,LIGHTING_LAYER+1)
 		icon_state = icon_on
 		item_state = icon_on
@@ -532,7 +532,7 @@ CIGARETTE PACKETS ARE IN FANCY.DM
 				if(prob(75))
 					user.visible_message("<span class='notice'>After a few attempts, [user] manages to light the [src].</span>")
 				else
-					user << "<span class='indigo'>You burn yourself while lighting the lighter.</span>"
+					user << "<span class='warning'>You burn yourself while lighting the lighter.</span>"
 					user.adjustFireLoss(5)
 					user.visible_message("<span class='notice'>After a few attempts, [user] manages to light the [src], they however burn their finger in the process.</span>")
 

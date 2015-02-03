@@ -26,15 +26,15 @@
 		var/obj/item/weapon/weldingtool/WT = W
 
 		if(amount < 2)
-			user << "<span class='indigo'>You need at least two rods to do this.</span>"
+			user << "<span class='warning'>You need at least two rods to do this.</span>"
 			return
 
 		if(WT.remove_fuel(0,user))
 			var/obj/item/stack/sheet/metal/new_item = new(usr.loc)
 			new_item.add_to_stacks(usr)
-			user.visible_message("<span class='indigo'>[src] is shaped into metal by [user.name] with the weldingtool.</span>", \
-			"<span class='indigo'>You shape the [src] into metal with the weldingtool.</span>", \
-			"<span class='indigo'>You hear welding.</span>")
+			user.visible_message("<span class='warning'>[src] is shaped into metal by [user.name] with the weldingtool.</span>", \
+			"<span class='warning'>You shape the [src] into metal with the weldingtool.</span>", \
+			"<span class='warning'>You hear welding.</span>")
 			var/obj/item/stack/rods/R = src
 			src = null
 			var/replace = (user.get_inactive_hand()==R)

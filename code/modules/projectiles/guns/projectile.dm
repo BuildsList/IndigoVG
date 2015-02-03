@@ -190,7 +190,7 @@
 			update_icon()
 			return
 	else
-		user << "<span class='indigo'>Nothing loaded in \the [src]!</span>"
+		user << "<span class='warning'>Nothing loaded in \the [src]!</span>"
 
 /obj/item/weapon/gun/projectile/afterattack(atom/target as mob|obj|turf|area, mob/living/user as mob|obj, flag)
 	..()
@@ -207,7 +207,7 @@
 //		if(in_chamber && loaded.len)
 //			usr << "It also has a chambered round." {R}
 	if(istype(silenced, /obj/item/gun_part/silencer))
-		user << "<span class='indigo'>It has a supressor attached to the barrel.</span>"
+		user << "<span class='warning'>It has a supressor attached to the barrel.</span>"
 
 /obj/item/weapon/gun/projectile/proc/getAmmo()
 	var/bullets = 0

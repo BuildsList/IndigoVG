@@ -468,7 +468,7 @@
 			last_fired = world.time
 		else
 			if (world.time % 3)
-				occupant_message("<span class='indigo'>[src] is not ready to fire again!")
+				occupant_message("<span class='warning'>[src] is not ready to fire again!")
 			return 0
 
 		switch(mode)

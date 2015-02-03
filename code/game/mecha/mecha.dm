@@ -173,9 +173,9 @@
 		if(65 to 85)
 			user << "<span class='notice'>It's slightly damaged.</span>"
 		if(45 to 65)
-			user << "<span class='indigo'>It's badly damaged.</span>"
+			user << "<span class='warning'>It's badly damaged.</span>"
 		if(25 to 45)
-			user << "<span class='indigo'>It's heavily damaged.</span>"
+			user << "<span class='warning'>It's heavily damaged.</span>"
 		else
 			user << "<span class='danger'>It's falling apart.</span>"
 	if(equipment && equipment.len)
@@ -438,8 +438,8 @@
 		src.take_damage(15)
 		src.check_for_internal_damage(list(MECHA_INT_TEMP_CONTROL,MECHA_INT_TANK_BREACH,MECHA_INT_CONTROL_LOST))
 		playsound(get_turf(src), 'sound/weapons/slash.ogg', 50, 1, -1)
-		user << "<span class='indigo'>You slash at the armored suit!</span>"
-		visible_message("<span class='indigo'>The [user] slashes at [src.name]'s armor!</span>")
+		user << "<span class='warning'>You slash at the armored suit!</span>"
+		visible_message("<span class='warning'>The [user] slashes at [src.name]'s armor!</span>")
 	else
 		src.log_append_to_last("Armor saved.")
 		playsound(get_turf(src), 'sound/weapons/slash.ogg', 50, 1, -1)
@@ -458,7 +458,7 @@
 			var/damage = rand(user.melee_damage_lower, user.melee_damage_upper)
 			src.take_damage(damage)
 			src.check_for_internal_damage(list(MECHA_INT_TEMP_CONTROL,MECHA_INT_TANK_BREACH,MECHA_INT_CONTROL_LOST))
-			visible_message("<span class='indigo'><B>[user]</B> [user.attacktext] [src]!</span>")
+			visible_message("<span class='warning'><B>[user]</B> [user.attacktext] [src]!</span>")
 			user.attack_log += text("\[[time_stamp()]\] <font color='red'>attacked [src.name]</font>")
 		else
 			src.log_append_to_last("Armor saved.")
@@ -683,9 +683,9 @@
 				output_maintenance_dialog(id_card, user)
 				return
 			else
-				user << "<span class='indigo'>Invalid ID: Access denied.</span>"
+				user << "<span class='warning'>Invalid ID: Access denied.</span>"
 		else
-			user << "<span class='indigo'>Maintenance protocols disabled by operator.</span>"
+			user << "<span class='warning'>Maintenance protocols disabled by operator.</span>"
 	else if(istype(W, /obj/item/weapon/wrench))
 		if(state==1)
 			state = 2
@@ -894,7 +894,7 @@
 			src.verbs -= /obj/mecha/verb/connect_to_port
 			return
 		else
-			src.occupant_message("<span class='indigo'>[name] failed to connect to the port.</span>")
+			src.occupant_message("<span class='warning'>[name] failed to connect to the port.</span>")
 			return
 	else
 		src.occupant_message("Nothing happens")
@@ -913,7 +913,7 @@
 		src.verbs -= /obj/mecha/verb/disconnect_from_port
 		src.verbs += /obj/mecha/verb/connect_to_port
 	else
-		src.occupant_message("<span class='indigo'>[name] is not connected to the port at the moment.</span>")
+		src.occupant_message("<span class='warning'>[name] is not connected to the port at the moment.</span>")
 
 /obj/mecha/verb/toggle_lights()
 	set name = "Toggle Lights"
@@ -972,7 +972,7 @@
 	else if(src.operation_allowed(usr))
 		passed = 1
 	if(!passed)
-		usr << "<span class='indigo'>Access denied</span>"
+		usr << "<span class='warning'>Access denied</span>"
 		src.log_append_to_last("Permission denied.")
 		return
 	for(var/mob/living/carbon/slime/M in range(1,usr))

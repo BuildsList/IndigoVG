@@ -79,7 +79,7 @@
 						c.info = "<font color = #101010>"
 					else			//no toner? shitty copies for you!
 						c.info = "<font color = #808080>"
-					var/copied = rhtml_decode(copy.info)
+					var/copied = html_decode(copy.info)
 					copied = replacetext(copied, "color:", "nocolor:")	//state of the art techniques in action
 					c.info += copied
 					c.info += "</font>"
@@ -257,7 +257,7 @@
 		var/obj/item/weapon/grab/G = O
 		if(ismob(G.affecting) && G.affecting != ass)
 			var/mob/GM = G.affecting
-			visible_message("<span class='indigo'>[usr] drags [GM.name] onto the photocopier!</span>")
+			visible_message("<span class='warning'>[usr] drags [GM.name] onto the photocopier!</span>")
 			GM.loc = get_turf(src)
 			ass = GM
 			if(photocopy)
@@ -329,11 +329,11 @@
 		return
 	src.add_fingerprint(user)
 	if(target == user && !user.stat && !user.weakened && !user.stunned && !user.paralysis)
-		visible_message("<span class='indigo'>[usr] jumps onto the photocopier!</span>")
+		visible_message("<span class='warning'>[usr] jumps onto the photocopier!</span>")
 	else if(target != user && !user.restrained() && !user.stat && !user.weakened && !user.stunned && !user.paralysis)
 		if(target.anchored) return
 		if(!ishuman(user) && !ismonkey(user)) return
-		visible_message("<span class='indigo'>[usr] drags [target.name] onto the photocopier!</span>")
+		visible_message("<span class='warning'>[usr] drags [target.name] onto the photocopier!</span>")
 	target.loc = get_turf(src)
 	ass = target
 	if(photocopy)

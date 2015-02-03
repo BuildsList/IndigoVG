@@ -857,7 +857,7 @@ var/global/list/obj/item/device/pda/PDAs = list()
 					<h4><img src=pda_menu.png> Detected Channels</h4>: <li>"}
 				// END AUTOFIX
 				for(var/datum/chatroom/C in chatrooms)
-					dat += "<a href='byond://?src=\ref[src];pdachannel=[C.name]'>#[rhtml_encode(lowertext(C.name))]"
+					dat += "<a href='byond://?src=\ref[src];pdachannel=[C.name]'>#[html_encode(lowertext(C.name))]"
 					if(C.password != "")
 						dat += " <img src=pda_locked.png>"
 					dat += "</li>"
@@ -959,7 +959,7 @@ var/global/list/obj/item/device/pda/PDAs = list()
 					var/turf/T = get_turf(src.loc)
 
 					if(!fexists("icons/pda_icons/pda_minimap_[map.nameShort].png"))
-						dat += {"<span class='indigo'>It appears that our services have yet to produce a minimap of this station. We apologize for the inconvenience.</span>"}
+						dat += {"<span class='warning'>It appears that our services have yet to produce a minimap of this station. We apologize for the inconvenience.</span>"}
 
 					if(T.z == map.zMainStation)
 						dat += {"Current Location: <b>[T.loc.name] ([T.x-WORLD_X_OFFSET],[T.y-WORLD_Y_OFFSET],1)</b><br>"}	//it's a "Station Map" app, so it only gives information reguarding
@@ -1007,7 +1007,7 @@ var/global/list/obj/item/device/pda/PDAs = list()
 					"}
 
 					if(!(app.markers.len))
-						dat += {"<br><span class='indigo'>no markers</span>"}
+						dat += {"<br><span class='warning'>no markers</span>"}
 					else
 						dat +={"<ul>"}
 						for(var/datum/minimap_marker/mkr in app.markers)
@@ -1329,7 +1329,7 @@ var/global/list/obj/item/device/pda/PDAs = list()
 //EXTRA FUNCTIONS===================================
 
 	if (mode == 2||mode == 21)//To clear message overlays.
-		overlays.Cut()
+		overlays.len = 0
 
 	if ((honkamt > 0) && (prob(60)))//For clown virus.
 		honkamt--
@@ -1432,7 +1432,7 @@ var/global/list/obj/item/device/pda/PDAs = list()
 			L << "\icon[P] <b>Message from [src.owner] ([ownjob]), </b>\"[t]\" (<a href='byond://?src=\ref[P];choice=Message;skiprefresh=1;target=\ref[src]'>Reply</a>)"
 
 		log_pda("[usr] (PDA: [src.name]) sent \"[t]\" to [P.name]")
-		P.overlays.Cut()
+		P.overlays.len = 0
 		P.overlays += image('icons/obj/pda.dmi', "pda-r")
 	else
 		U << "<span class='notice'>ERROR: Messaging server is not responding.</span>"

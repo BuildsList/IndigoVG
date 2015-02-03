@@ -19,8 +19,8 @@
 				unbuckle()
 			else
 				buckled_mob.visible_message(\
-					"<span class='indigo'>[buckled_mob.name] struggles to break free of the gelatinous resin...</span>",\
-					"<span class='indigo'>You struggle to break free from the gelatinous resin...</span>",\
+					"<span class='warning'>[buckled_mob.name] struggles to break free of the gelatinous resin...</span>",\
+					"<span class='warning'>You struggle to break free from the gelatinous resin...</span>",\
 					"<span class='notice'>You hear squelching...</span>")
 				spawn(1200)
 					if(user && buckled_mob && user.buckled == src)
@@ -45,7 +45,7 @@
 	else
 		M.visible_message(\
 			"<span class='notice'>[user.name] secretes a thick vile goo, securing [M.name] into [src]!</span>",\
-			"<span class='indigo'>[user.name] drenches you in a foul-smelling resin, trapping you in the [src]!</span>",\
+			"<span class='warning'>[user.name] drenches you in a foul-smelling resin, trapping you in the [src]!</span>",\
 			"<span class='notice'>You hear squelching...</span>")
 	M.buckled = src
 	M.loc = src.loc
@@ -61,7 +61,7 @@
 	health = max(0, health - aforce)
 	playsound(loc, 'sound/effects/attackblob.ogg', 100, 1)
 	for(var/mob/M in viewers(src, 7))
-		M.show_message("<span class='indigo'>[user] hits [src] with [W]!</span>", 1)
+		M.show_message("<span class='warning'>[user] hits [src] with [W]!</span>", 1)
 	healthcheck()
 
 /obj/structure/stool/bed/nest/proc/healthcheck()

@@ -17,9 +17,9 @@
 	var/datum/effect/effect/system/spark_spread/spark_system = new /datum/effect/effect/system/spark_spread
 	//Messages - Saves me time if I want to change something.
 	var/noserver = "<span class='alert'>ALERT: No server detected.</span>"
-	var/incorrectkey = "<span class='indigo'>ALERT: Incorrect decryption key!</span>"
+	var/incorrectkey = "<span class='warning'>ALERT: Incorrect decryption key!</span>"
 	var/defaultmsg = "<span class='notice'>Welcome. Please select an option.</span>"
-	var/rebootmsg = "<span class='indigo'>%$&(£: Critical %$$@ Error // !RestArting! <lOadiNg backUp iNput ouTput> - ?pLeaSe wAit!</span>"
+	var/rebootmsg = "<span class='warning'>%$&(£: Critical %$$@ Error // !RestArting! <lOadiNg backUp iNput ouTput> - ?pLeaSe wAit!</span>"
 	//Computer properties
 	var/screen = 0 		// 0 = Main menu, 1 = Message Logs, 2 = Hacked screen, 3 = Custom Message
 	var/hacking = 0		// Is it being hacked into by the AI/Cyborg
@@ -40,7 +40,7 @@
 		return
 	if(isscrewdriver(O) && emagged)
 		//Stops people from just unscrewing the monitor and putting it back to get the console working again.
-		user << "<span class='indigo'>It is too hot to mess with!</span>"
+		user << "<span class='warning'>It is too hot to mess with!</span>"
 		return
 	..()
 	return
@@ -148,7 +148,7 @@
 			if(!auth)
 				dat += "<br><hr><dd><span class='notice'>Please authenticate with the server in order to show additional options.</span>"
 			else
-				dat += "<br><hr><dd><span class='indigo'>Reg, #514 forbids sending messages to a Head of Staff containing Erotic Rendering Properties.</span>"
+				dat += "<br><hr><dd><span class='warning'>Reg, #514 forbids sending messages to a Head of Staff containing Erotic Rendering Properties.</span>"
 
 		//Message Logs
 		if(1)
@@ -274,10 +274,10 @@
 
 /obj/machinery/computer/message_monitor/proc/BruteForce(mob/user as mob)
 	if(isnull(linkedServer))
-		user << "<span class='indigo'>Could not complete brute-force: Linked Server Disconnected!</span>"
+		user << "<span class='warning'>Could not complete brute-force: Linked Server Disconnected!</span>"
 	else
 		var/currentKey = src.linkedServer.decryptkey
-		user << "<span class='indigo'>Brute-force completed! The key is '[currentKey]'.</span>"
+		user << "<span class='warning'>Brute-force completed! The key is '[currentKey]'.</span>"
 	src.hacking = 0
 	src.icon_state = normal_icon
 	src.screen = 0 // Return the screen back to normal
@@ -474,7 +474,7 @@
 									var/mob/living/carbon/human/H = customrecepient.loc
 									H << "\icon[customrecepient] <b>Message from [customsender] ([customjob]), </b>\"[custommessage]\" (<a href='byond://?src=\ref[src];choice=Message;skiprefresh=1;target=\ref[src]'>Reply</a>)"
 								log_pda("[usr] (PDA: [customsender]) sent \"[custommessage]\" to [customrecepient.owner]")
-								customrecepient.overlays.Cut()
+								customrecepient.overlays.len = 0
 								customrecepient.overlays += image('icons/obj/pda.dmi', "pda-r")
 						//Sender is faking as someone who exists
 						else
@@ -488,7 +488,7 @@
 									var/mob/living/carbon/human/H = customrecepient.loc
 									H << "\icon[customrecepient] <b>Message from [PDARec.owner] ([customjob]), </b>\"[custommessage]\" (<a href='byond://?src=\ref[customrecepient];choice=Message;skiprefresh=1;target=\ref[PDARec]'>Reply</a>)"
 								log_pda("[usr] (PDA: [PDARec.owner]) sent \"[custommessage]\" to [customrecepient.owner]")
-								customrecepient.overlays.Cut()
+								customrecepient.overlays.len = 0
 								customrecepient.overlays += image('icons/obj/pda.dmi', "pda-r")
 						//Finally..
 						ResetMessage()

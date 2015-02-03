@@ -42,11 +42,11 @@
 			if(W.force < 15)
 				visible_message("<span class='notice'>[src]'s protective glass glances off the hit from [O].")
 			else
-				visible_message("<span class='indigo'>[user] damages [src]'s protective glass with [O].")
+				visible_message("<span class='warning'>[user] damages [src]'s protective glass with [O].")
 				hitstaken++
 				if(hitstaken == 4)
 					playsound(user, 'sound/effects/Glassbr3.ogg', 100, 1) //Break cabinet, receive goodies. Cabinet's fucked for life after that.
-					visible_message("<span class='indigo'>[src]'s protective glass shatters, exposing the cabinet's content.")
+					visible_message("<span class='warning'>[src]'s protective glass shatters, exposing the cabinet's content.")
 					smashed = 1
 					locked = 0
 					localopened = 1
@@ -56,7 +56,7 @@
 		if(!fireaxe)
 			var/obj/item/weapon/twohanded/fireaxe/F = O
 			if(F.wielded)
-				user << "<span class='indigo'>Unwield [F] first!</span>"
+				user << "<span class='warning'>Unwield [F] first!</span>"
 				return
 			fireaxe = O
 			user.drop_item(O)
@@ -66,7 +66,7 @@
 			update_icon()
 		else
 			if(smashed)
-				user << "<span class='indigo'>[src]'s protective glass is broken. Cutting hazard right there!</span>"
+				user << "<span class='warning'>[src]'s protective glass is broken. Cutting hazard right there!</span>"
 				return
 			if(istype(O, /obj/item/device/multitool))
 				if(localopened)
@@ -115,7 +115,7 @@
 		hasaxe = 1
 
 	if(locked)
-		user <<"<span class='indigo'>[src] is locked tight!</span>"
+		user <<"<span class='warning'>[src] is locked tight!</span>"
 		return
 	if(localopened)
 		if(fireaxe)
@@ -156,7 +156,7 @@
 
 	if(isrobot(usr) || locked || smashed)
 		if(locked)
-			usr << "<span class='indigo'>[src] is locked tight!</span>"
+			usr << "<span class='warning'>[src] is locked tight!</span>"
 		else if(smashed)
 			usr << "<span class='notice'>The protective glass is broken!</span>"
 		return
@@ -191,7 +191,7 @@
 	if(isobserver(user))
 		return //NO. FUCK OFF.
 	if(smashed)
-		user << "<span class='indigo'>[src]'s security protocols are locked. Might have to do with the smashed glass.</span>"
+		user << "<span class='warning'>[src]'s security protocols are locked. Might have to do with the smashed glass.</span>"
 		return
 	else
 		locked = !locked

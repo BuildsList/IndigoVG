@@ -51,7 +51,7 @@
 		return
 
 	if(broken)
-		user << "<span class='indigo'>\The [src] is broken.</span>"
+		user << "<span class='warning'>\The [src] is broken.</span>"
 		return
 
 	flash_recharge()
@@ -63,12 +63,12 @@
 			last_used = world.time
 			if(prob(times_used))	//if you use it 5 times in a minute it has a 10% chance to break!
 				broken = 1
-				user << "<span class='indigo'>The bulb has burnt out!</span>"
+				user << "<span class='warning'>The bulb has burnt out!</span>"
 				icon_state = "flashburnt"
 				return
 			times_used++
 		else	//can only use it  5 times a minute
-			user << "<span class='indigo'>*click* *click*</span>"
+			user << "<span class='warning'>*click* *click*</span>"
 			return
 
 	playsound(get_turf(user), 'sound/weapons/flash.ogg', 100, 1)
@@ -132,7 +132,7 @@
 /obj/item/device/flash/attack_self(mob/living/carbon/user as mob, flag = 0, emp = 0)
 	if(!user || !clown_check(user)) 	return
 	if(broken)
-		user.show_message("<span class='indigo'>The [src.name] is broken</span>", 2)
+		user.show_message("<span class='warning'>The [src.name] is broken</span>", 2)
 		return
 
 	flash_recharge()
@@ -143,12 +143,12 @@
 		if(0 to 5)
 			if(prob(2*times_used))	//if you use it 5 times in a minute it has a 10% chance to break!
 				broken = 1
-				user << "<span class='indigo'>The bulb has burnt out!</span>"
+				user << "<span class='warning'>The bulb has burnt out!</span>"
 				icon_state = "flashburnt"
 				return
 			times_used++
 		else	//can only use it  5 times a minute
-			user.show_message("<span class='indigo'>*click* *click*</span>", 2)
+			user.show_message("<span class='warning'>*click* *click*</span>", 2)
 			return
 	playsound(get_turf(src), 'sound/weapons/flash.ogg', 100, 1)
 	flick("flash2", src)
@@ -173,8 +173,8 @@
 			var/oldalpha = M.alpha
 			if(prob(80))
 				M.alpha = 255
-				M.visible_message("<span class='indigo'>[M] suddenly becomes fully visible!</span>",\
-								"<span class='indigo'>You see a bright flash of light and are suddenly fully visible again.</span>")
+				M.visible_message("<span class='warning'>[M] suddenly becomes fully visible!</span>",\
+								"<span class='warning'>You see a bright flash of light and are suddenly fully visible again.</span>")
 				spawn(50)
 					M.alpha = oldalpha
 		var/safety = M:eyecheck()

@@ -21,7 +21,7 @@
 	animation.icon_state = "cultfloor"
 	flick("cultfloor",animation)
 	spawn(10)
-		del(animation)
+		qdel(animation)
 
 /obj/effect/proc_holder/spell/aoe_turf/conjure/wall
 	name = "Lesser Construction"
@@ -40,7 +40,7 @@
 	animation.icon_state = "cultwall"
 	flick("cultwall",animation)
 	spawn(10)
-		del(animation)
+		qdel(animation)
 
 /obj/effect/proc_holder/spell/aoe_turf/conjure/wall/reinforced
 	name = "Greater Construction"
@@ -214,11 +214,11 @@
 			c_animation.icon_state = "rune_teleport"
 			flick("harvesting",c_animation)
 			spawn(10)
-				del(c_animation)
+				qdel(c_animation)
 			src.loc = destination
-			src << "<span class='indigo'>You warp back to Nar-Sie[prey ? " along with your prey":""].</span>"
+			src << "<span class='warning'>You warp back to Nar-Sie[prey ? " along with your prey":""].</span>"
 		else
-			src << "<span class='indigo'>Something is blocking the harvest.</span>"
+			src << "<span class='warning'>Something is blocking the harvest.</span>"
 			nullblock = 0
 	else
 		src << "<span class='danger'>...something's wrong!</span>"//There shouldn't be an instance of Harvesters when Nar-Sie isn't in the world.
@@ -234,7 +234,7 @@
 					door.cultify()
 		doorcooldown = 0
 	else
-		src << "<span class='indigo'>You aren't ready to disintegrate doors again just yet.</span>"
+		src << "<span class='warning'>You aren't ready to disintegrate doors again just yet.</span>"
 
 /mob/living/simple_animal/construct/harvester/verb/harvesterune()
 	set name = "Scribe a Rune"
@@ -246,7 +246,7 @@
 	var/r											//shamelessly copied from /obj/item/weapon/tome/imbued
 	if(user.runecooldown >= 10)
 		if (!istype(user.loc,/turf))
-			user << "<span class='indigo'> You do not have enough space to write a proper rune.</span>"
+			user << "<span class='warning'> You do not have enough space to write a proper rune.</span>"
 			return
 		var/list/runes = list("Teleport", "Teleport Other", "Spawn a Tome", "Change Construct Type", "Convert", "EMP", "Drain Blood", "See Invisible", "Resurrect", "Hide Runes", "Reveal Runes", "Astral Journey", "Manifest a Ghost", "Imbue Talisman", "Sacrifice", "Wall", "Free Cultist", "Summon Cultist", "Deafen", "Blind", "BloodBoil", "Communicate", "Stun")
 		r = input("Choose a rune to scribe", "Rune Scribing") in runes //not cancellable.
@@ -422,5 +422,5 @@
 					R.word3=cultwords["technology"]
 					R.check_icon()
 	else
-		user << "<span class='indigo'>You aren't ready to write another rune just yet.</span>"
+		user << "<span class='warning'>You aren't ready to write another rune just yet.</span>"
 

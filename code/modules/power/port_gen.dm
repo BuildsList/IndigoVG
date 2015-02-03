@@ -144,7 +144,7 @@ display round(lastgen) and plasmatank amount
 /obj/machinery/power/port_gen/pacman/examine(mob/user)
 	..()
 	if(crit_fail)
-		user << "<span class='indigo'>The generator seems to have broken down.</span>"
+		user << "<span class='warning'>The generator seems to have broken down.</span>"
 	else
 		user << "<span class='info'>The generator has [sheets] units of [sheet_name] fuel left, producing [power_gen] per cycle.</span>"
 

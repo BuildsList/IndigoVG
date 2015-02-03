@@ -14,10 +14,17 @@
 /obj/structure/bookcase
 	name = "bookcase"
 	icon = 'icons/obj/library.dmi'
-	icon_state = "book_alt-0"
+	icon_state = "book-0"
 	anchored = 1
 	density = 1
 	opacity = 1
+	var/health = 50
+
+	autoignition_temperature = AUTOIGNITION_WOOD
+	fire_fuel = 10
+
+/obj/structure/bookcase/cultify()
+	return
 
 /obj/structure/bookcase/initialize()
 	for(var/obj/item/I in loc)
@@ -30,6 +37,30 @@
 		user.drop_item()
 		O.loc = src
 		update_icon()
+	else if(istype(O, /obj/item/weapon/tome))
+		user.drop_item()
+		O.loc = src
+		update_icon()
+	else if(istype(O, /obj/item/weapon/spellbook))
+		user.drop_item()
+		O.loc = src
+		update_icon()
+	else if(istype(O, /obj/item/weapon/storage/bible))
+		user.drop_item()
+		O.loc = src
+		update_icon()
+	else if(istype(O, /obj/item/weapon/wrench))
+		user << "<span class='notice'> Now disassembling bookcase</span>"
+		playsound(get_turf(src), 'sound/items/Ratchet.ogg', 50, 1)
+		if(do_after(user,50))
+			new /obj/item/stack/sheet/wood(get_turf(src))
+			new /obj/item/stack/sheet/wood(get_turf(src))
+			new /obj/item/stack/sheet/wood(get_turf(src))
+			new /obj/item/stack/sheet/wood(get_turf(src))
+			new /obj/item/stack/sheet/wood(get_turf(src))
+			density = 0
+			qdel(src)
+		return
 	else if(istype(O, /obj/item/weapon/pen))
 		var/newname = stripped_input(usr, "What would you like to title this bookshelf?")
 		if(!newname)
@@ -37,6 +68,18 @@
 		else
 			name = ("bookcase ([sanitize(newname)])")
 	else
+		switch(O.damtype)
+			if("fire")
+				src.health -= O.force * 1
+			if("brute")
+				src.health -= O.force * 0.75
+			else
+		if (src.health <= 0)
+			visible_message("<span class=warning>The bookcase is smashed apart!</span>")
+			new /obj/item/stack/sheet/wood(get_turf(src))
+			new /obj/item/stack/sheet/wood(get_turf(src))
+			new /obj/item/stack/sheet/wood(get_turf(src))
+			qdel(src)
 		..()
 
 /obj/structure/bookcase/attack_hand(var/mob/user as mob)
@@ -56,13 +99,13 @@
 	switch(severity)
 		if(1.0)
 			for(var/obj/item/weapon/book/b in contents)
-				del(b)
+				qdel(b)
 			qdel(src)
 			return
 		if(2.0)
 			for(var/obj/item/weapon/book/b in contents)
 				if (prob(50)) b.loc = (get_turf(src))
-				else del(b)
+				else qdel(b)
 			qdel(src)
 			return
 		if(3.0)
@@ -76,9 +119,9 @@
 
 /obj/structure/bookcase/update_icon()
 	if(contents.len < 5)
-		icon_state = "book_alt-[contents.len]"
+		icon_state = "book-[contents.len]"
 	else
-		icon_state = "book_alt-5"
+		icon_state = "book-5"
 
 
 /obj/structure/bookcase/manuals/medical
@@ -99,9 +142,8 @@
 		new /obj/item/weapon/book/manual/engineering_particle_accelerator(src)
 		new /obj/item/weapon/book/manual/engineering_hacking(src)
 		new /obj/item/weapon/book/manual/engineering_guide(src)
-//		new /obj/item/weapon/book/manual/atmospipes(src)
 		new /obj/item/weapon/book/manual/engineering_singularity_safety(src)
-//		new /obj/item/weapon/book/manual/evaguide(src)
+		new /obj/item/weapon/book/manual/robotics_cyborgs(src)
 		update_icon()
 
 /obj/structure/bookcase/manuals/research_and_development
@@ -125,6 +167,10 @@
 	w_class = 3		 //upped to three because books are, y'know, pretty big. (and you could hide them inside eachother recursively forever)
 	flags = FPRINT
 	attack_verb = list("bashed", "whacked", "educated")
+
+	autoignition_temperature = AUTOIGNITION_PAPER
+	fire_fuel = 3
+
 	var/dat			 // Actual page content
 	var/due_date = 0 // Game time in 1/10th seconds
 	var/author		 // Who wrote the thing, can be changed by pen or PC. It is not automatically assigned
@@ -132,6 +178,10 @@
 	var/title		 // The real name of the book.
 	var/carved = 0	 // Has the book been hollowed out for use as a secret storage item?
 	var/obj/item/store	//What's in the book?
+
+/obj/item/weapon/book/cultify()
+	new /obj/item/weapon/tome(loc)
+	..()
 
 /obj/item/weapon/book/attack_self(var/mob/user as mob)
 	if(carved)

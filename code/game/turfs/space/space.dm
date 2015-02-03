@@ -22,7 +22,7 @@
 		var/obj/structure/lattice/L = locate(/obj/structure/lattice, src)
 		if(L)
 			if(R.amount < 2)
-				user << "<span class='indigo'>You don't have enough rods to do that.</span>"
+				user << "<span class='warning'>You don't have enough rods to do that.</span>"
 				return
 			user << "<span class='notice'>You begin to build a catwalk.</span>"
 			if(do_after(user,30))
@@ -49,7 +49,7 @@
 			S.use(1)
 			return
 		else
-			user << "<span class='indigo'>The plating is going to need some support.</span>"
+			user << "<span class='warning'>The plating is going to need some support.</span>"
 	return
 
 
@@ -57,11 +57,10 @@
 
 /turf/space/Entered(atom/movable/A as mob|obj)
 	if(movement_disabled)
-		usr << "<span class='indigo'>Movement is admin-disabled.</span>" //This is to identify lag problems
+		usr << "<span class='warning'>Movement is admin-disabled.</span>" //This is to identify lag problems
 		return
 	..()
 	if ((!(A) || src != A.loc))	return
-
 	inertial_drift(A)
 
 	if(ticker && ticker.mode)
@@ -117,7 +116,7 @@
 				if(MM.client && !MM.stat)
 					if(MM.locked_to_z!=0)
 						if(src.z == MM.locked_to_z)
-							MM << "<span class='indigo'>You cannot leave this area.</span>"
+							MM << "<span class='warning'>You cannot leave this area.</span>"
 							if(MM.x <= TRANSITIONEDGE)
 								MM.inertia_dir = 4
 							else if(MM.x >= world.maxx -TRANSITIONEDGE)
@@ -128,7 +127,7 @@
 								MM.inertia_dir = 2
 							return
 						else
-							MM << "<span class='indigo'>You find your way back.</span"
+							MM << "<span class='warning'>You find your way back.</span"
 							move_to_z=MM.locked_to_z
 
 			var/safety = 1

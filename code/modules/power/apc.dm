@@ -915,10 +915,10 @@
 	if(!istype(malf))
 		return
 	if(istype(malf.loc, /obj/machinery/power/apc)) // Already in an APC
-		malf << "<span class='indigo'>You must evacuate your current apc first.</span>"
+		malf << "<span class='warning'>You must evacuate your current apc first.</span>"
 		return
 	if(!malf.can_shunt)
-		malf << "<span class='indigo'>You cannot shunt.</span>"
+		malf << "<span class='warning'>You cannot shunt.</span>"
 		return
 	if(STATION_Z != z)
 		return
@@ -1023,8 +1023,11 @@
 	area.calc_lighting() */
 
 	lastused_light = areaMaster.usage(LIGHT)
+	lastused_light += areaMaster.usage(STATIC_LIGHT)
 	lastused_equip = areaMaster.usage(EQUIP)
+	lastused_light += areaMaster.usage(STATIC_EQUIP)
 	lastused_environ = areaMaster.usage(ENVIRON)
+	lastused_light += areaMaster.usage(STATIC_ENVIRON)
 	areaMaster.clear_usage()
 
 	lastused_total = lastused_light + lastused_equip + lastused_environ

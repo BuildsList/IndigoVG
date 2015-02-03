@@ -69,7 +69,7 @@
 	set src in usr
 
 	if((M_CLUMSY in usr.mutations) && prob(50))
-		usr << "<span class='indigo'>You cut yourself on [src].</span>"
+		usr << "<span class='warning'>You cut yourself on [src].</span>"
 		return
 	var/n_name = copytext(sanitize(input(usr, "What would you like to label [src]?", "Paper Labelling", null)  as text), 1, MAX_NAME_LEN)
 	if((loc == usr && usr.stat == 0))
@@ -151,7 +151,7 @@
 	info = null
 	stamps = null
 	stamped = list()
-	overlays.Cut()
+	overlays.len = 0
 	updateinfolinks()
 	update_icon()
 
@@ -211,7 +211,7 @@
 		var/t = sanitize(input("Enter what you want to write:", "Write", null, null) as message, MAX_MESSAGE_LEN)
 		var/obj/item/i = usr.get_active_hand() // Check to see if he still got that darn pen, also check if he's using a crayon or pen.
 		if(!istype(i,/obj/item/weapon/pen) && !istype(i,/obj/item/toy/crayon))
-			usr << "<span class='indigo'>Please ensure your pen is in your active hand and that you're holding the paper.</span>"
+			usr << "<span class='warning'>Please ensure your pen is in your active hand and that you're holding the paper.</span>"
 			return
 
 		// if paper is not in usr, then it must be in a clipboard or folder, which must be in or near usr

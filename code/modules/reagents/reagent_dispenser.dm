@@ -95,7 +95,7 @@
 /obj/structure/reagent_dispensers/fueltank/examine(mob/user)
 	..()
 	if (modded)
-		user << "<span class='indigo'>Fuel faucet is wrenched open, leaking the fuel!</span>"
+		user << "<span class='warning'>Fuel faucet is wrenched open, leaking the fuel!</span>"
 	if(rig)
 		user << "<span class='notice'>There is some kind of device rigged to the tank.</span>"
 
@@ -115,7 +115,7 @@
 		modded = modded ? 0 : 1
 	if (istype(W,/obj/item/device/assembly_holder))
 		if (rig)
-			user << "<span class='indigo'>There is another device in the way.</span>"
+			user << "<span class='warning'>There is another device in the way.</span>"
 			return ..()
 		user.visible_message("[user] begins rigging [W] to \the [src].", "You begin rigging [W] to \the [src]")
 		if(do_after(user, 20))

@@ -318,7 +318,7 @@ var/global/list/whitelisted_species = list("Human")
 /datum/species/proc/handle_death(var/mob/living/carbon/human/H) //Handles any species-specific death events (such as dionaea nymph spawns).
 	/*
 	if(flags & IS_SYNTHETIC)
-		//H.make_jittery(200) //S-s-s-s-sytem f-f-ai-i-i-i-i-lure-ure-ure-ure
+		//H.Jitter(200) //S-s-s-s-sytem f-f-ai-i-i-i-i-lure-ure-ure-ure
 		H.h_style = ""
 		spawn(100)
 			//H.is_jittery = 0
@@ -367,7 +367,7 @@ var/global/list/whitelisted_species = list("Human")
 	heat_level_2 = 480 //Default 400
 	heat_level_3 = 1100 //Default 1000
 
-	flags = IS_WHITELISTED | HAS_LIPS | HAS_UNDERWEAR | HAS_TAIL
+	flags = HAS_LIPS | HAS_UNDERWEAR | HAS_TAIL | HAS_SKIN_TONE
 
 	flesh_color = "#34AF10"
 
@@ -383,7 +383,7 @@ var/global/list/whitelisted_species = list("Human")
 	language = "Clatter"
 	attack_verb = "punch"
 
-	flags = IS_WHITELISTED | HAS_LIPS | /*HAS_TAIL | NO_EAT |*/ NO_BREATHE /*| NON_GENDERED*/ | NO_BLOOD
+	flags = IS_WHITELISTED | HAS_LIPS | /*HAS_TAIL | NO_EAT |*/ NO_BREATHE /*| NON_GENDERED*/ | NO_BLOOD | HAS_SKIN_TONE
 
 	default_mutations=list(SKELETON)
 
@@ -413,7 +413,7 @@ var/global/list/whitelisted_species = list("Human")
 
 	primitive = /mob/living/carbon/monkey/tajara
 
-	flags = IS_WHITELISTED | HAS_LIPS | HAS_UNDERWEAR | HAS_TAIL
+	flags = HAS_LIPS | HAS_UNDERWEAR | HAS_TAIL | HAS_SKIN_TONE
 
 	flesh_color = "#AFA59E"
 
@@ -473,7 +473,7 @@ var/global/list/whitelisted_species = list("Human")
 
 	primitive = /mob/living/carbon/monkey // TODO
 
-	flags = WHITELISTED | HAS_LIPS | HAS_UNDERWEAR | CAN_BE_FAT
+	flags = IS_WHITELISTED | HAS_LIPS | HAS_UNDERWEAR | CAN_BE_FAT | HAS_SKIN_TONE
 
 	// Both must be set or it's only a 45% chance of manifesting.
 	default_mutations=list(M_REMOTE_TALK)
@@ -494,7 +494,7 @@ var/global/list/whitelisted_species = list("Human")
 
 	primitive = /mob/living/carbon/monkey // TODO
 
-	flags = HAS_LIPS
+	flags = HAS_LIPS | HAS_SKIN_TONE
 
 	// Both must be set or it's only a 45% chance of manifesting.
 	default_mutations=list(M_STRONG | M_RUN | M_LOUD)
@@ -514,7 +514,7 @@ var/global/list/whitelisted_species = list("Human")
 	language = "Skrellian"
 	primitive = /mob/living/carbon/monkey/skrell
 
-	flags = IS_WHITELISTED | HAS_LIPS | HAS_UNDERWEAR
+	flags = HAS_LIPS | HAS_UNDERWEAR | HAS_SKIN_TONE
 
 	flesh_color = "#8CD7A3"
 
@@ -536,7 +536,7 @@ var/global/list/whitelisted_species = list("Human")
 	eyes = "vox_eyes_s"
 	breath_type = "nitrogen"
 
-	flags = WHITELISTED | NO_SCAN | NO_BLOOD
+	flags = NO_SCAN | NO_BLOOD | HAS_SKIN_TONE
 
 	blood_color = "#2299FC"
 	flesh_color = "#808D11"
@@ -673,7 +673,7 @@ var/global/list/whitelisted_species = list("Human")
 	heat_level_2 = 3000
 	heat_level_3 = 4000
 
-	flags = IS_WHITELISTED | NO_BREATHE | REQUIRE_LIGHT | NO_SCAN | IS_PLANT | RAD_ABSORB | NO_BLOOD | IS_SLOW | NO_PAIN
+	flags = IS_WHITELISTED | NO_BREATHE | REQUIRE_LIGHT | NO_SCAN | IS_PLANT | RAD_ABSORB | NO_BLOOD | IS_SLOW | NO_PAIN | HAS_SKIN_TONE
 
 	blood_color = "#004400"
 	flesh_color = "#907E4A"

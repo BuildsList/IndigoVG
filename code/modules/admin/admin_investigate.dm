@@ -74,16 +74,16 @@ var/global/list/investigations=list(
 	set category = "Admin"
 
 	if(!holder)
-		src << "<span class='indigo'>You're not an admin, go away.</span>"
+		src << "<span class='warning'>You're not an admin, go away.</span>"
 		return
 
 	if(!(subject in investigations))
-		src << "<span class='indigo'>Unable to find that subject.</span>"
+		src << "<span class='warning'>Unable to find that subject.</span>"
 		return
 
 	var/datum/log_controller/I = investigations[subject]
 	if(!I)
-		src << "<span class='indigo'>No log for [subject] can be found.</span>"
+		src << "<span class='warning'>No log for [subject] can be found.</span>"
 		return
 
 	I.read(usr)

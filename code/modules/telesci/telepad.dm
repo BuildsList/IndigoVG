@@ -25,7 +25,7 @@
 			opened = 1
 	if(istype(W, /obj/item/bluespace_crystal) && opened)
 		if(amplifier)
-			user << "<span class='indigo'>There's something in the booster coil already.</span>"
+			user << "<span class='warning'>There's something in the booster coil already.</span>"
 			return
 		playsound(src, 'sound/weapons/Genhit.ogg', 50, 1)
 		user << "<span class = 'caution'> You jam \the [W] into \the [src]'s booster coil.</span>"
@@ -75,7 +75,7 @@
 		playsound(src, 'sound/items/Welder.ogg', 50, 1)
 		user << "<span class = 'caution'> You disassemble the telepad.</span>"
 		new /obj/item/stack/sheet/metal(get_turf(src))
-		new /obj/item/stack/sheet/glass(get_turf(src))
+		new /obj/item/stack/sheet/glass/glass(get_turf(src))
 		del(src)
 
 ///TELEPAD CALLER///

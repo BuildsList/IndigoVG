@@ -6,7 +6,7 @@ client
 		set name = "Add Reagent"
 
 		if(!usr.client || !usr.client.holder)
-			usr << "<span class='indigo'>You need to be an administrator to access this.</span>"
+			usr << "<span class='warning'>You need to be an administrator to access this.</span>"
 			return
 
 		if(!D) return
@@ -16,7 +16,7 @@ client
 			if(reagentDatum)
 				var/reagentAmount = input(usr, "Amount", "Insert Amount", "") as num
 				if(A.reagents.add_reagent(reagentDatum, reagentAmount))
-					usr << "<span class='indigo'>[reagentDatum] doesn't exist.</span>"
+					usr << "<span class='warning'>[reagentDatum] doesn't exist.</span>"
 					return
 				log_admin("[key_name(usr)] added [reagentDatum] with [reagentAmount] units to [A] ")
 				message_admins("[key_name(usr)] added [reagentDatum] with [reagentAmount] units to [A] ")

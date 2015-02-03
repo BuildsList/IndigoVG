@@ -253,7 +253,7 @@
 /*
 /obj/item/weapon/wrapping_paper/attackby(obj/item/weapon/W as obj, mob/user as mob)
 	if(isMoMMI(user))
-		user << "<span class='indigo'>You need two hands for this.</span>"
+		user << "<span class='warning'>You need two hands for this.</span>"
 		return
 	..()
 	if (!( locate(/obj/structure/table, src.loc) ))

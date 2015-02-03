@@ -116,13 +116,13 @@
 			if(4)
 				o += "WEST: "
 		if(tile_info[index] == null)
-			o += "<span class='indigo'>DATA UNAVAILABLE</span>"
+			o += "<span class='warning'>DATA UNAVAILABLE</span>"
 			usr << o
 			continue
 		var/celsius = convert_k2c(tile_info[index][1])
 		var/pressure = tile_info[index][2]
 		if(dir_alerts[index] & (FIREDOOR_ALERT_HOT|FIREDOOR_ALERT_COLD))
-			o += "<span class='indigo'>"
+			o += "<span class='warning'>"
 		else
 			o += "<span style='color:blue'>"
 		o += "[celsius]°C</span> "
@@ -195,7 +195,7 @@
 			return
 
 	if(blocked)
-		user << "<span class='indigo'>\The [src] is welded solid!</span>"
+		user << "<span class='warning'>\The [src] is welded solid!</span>"
 		return
 
 	var/area/A = get_area_master(src)
@@ -262,7 +262,7 @@
 
 	if(alarmed && density && lockdown && !access_granted/* && !( users_name in users_to_open ) */)
 		// Too many shitters on /vg/ for the honor system to work.
-		user << "<span class='indigo'>Access denied.  Please wait for authorities to arrive, or for the alert to clear.</span>"
+		user << "<span class='warning'>Access denied.  Please wait for authorities to arrive, or for the alert to clear.</span>"
 		return
 		// End anti-shitter system
 		/*

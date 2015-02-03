@@ -25,23 +25,23 @@
 			if(do_after(user, 20))
 				if(!src || !WT.isOn()) return
 				playsound(get_turf(src), 'sound/items/Welder2.ogg', 50, 1)
-				user.visible_message("<span class='indigo'>[user] cuts the [src] apart.</span>", "<span class='indigo'>You cut the [src] apart.</span>", "You hear welding.")
+				user.visible_message("<span class='warning'>[user] cuts the [src] apart.</span>", "<span class='warning'>You cut the [src] apart.</span>", "You hear welding.")
 				new /obj/item/stack/sheet/metal(src.loc,5)
 				qdel(src)
 				return
 			else
-				user << "\blue The welding tool needs to be on to start this task."
+				user << "<span class='notice'>The welding tool needs to be on to start this task.</span>"
 		else
-			user << "\blue You need more welding fuel to complete this task."
+			user << "<span class='notice'>You need more welding fuel to complete this task.</span>"
 
-	if(istype(W, /obj/item/stack/sheet/rglass/plasmarglass))
-		var/obj/item/stack/sheet/rglass/plasmarglass/stack = W
+	if(istype(W, /obj/item/stack/sheet/glass/plasmarglass))
+		var/obj/item/stack/sheet/glass/plasmarglass/stack = W
 		if(stack.amount < 5)
-			user << "<span class='indigo'>You need at least 5 [stack] to build a beamsplitter.</span>"
+			user << "<span class='warning'>You need at least 5 [stack] to build a beamsplitter.</span>"
 			return
 		if(do_after(user,10))
 			if(stack.amount < 5)
-				user << "<span class='indigo'>You need at least 5 [stack] to build a beamsplitter.</span>"
+				user << "<span class='warning'>You need at least 5 [stack] to build a beamsplitter.</span>"
 				return
 			stack.use(5)
 			var/obj/machinery/mirror/beamsplitter/BS = new (get_turf(src))
@@ -49,14 +49,14 @@
 			qdel(src)
 		return
 
-	if(istype(W, /obj/item/stack/sheet/rglass))
-		var/obj/item/stack/sheet/rglass/stack = W
+	if(istype(W, /obj/item/stack/sheet/glass/rglass))
+		var/obj/item/stack/sheet/glass/rglass/stack = W
 		if(stack.amount < 5)
-			user << "<span class='indigo'>You need at least 5 [stack] to build a beamsplitter.</span>"
+			user << "<span class='warning'>You need at least 5 [stack] to build a beamsplitter.</span>"
 			return
 		if(do_after(user,10))
 			if(stack.amount < 5)
-				user << "<span class='indigo'>You need at least 5 [stack] to build a beamsplitter.</span>"
+				user << "<span class='warning'>You need at least 5 [stack] to build a beamsplitter.</span>"
 				return
 			stack.use(5)
 			var/obj/machinery/mirror/mirror = new (get_turf(src))

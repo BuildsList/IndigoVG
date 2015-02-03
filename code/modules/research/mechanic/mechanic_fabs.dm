@@ -45,7 +45,7 @@
 	if(istype(O, /obj/item/research_blueprint))
 		var/obj/item/research_blueprint/RB = O
 		if(!design_types[RB.design_type])
-			user <<"<span class='indigo'>This isn't the right machine for that kind of blueprint!</span>"
+			user <<"<span class='warning'>This isn't the right machine for that kind of blueprint!</span>"
 			return 0
 		else if(RB.stored_design && design_types[RB.design_type])
 			if(src.AddBlueprint(RB, user))

@@ -27,14 +27,14 @@
 /obj/structure/stool/bed/chair/vehicle/janicart/examine(mob/user)
 	..()
 	if(in_range(src, user) && reagents.has_reagent("lube"))
-		user << "<span class='indigo'> Something is very off about this water.</span>"
+		user << "<span class='warning'> Something is very off about this water.</span>"
 	switch(health)
 		if(75 to 99)
 			user << "<span class='info'>It appears slightly dented.</span>"
 		if(40 to 74)
-			user << "<span class='indigo'>It appears heavily dented.</span>"
+			user << "<span class='warning'>It appears heavily dented.</span>"
 		if(1 to 39)
-			user << "<span class='indigo'>It appears severely dented.</span>"
+			user << "<span class='warning'>It appears severely dented.</span>"
 		if((INFINITY * -1) to 0)
 			user << "<span class='danger'>It appears completely unsalvageable</span>"
 	if(mybag)
@@ -65,6 +65,12 @@
 
 /obj/structure/stool/bed/chair/vehicle/janicart/attack_hand(mob/user)
 	if(mybag)
+		if(buckled_mob==user)
+			switch(alert("Choose an action","Janicart","Get off the ride","Remove the bag","Cancel"))
+				if("Get off the ride")
+					return ..()
+				if("Cancel")
+					return
 		mybag.loc = get_turf(user)
 		user.put_in_hands(mybag)
 		mybag = null
@@ -100,5 +106,5 @@
 							cleaned_human.shoes.clean_blood()
 							cleaned_human.update_inv_shoes(0)
 						cleaned_human.clean_blood()
-						cleaned_human << "<span class='indigo'>[src] cleans your face!</span>"
+						cleaned_human << "<span class='warning'>[src] cleans your face!</span>"
 	return

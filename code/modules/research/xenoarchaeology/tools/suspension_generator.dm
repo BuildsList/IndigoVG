@@ -15,6 +15,9 @@
 	var/obj/effect/suspension_field/suspension_field
 	var/list/secured_mobs = list()
 
+/obj/machinery/suspension_gen/power_change()
+	return
+
 /obj/machinery/suspension_gen/New()
 	src.cell = new/obj/item/weapon/cell/high(src)
 	..()
@@ -88,7 +91,7 @@
 		dat += "[field_type=="mercury"?"<b>":""	]<A href='?src=\ref[src];select_field=mercury'>Mercury dispersion wave</A></b><br>"
 		dat += "[field_type=="iron"?"<b>":""		]<A href='?src=\ref[src];select_field=iron'>Iron wafer conduction field</A></b><br>"
 		dat += "[field_type=="calcium"?"<b>":""	]<A href='?src=\ref[src];select_field=calcium'>Calcium binary deoxidiser</A></b><br>"
-		dat += "[field_type=="plasma"?"<b>":""	]<A href='?src=\ref[src];select_field=chlorine'>Chlorine diffusion emissions</A></b><br>"
+		dat += "[field_type=="chlorine"?"<b>":""	]<A href='?src=\ref[src];select_field=chlorine'>Chlorine diffusion emissions</A></b><br>"
 		dat += "[field_type=="plasma"?"<b>":""	]<A href='?src=\ref[src];select_field=plasma'>Plasma saturated field</A></b><br>"
 	else
 		dat += "<br>"
@@ -111,7 +114,7 @@
 	onclose(user, "suspension")
 
 /obj/machinery/suspension_gen/Topic(href, href_list)
-	..()
+	if(..()) return
 	usr.set_machine(src)
 
 	if(href_list["toggle_field"])
@@ -120,7 +123,7 @@
 				if(anchored)
 					activate()
 				else
-					usr << "<span class='indigo'>You are unable to activate [src] until it is properly secured on the ground.</span>"
+					usr << "<span class='warning'>You are unable to activate [src] until it is properly secured on the ground.</span>"
 		else
 			deactivate()
 	if(href_list["select_field"])
@@ -134,7 +137,7 @@
 			if(attempt_unlock(I))
 				usr << "<span class='info'>You insert [I], the console flashes \'<i>Access granted.</a>\'</span>"
 			else
-				usr << "<span class='indigo'>You insert [I], the console flashes \'<i>Access denied.</a>\'</span>"
+				usr << "<span class='warning'>You insert [I], the console flashes \'<i>Access denied.</a>\'</span>"
 	else if(href_list["ejectcard"])
 		if(auth_card)
 			if(ishuman(usr))
@@ -189,11 +192,11 @@
 					user << "<span class='info'>You crowbar the battery panel [open ? "open" : "in place"].</span>"
 					icon_state = "suspension[anchored ? (open ? (cell ? "1" : "0") : "2") : (open ? (cell ? "1-b" : "0-b") : "2-b")]"
 				else
-					user << "<span class='indigo'>[src]'s safety locks are engaged, shut it down first.</span>"
+					user << "<span class='warning'>[src]'s safety locks are engaged, shut it down first.</span>"
 			else
-				user << "<span class='indigo'>Unscrew [src]'s battery panel first.</span>"
+				user << "<span class='warning'>Unscrew [src]'s battery panel first.</span>"
 		else
-			user << "<span class='indigo'>[src]'s security locks are engaged.</span>"
+			user << "<span class='warning'>[src]'s security locks are engaged.</span>"
 	else if (istype(W, /obj/item/weapon/wrench))
 		if(!suspension_field)
 			if(anchored)
@@ -207,11 +210,11 @@
 			else
 				desc = "It has stubby legs bolted up against it's body for stabilising."
 		else
-			user << "<span class='indigo'>You are unable to secure [src] while it is active!</span>"
+			user << "<span class='warning'>You are unable to secure [src] while it is active!</span>"
 	else if (istype(W, /obj/item/weapon/cell))
 		if(open)
 			if(cell)
-				user << "<span class='indigo'>There is a power cell already installed.</span>"
+				user << "<span class='warning'>There is a power cell already installed.</span>"
 			else
 				user.drop_item()
 				W.loc = src
@@ -227,9 +230,9 @@
 			if(attempt_unlock(I))
 				user << "<span class='info'>You swipe [I], the console flashes \'<i>Access granted.</i>\'</span>"
 			else
-				user << "<span class='indigo'>You swipe [I], console flashes \'<i>Access denied.</i>\'</span>"
+				user << "<span class='warning'>You swipe [I], console flashes \'<i>Access denied.</i>\'</span>"
 		else
-			user << "<span class='indigo'>Remove [auth_card] first.</span>"
+			user << "<span class='warning'>Remove [auth_card] first.</span>"
 
 /obj/machinery/suspension_gen/proc/attempt_unlock(var/obj/item/weapon/card/C)
 	if(!open)

@@ -24,7 +24,7 @@
 					wearable = 1
 
 			if(!wearable && (slot != 15 && slot != 16)) //Pockets.
-				M << "<span class='indigo'>Your species cannot wear [src].</span>"
+				M << "<span class='warning'>Your species cannot wear [src].</span>"
 				return 0
 
 	return ..()
@@ -212,14 +212,14 @@ BLIND     // can't see anything
 	name = "Space helmet"
 	icon_state = "space"
 	desc = "A special helmet designed for work in a hazardous, low-pressure environment."
-	flags = FPRINT  | BLOCKHAIR | STOPSPRESSUREDMAGE
+	flags = FPRINT  | BLOCKHAIR | STOPSPRESSUREDMG
 	item_state = "space"
 	permeability_coefficient = 0.01
 	armor = list(melee = 0, bullet = 0, laser = 0,energy = 0, bomb = 0, bio = 100, rad = 50)
 	body_parts_covered = FULL_HEAD
 	flags_inv = HIDEMASK|HIDEEARS|HIDEEYES|HIDEFACE
 	cold_protection = HEAD
-	min_cold_protection_temperature = SPACE_HELMET_MIN_COLD_PROTECITON_TEMPERATURE
+	min_cold_protection_temperature = SPACE_HELMET_MIN_COLD_PROTECTION_TEMPERATURE
 	siemens_coefficient = 0.9
 	species_restricted = list("exclude","Diona","Muton")
 
@@ -231,14 +231,14 @@ BLIND     // can't see anything
 	w_class = 4//bulky item
 	gas_transfer_coefficient = 0.01
 	permeability_coefficient = 0.02
-	flags = FPRINT  | STOPSPRESSUREDMAGE
+	flags = FPRINT  | STOPSPRESSUREDMG
 	body_parts_covered = UPPER_TORSO|LOWER_TORSO|LEGS|FEET|ARMS|HANDS
 	allowed = list(/obj/item/device/flashlight,/obj/item/weapon/tank/emergency_oxygen,/obj/item/weapon/tank/emergency_nitrogen)
 	slowdown = 3
 	armor = list(melee = 0, bullet = 0, laser = 0,energy = 0, bomb = 0, bio = 100, rad = 50)
 	flags_inv = HIDEGLOVES|HIDESHOES|HIDEJUMPSUIT
 	cold_protection = UPPER_TORSO | LOWER_TORSO | LEGS | FEET | ARMS | HANDS
-	min_cold_protection_temperature = SPACE_SUIT_MIN_COLD_PROTECITON_TEMPERATURE
+	min_cold_protection_temperature = SPACE_SUIT_MIN_COLD_PROTECTION_TEMPERATURE
 	siemens_coefficient = 0.9
 	species_restricted = list("exclude","Diona","Muton")
 
@@ -310,16 +310,16 @@ BLIND     // can't see anything
 	if (istype(M, /mob/dead/)) return
 	if (usr.stat || usr.restrained()) return
 	if(has_sensor >= 2)
-		usr << "<span class='indigo'>The controls are locked.</span>"
+		usr << "<span class='warning'>The controls are locked.</span>"
 		return 0
 	if(has_sensor <= 0)
-		usr << "<span class='indigo'>This suit does not have any sensors.</span>"
+		usr << "<span class='warning'>This suit does not have any sensors.</span>"
 		return 0
 
 	var/list/modes = list("Off", "Binary sensors", "Vitals tracker", "Tracking beacon")
 	var/switchMode = input("Select a sensor mode:", "Suit Sensor Mode", modes[sensor_mode + 1]) in modes
 	if(get_dist(usr, src) > 1)
-		usr << "<span class='indigo'>You have moved too far away.</span>"
+		usr << "<span class='warning'>You have moved too far away.</span>"
 		return
 	sensor_mode = modes.Find(switchMode) - 1
 
@@ -376,7 +376,7 @@ BLIND     // can't see anything
 	if(usr.stat) return
 
 	if (!hastie || !istype(hastie,/obj/item/clothing/tie/holster))
-		usr << "<span class='indigo'>You need a holster for that!</span>"
+		usr << "<span class='warning'>You need a holster for that!</span>"
 		return
 	var/obj/item/clothing/tie/holster/H = hastie
 
@@ -386,7 +386,7 @@ BLIND     // can't see anything
 			return
 		var/obj/item/weapon/gun/W = usr.get_active_hand()
 		if (!W.isHandgun())
-			usr << "<span class='indigo'>This gun won't fit in \the [H]!</span>"
+			usr << "<span class='warning'>This gun won't fit in \the [H]!</span>"
 			return
 		H.holstered = usr.get_active_hand()
 		usr.drop_item()
@@ -394,11 +394,11 @@ BLIND     // can't see anything
 		usr.visible_message("<span class='notice'>\The [usr] holsters \the [H.holstered].", "You holster \the [H.holstered].</span>")
 	else
 		if(istype(usr.get_active_hand(),/obj) && istype(usr.get_inactive_hand(),/obj))
-			usr << "<span class='indigo'>You need an empty hand to draw the gun!</span>"
+			usr << "<span class='warning'>You need an empty hand to draw the gun!</span>"
 		else
 			if(usr.a_intent == "hurt")
-				usr.visible_message("<span class='indigo'>\The [usr] draws \the [H.holstered], ready to shoot!</span>", \
-				"<span class='indigo'>You draw \the [H.holstered], ready to shoot!</span>")
+				usr.visible_message("<span class='warning'>\The [usr] draws \the [H.holstered], ready to shoot!</span>", \
+				"<span class='warning'>You draw \the [H.holstered], ready to shoot!</span>")
 			else
 				usr.visible_message("<span class='notice'>\The [usr] draws \the [H.holstered], pointing it at the ground.</span>", \
 				"<span class='notice'>You draw \the [H.holstered], pointing it at the ground.</span>")
@@ -413,7 +413,7 @@ BLIND     // can't see anything
 	if(usr.stat) return
 
 	if (!hastie || !istype(hastie,/obj/item/clothing/tie/storage))
-		usr << "<span class='indigo'>You need something to store items in for that!</span>"
+		usr << "<span class='warning'>You need something to store items in for that!</span>"
 		return
 	var/obj/item/clothing/tie/storage/W = hastie
 

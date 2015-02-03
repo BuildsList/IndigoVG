@@ -128,7 +128,7 @@
 	level = T.intact ? 2 : 1
 	initialize(1)
 	if(!node1&&!node2)
-		usr << "<span class='indigo'>There's nothing to connect this pipe section to! A pipe segment must be connected to at least one other object!</span>"
+		usr << "<span class='warning'>There's nothing to connect this pipe section to! A pipe segment must be connected to at least one other object!</span>"
 		return 0
 	update_icon()
 	build_network()
@@ -149,7 +149,7 @@
 
 /obj/machinery/atmospherics/pipe/simple/process()
 	if(!parent) //This should cut back on the overhead calling build_network thousands of times per cycle
-		..()
+		build_network()
 	else
 		. = PROCESS_KILL
 
@@ -215,7 +215,7 @@
 	user << "<span class='info'>This [src.name] is rated up to [format_num(alert_pressure)] kPa.</span>"
 
 /obj/machinery/atmospherics/pipe/simple/proc/groan()
-	src.visible_message("<span class='indigo'>\The [src] groans from the pressure!</span>");
+	src.visible_message("<span class='warning'>\The [src] groans from the pressure!</span>");
 
 	// Need SFX for groaning metal.
 	//playsound(get_turf(src), 'sound/effects/groan.ogg', 25, 1)
@@ -605,7 +605,7 @@
 	level = T.intact ? 2 : 1
 	initialize(1)
 	if(!node1&&!node2&&!node3)
-		usr << "<span class='indigo'>There's nothing to connect this manifold to! A pipe segment must be connected to at least one other object!</span>"
+		usr << "<span class='warning'>There's nothing to connect this manifold to! A pipe segment must be connected to at least one other object!</span>"
 		return 0
 	update_icon() // Skipped in initialize()!
 	build_network()
@@ -851,7 +851,7 @@
 	level = T.intact ? 2 : 1
 	initialize(1)
 	if(!node1 && !node2 && !node3 && !node4)
-		usr << "<span class='indigo'>There's nothing to connect this manifold to! A pipe segment must be connected to at least one other object!</span>"
+		usr << "<span class='warning'>There's nothing to connect this manifold to! A pipe segment must be connected to at least one other object!</span>"
 		return 0
 	update_icon()
 	build_network()
@@ -1093,14 +1093,14 @@
 		return ..()
 	var/turf/T = src.loc
 	if (level==1 && isturf(T) && T.intact)
-		user << "<span class='indigo'>You must remove the plating first.</span>"
+		user << "<span class='warning'>You must remove the plating first.</span>"
 		return 1
 	var/datum/gas_mixture/int_air = return_air()
 	var/datum/gas_mixture/env_air = loc.return_air()
 	add_fingerprint(user)
 	if ((int_air.return_pressure()-env_air.return_pressure()) > 2*ONE_ATMOSPHERE)
 		if(istype(W, /obj/item/weapon/wrench/socket))
-			user << "<span class='indigo'>You begin to open the pressure release valve on the pipe...</span>"
+			user << "<span class='warning'>You begin to open the pressure release valve on the pipe...</span>"
 			if(do_after(user, 50))
 				playsound(get_turf(src), 'sound/machines/hiss.ogg', 50, 1)
 				user.visible_message("[user] vents \the [src].",
@@ -1112,7 +1112,7 @@
 				env_air.add(transit) //put it in the air
 				del(transit) //remove the carrier
 		else
-			user << "<span class='indigo'>You cannot unwrench this [src], it too exerted due to internal pressure.</span>"
+			user << "<span class='warning'>You cannot unwrench this [src], it too exerted due to internal pressure.</span>"
 			return 1
 	playsound(get_turf(src), 'sound/items/Ratchet.ogg', 50, 1)
 	user << "<span class='notice'>You begin to unfasten \the [src]...</span>"

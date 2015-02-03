@@ -147,7 +147,7 @@ proc/hasorgans(A)
 	return t
 
 proc/slur(phrase)
-	phrase = rhtml_decode(phrase)
+	phrase = html_decode(phrase)
 	var/leng=length(phrase)
 	var/counter=length(phrase)
 	var/newphrase=""
@@ -170,7 +170,7 @@ proc/slur(phrase)
 	return newphrase
 
 /proc/stutter(n)
-	var/te = rhtml_decode(n)
+	var/te = html_decode(n)
 	var/t = ""//placed before the message. Not really sure what it's for.
 	n = length(n)//length of the entire word
 	var/p = null
@@ -234,7 +234,7 @@ The difference with stutter is that this proc can stutter more than 1 letter
 The issue here is that anything that does not have a space is treated as one word (in many instances). For instance, "LOOKING," is a word, including the comma.
 It's fairly easy to fix if dealing with single letters but not so much with compounds of letters./N
 */
-	var/te = rhtml_decode(n)
+	var/te = html_decode(n)
 	var/t = ""
 	n = length(n)
 	var/p = 1
@@ -265,6 +265,9 @@ It's fairly easy to fix if dealing with single letters but not so much with comp
 		var/x
 		M.shakecamera = 1
 		for(x=0; x<duration, x++)
+			if(!M || !M.client)
+				M.shakecamera = 0
+				return //somebody disconnected while being shaken
 			M.client.eye = locate(dd_range(1,M.loc.x+rand(-strength,strength),world.maxx),dd_range(1,M.loc.y+rand(-strength,strength),world.maxy),M.loc.z)
 			sleep(1)
 		M.shakecamera = 0

@@ -28,7 +28,7 @@
 
 /obj/item/device/mmi/posibrain/proc/search_for_candidates()
 	icon_state = "posibrain-searching"
-	ghost_volunteers.Cut()
+	ghost_volunteers.len = 0
 	src.searching = 1
 	src.request_player()
 	spawn(600)
@@ -104,14 +104,14 @@
 		O << "Not looking for a ghost, yet."
 		return
 	if(!istype(O))
-		O << "<span class='indigo'>NO.</span>"
+		O << "<span class='warning'>NO.</span>"
 		return
 	if(O in ghost_volunteers)
 		O << "<span class='notice'>Removed from registration list.</span>"
 		ghost_volunteers.Remove(O)
 		return
 	if(!check_observer(O))
-		O << "<span class='indigo'>You cannot be \a [src].</span>"
+		O << "<span class='warning'>You cannot be \a [src].</span>"
 		return
 	O.<< "<span class='notice'>You've been added to the list of ghosts that may become this [src].  Click again to unvolunteer.</span>"
 	ghost_volunteers.Add(O)
@@ -125,7 +125,7 @@
 		else if(!src.brainmob.client)
 			user << "<span class='notice'>It appears to be in stand-by mode.</span>" //closed game window
 		else if(!src.brainmob.key)
-			user << "<span class='indigo'>It doesn't seem to be responsive.</span>" //ghosted
+			user << "<span class='warning'>It doesn't seem to be responsive.</span>" //ghosted
 	user << "<span class='info'>*---------*</span>"
 
 /obj/item/device/mmi/posibrain/emp_act(severity)

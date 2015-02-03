@@ -259,7 +259,7 @@
 		health -= damage
 		for(var/mob/M in viewers(src, null))
 			if ((M.client && !( M.blinded )))
-				M.show_message("<span class='indigo'><B>[src] has been attacked with the [O] by [user].</B></span>")
+				M.show_message("<span class='warning'><B>[src] has been attacked with the [O] by [user].</B></span>")
 	*/
 
 /mob/living/simple_animal/hostile/retaliate/cluwne/Bump(atom/movable/AM as mob|obj, yes)
@@ -267,7 +267,7 @@
 		if ((!( yes ) || now_pushing))
 			return
 		if(ismob(AM))
-			src << "<span class='indigo'><B>You are too depressed to push [AM] out of \the way.</B></span>"
+			src << "<span class='warning'><B>You are too depressed to push [AM] out of \the way.</B></span>"
 			AM:LAssailant = src
 			return
 		..()
@@ -303,7 +303,7 @@
 
 /mob/living/simple_animal/hostile/retaliate/cluwne/proc/handle_disabilities()
 	if ((prob(5) && paralysis < 10))
-		src << "<span class='indigo'>You have a seizure!</span>"
+		src << "<span class='warning'>You have a seizure!</span>"
 		Paralyse(10)
 
 /mob/living/simple_animal/hostile/retaliate/cluwne/emote(var/act)

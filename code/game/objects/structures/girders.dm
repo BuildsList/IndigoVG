@@ -29,11 +29,11 @@
 		if(!(PK.diggables & DIG_WALLS)) //we can dig a wall, we can dig a girder
 			return
 
-		user.visible_message("<span class='indigo'>[user] starts [PK.drill_verb] \the [src] with \the [PK]</span>",
+		user.visible_message("<span class='warning'>[user] starts [PK.drill_verb] \the [src] with \the [PK]</span>",
 							"<span class='notice'>You start [PK.drill_verb] \the [src] with \the [PK]</span>")
 		if(do_after(user,30))
 			if(!src) return
-			user.visible_message("<span class='indigo'>[user] destroys \the [src]!</span>",
+			user.visible_message("<span class='warning'>[user] destroys \the [src]!</span>",
 								"<span class='notice'>You start [PK.drill_verb] \the [src] with \the [PK]</span>")
 			new /obj/item/stack/sheet/metal(get_turf(src))
 			del(src)
@@ -241,11 +241,11 @@
 		if(!(PK.diggables & DIG_WALLS))
 			return
 
-		user.visible_message("<span class='indigo'>[user] starts [PK.drill_verb] \the [src] with \the [PK]</span>",
+		user.visible_message("<span class='warning'>[user] starts [PK.drill_verb] \the [src] with \the [PK]</span>",
 							"<span class='notice'>You start [PK.drill_verb] \the [src] with \the [PK]</span>")
 		if(do_after(user,30))
 			if(!src) return
-			user.visible_message("<span class='indigo'>[user] destroys \the [src]!</span>",
+			user.visible_message("<span class='warning'>[user] destroys \the [src]!</span>",
 								"<span class='notice'>You start [PK.drill_verb] \the [src] with \the [PK]</span>")
 			new /obj/effect/decal/remains/human(loc)
 			del(src)

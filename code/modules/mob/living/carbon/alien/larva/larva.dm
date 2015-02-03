@@ -59,7 +59,8 @@
 //This needs to be fixed
 /mob/living/carbon/alien/larva/Stat()
 	..()
-	stat(null, "Progress: [amount_grown]/[max_grown]")
+	if(statpanel("Status"))
+		stat(null, "Progress: [amount_grown]/[max_grown]")
 
 /mob/living/carbon/alien/larva/adjustToxLoss(amount)
 	if(stat != DEAD)
@@ -113,7 +114,7 @@
 
 		//paralysis += 1
 
-	src << "<span class='indigo'>The blob attacks you !</span>"
+	src << "<span class='warning'>The blob attacks you !</span>"
 
 	adjustFireLoss(damage)
 	updatehealth()
@@ -126,7 +127,7 @@
 /mob/living/carbon/alien/larva/meteorhit(O as obj)
 	if(flags & INVULNERABLE)
 		return
-	visible_message("<span class='indigo'>\The [src] has been hit by [O]")
+	visible_message("<span class='warning'>\The [src] has been hit by [O]")
 	if(health > 0)
 		adjustBruteLoss((istype(O, /obj/effect/meteor/small) ? 10 : 25)) //You fucking what
 		adjustFireLoss(30)
@@ -139,7 +140,7 @@
 	else
 		M.attack_log += text("\[[time_stamp()]\] <font color='red'>[M.attacktext] [src.name] ([src.ckey])</font>")
 		src.attack_log += text("\[[time_stamp()]\] <font color='orange'>Has been [M.attacktext] by [M.name] ([M.ckey])</font>")
-		visible_message("<span class='indigo'><B>[M]</B> [M.attacktext] \the [src]!</span>")
+		visible_message("<span class='warning'><B>[M]</B> [M.attacktext] \the [src]!</span>")
 		var/damage = rand(M.melee_damage_lower, M.melee_damage_upper)
 		adjustBruteLoss(damage)
 		M.attack_log += text("\[[time_stamp()]\] <font color='red'>attacked [src.name] ([src.ckey])</font>")
@@ -151,13 +152,13 @@
 		return //Fix for aliens receiving double messages when attacking other aliens.
 
 	if(!ticker)
-		M << "<span class='indigo'>You cannot attack people before the game has started.</span>"
+		M << "<span class='warning'>You cannot attack people before the game has started.</span>"
 		return
 
 /*
 	//MUH SPAWN PROTECTION
 	if(istype(loc, /turf) && istype(loc.loc, /area/start))
-		M << "<span class='indigo'>No attacking people at spawn, you jackass.</span>"
+		M << "<span class='warning'>No attacking people at spawn, you jackass.</span>"
 		return
 */
 	..()
@@ -179,7 +180,7 @@
 
 /mob/living/carbon/alien/larva/attack_slime(mob/living/carbon/slime/M as mob)
 	if(!ticker)
-		M << "<span class='indigo'>You cannot attack people before the game has started.</span>"
+		M << "<span class='warning'>You cannot attack people before the game has started.</span>"
 		return
 
 	if(M.Victim) return // can't attack while eating!
@@ -203,12 +204,12 @@
 
 /mob/living/carbon/alien/larva/attack_hand(mob/living/carbon/human/M as mob)
 	if(!ticker)
-		M << "<span class='indigo'>You cannot attack people before the game has started.</span>"
+		M << "<span class='warning'>You cannot attack people before the game has started.</span>"
 		return
 
 	/*
 	if(istype(loc, /turf) && istype(loc.loc, /area/start))
-		M << "<span class='indigo'>No attacking people at spawn, you jackass.</span>"
+		M << "<span class='warning'>No attacking people at spawn, you jackass.</span>"
 		return
 	*/
 	..()
@@ -228,7 +229,7 @@
 					visible_message("<span class='danger'>\The [src] has been touched with the stun gloves by [M] !</span>")
 					return
 				else
-					M << "<span class='indigo'>Not enough charge !</span>"
+					M << "<span class='warning'>Not enough charge !</span>"
 					return
 
 	switch(M.a_intent)
@@ -264,7 +265,7 @@
 			LAssailant = M
 
 			playsound(loc, 'sound/weapons/thudswoosh.ogg', 50, 1, -1)
-			visible_message("<span class='indigo'>[M] has grabbed \the [src] passively !</span>")
+			visible_message("<span class='warning'>[M] has grabbed \the [src] passively !</span>")
 
 		else
 			var/damage = rand(1, 9)
@@ -290,12 +291,12 @@
 
 /mob/living/carbon/alien/larva/attack_alien(mob/living/carbon/alien/humanoid/M as mob)
 	if(!ticker)
-		M << "<span class='indigo'>You cannot attack people before the game has started.</span>"
+		M << "<span class='warning'>You cannot attack people before the game has started.</span>"
 		return
 
 	/*
 	if(istype(loc, /turf) && istype(loc.loc, /area/start))
-		M << "<span class='indigo'>No attacking people at spawn, you jackass.</span>"
+		M << "<span class='warning'>No attacking people at spawn, you jackass.</span>"
 		return
 	*/
 	..()

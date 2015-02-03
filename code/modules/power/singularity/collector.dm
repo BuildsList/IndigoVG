@@ -49,7 +49,7 @@ var/global/list/rad_collectors = list()
 			investigation_log(I_SINGULO,"turned [active?"<font color='green'>on</font>":"<font color='red'>off</font>"] by [user.key]. [P?"Fuel: [round(P.air_contents.toxins/0.29)]%":"<font color='red'>It is empty</font>"].")
 			return
 		else
-			user << "<span class='indigo'>The controls are locked!</span>"
+			user << "<span class='warning'>The controls are locked!</span>"
 			return
 ..()
 
@@ -64,10 +64,10 @@ var/global/list/rad_collectors = list()
 		return 1
 	else if(istype(W, /obj/item/weapon/tank/plasma))
 		if(!src.anchored)
-			user << "<span class='indigo'>\The [src] needs to be secured to the floor first.</span>"
+			user << "<span class='warning'>\The [src] needs to be secured to the floor first.</span>"
 			return 1
 		if(src.P)
-			user << "<span class='indigo'>A plasma tank is already loaded.</span>"
+			user << "<span class='warning'>A plasma tank is already loaded.</span>"
 			return 1
 		user.drop_item()
 		src.P = W
@@ -84,9 +84,9 @@ var/global/list/rad_collectors = list()
 				user << "<span class='notice'>The controls are now [src.locked ? "locked." : "unlocked."]</span>"
 			else
 				src.locked = 0 //just in case it somehow gets locked
-				user << "<span class='indigo'>The controls can only be locked when \the [src] is active</span>"
+				user << "<span class='warning'>The controls can only be locked when \the [src] is active</span>"
 		else
-			user << "<span class='indigo'>Access denied!</span>"
+			user << "<span class='warning'>Access denied!</span>"
 			return 1
 	else
 		return
@@ -132,7 +132,7 @@ var/global/list/rad_collectors = list()
 		last_power = power_produced
 
 /obj/machinery/power/rad_collector/proc/update_icons()
-	overlays.Cut()
+	overlays.len = 0
 	if(P)
 		overlays += image('icons/obj/singularity.dmi', "ptank")
 	if(stat & (NOPOWER|BROKEN))
