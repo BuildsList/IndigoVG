@@ -63,8 +63,10 @@
 				output += "<p><a href='byond://?src=\ref[src];showpoll=1'>Show Player Polls</A></p>"
 
 	output += "</div>"
-
-	src << browse(output,"window=playersetup;size=210x240;can_close=0")
+	var/datum/browser/popup = new(usr, "playersetup", "<div align='center'>Player Setup</div>", 210, 240)
+	popup.set_window_options("can_close=0")
+	popup.set_content(output)
+	popup.open(0)
 	return
 
 /mob/new_player/Stat()
@@ -341,8 +343,6 @@
 
 /mob/new_player/proc/AnnounceArrival(var/mob/living/carbon/human/character, var/rank)
 	if (ticker.current_state == GAME_STATE_PLAYING)
-		//var/obj/item/device/radio/intercom/a = new /obj/item/device/radio/intercom(null)// BS12 EDIT Arrivals Announcement Computer, rather than the AI.
-
 		if(character.mind.role_alt_title)
 			rank = character.mind.role_alt_title
 		//say("[character.real_name],[rank ? " [rank]," : " visitor," ] has arrived on the station.", "Arrivals Announcement Computer")

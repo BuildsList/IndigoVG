@@ -390,42 +390,42 @@ var/const/MAX_SAVE_SLOTS = 8
 		dat += {"<a href='?_src_=prefs;preference=reset_all'>Reset Setup</a>
 			</center></body></html>"}
 		// END AUTOFIX
-		user << browse(dat, "window=preferences;size=560x580")
+		var/datum/browser/popup = new(user, "preferences", "<div align='center'>Character Setup</div>", 580, 620)
+		popup.set_content(dat)
+		popup.open(0)
 
-	proc/SetChoices(mob/user, limit = 17, list/splitJobs = list("Chief Engineer", "AI"), width = 550, height = 550)
-		if(!job_master)
-			return
+	proc/SetChoices(mob/user, limit = 17, list/splitJobs = list("Chief Engineer", "Research Director"), widthPerColumn = 295, height = 620)
+		if(!job_master)	return
 
-		//limit 	 - The amount of jobs allowed per column. Defaults to 17 to make it look nice.
+		//limit - The amount of jobs allowed per column. Defaults to 17 to make it look nice.
 		//splitJobs - Allows you split the table by job. You can make different tables for each department by including their heads. Defaults to CE to make it look nice.
-		//width	 - Screen' width. Defaults to 550 to make it look nice.
-		//height 	 - Screen's height. Defaults to 500 to make it look nice.
+		//widthPerColumn - Screen's width for every column.
+		//height - Screen's height.
 
+		var/width = widthPerColumn
 
-		var/HTML = "<body>"
-
-		// AUTOFIXED BY fix_string_idiocy.py
-		// C:\Users\Rob\Documents\Projects\vgstation13\code\modules\client\preferences.dm:386: HTML += "<tt><center>"
-		HTML += {"<tt><center>
-			<b>Choose occupation chances</b><br>Unavailable occupations are in red.<br><br>
-			<center><a href='?_src_=prefs;preference=job;task=close'>\[Done\]</a></center><br>
-			<table width='100%' cellpadding='1' cellspacing='0'><tr><td width='20%'>
-			<table width='100%' cellpadding='1' cellspacing='0'>"}
-		// END AUTOFIX
+		var/HTML = "<center>"
+		HTML += "<b>Choose occupation chances</b><br>"
+		HTML += "<div align='center'>Unavailable occupations are in red.<br></div>"
+		HTML += "<center><a href='?_src_=prefs;preference=job;task=close'>Close</a></center><br>" // Easier to press up here.
+		HTML += "<script type='text/javascript'>function setJobPrefRedirect(level, rank) { window.location.href='?_src_=prefs;preference=job;task=setJobLevel;level=' + level + ';text=' + encodeURIComponent(rank); return false; }</script>"
+		HTML += "<table width='100%' cellpadding='1' cellspacing='0'><tr><td width='20%'>" // Table within a table for alignment, also allows you to easily add more colomns.
+		HTML += "<table width='100%' cellpadding='1' cellspacing='0'>"
 		var/index = -1
 
 		//The job before the current job. I only use this to get the previous jobs color when I'm filling in blank rows.
 		var/datum/job/lastJob
-		if (!job_master)		return
+
 		for(var/datum/job/job in job_master.occupations)
 
 			index += 1
 			if((index >= limit) || (job.title in splitJobs))
+				width += widthPerColumn
 				if((index < limit) && (lastJob != null))
 					//If the cells were broken up by a job in the splitJob list then it will fill in the rest of the cells with
 					//the last job's selection color. Creating a rather nice effect.
 					for(var/i = 0, i < (limit - index), i += 1)
-						HTML += "<tr bgcolor='[lastJob.selection_color]'><td width='60%' align='right'><a>&nbsp</a></td><td><a>&nbsp</a></td></tr>"
+						HTML += "<tr bgcolor='[lastJob.selection_color]'><td width='60%' align='right'>&nbsp</td><td>&nbsp</td></tr>"
 				HTML += "</table></td><td width='20%'><table width='100%' cellpadding='1' cellspacing='0'>"
 				index = 0
 
@@ -433,68 +433,78 @@ var/const/MAX_SAVE_SLOTS = 8
 			var/rank = job.title
 			lastJob = job
 			if(jobban_isbanned(user, rank))
-				HTML += "<font color=red>[rank]</font></td><td><font color=red><b> \[BANNED]</b></font></td></tr>"
+				HTML += "<font color=red>[rank]</font></td><td><font color=red><b> \[BANNED\]</b></font></td></tr>"
 				continue
 			if(!job.player_old_enough(user.client))
 				var/available_in_days = job.available_in_days(user.client)
-				HTML += "<font color=red>[rank]</font></td><td><font color=red> \[IN [(available_in_days)] DAYS]</font></td></tr>"
+				HTML += "<font color=red>[rank]</font></td><td><font color=red> \[IN [(available_in_days)] DAYS\]</font></td></tr>"
 				continue
 			if((job_civilian_low & ASSISTANT) && (rank != "Assistant"))
 				HTML += "<font color=orange>[rank]</font></td><td></td></tr>"
 				continue
 			if((rank in command_positions) || (rank == "AI"))//Bold head jobs
-				HTML += "<b>[rank]</b>"
+				HTML += "<b><span class='dark'>[rank]</span></b>"
 			else
-				HTML += "[rank]"
+				HTML += "<span class='dark'>[rank]</span>"
+
+			HTML += "</td><td width='40%'>"
+
+			var/prefLevelLabel = "ERROR"
+			var/prefLevelColor = "pink"
+			var/prefUpperLevel = -1 // level to assign on left click
+			var/prefLowerLevel = -1 // level to assign on right click
+
+			if(GetJobDepartment(job, 1) & job.flag)
+				prefLevelLabel = "High"
+				prefLevelColor = "slateblue"
+				prefUpperLevel = 4
+				prefLowerLevel = 2
+			else if(GetJobDepartment(job, 2) & job.flag)
+				prefLevelLabel = "Medium"
+				prefLevelColor = "green"
+				prefUpperLevel = 1
+				prefLowerLevel = 3
+			else if(GetJobDepartment(job, 3) & job.flag)
+				prefLevelLabel = "Low"
+				prefLevelColor = "orange"
+				prefUpperLevel = 2
+				prefLowerLevel = 4
+			else
+				prefLevelLabel = "NEVER"
+				prefLevelColor = "red"
+				prefUpperLevel = 3
+				prefLowerLevel = 1
 
 
-			// AUTOFIXED BY fix_string_idiocy.py
-			// C:\Users\Rob\Documents\Projects\vgstation13\code\modules\client\preferences.dm:426: HTML += "</td><td width='40%'>"
-			HTML += {"</td><td width='40%'>
-				<a href='?_src_=prefs;preference=job;task=input;text=[rank]'>"}
-			// END AUTOFIX
+			HTML += "<a class='white' href='?_src_=prefs;preference=job;task=setJobLevel;level=[prefUpperLevel];text=[rank]' oncontextmenu='javascript:return setJobPrefRedirect([prefLowerLevel], \"[rank]\");'>"
+
 			if(rank == "Assistant")//Assistant is special
 				if(job_civilian_low & ASSISTANT)
-					HTML += " <font color=green>\[Yes]</font>"
+					HTML += "<font color=green>Yes</font>"
 				else
-					HTML += " <font color=red>\[No]</font>"
+					HTML += "<font color=red>No</font>"
 				HTML += "</a></td></tr>"
 				continue
 
-			if(GetJobDepartment(job, 1) & job.flag)
-				HTML += " <font color=blue>\[High]</font>"
-			else if(GetJobDepartment(job, 2) & job.flag)
-				HTML += " <font color=green>\[Medium]</font>"
-			else if(GetJobDepartment(job, 3) & job.flag)
-				HTML += " <font color=orange>\[Low]</font>"
-			else
-				HTML += " <font color=red>\[NEVER]</font>"
-			if(job.alt_titles)
-				HTML += "</a></td></tr><tr bgcolor='[lastJob.selection_color]'><td width='60%' align='center'><a>&nbsp</a></td><td><a href=\"byond://?src=\ref[user];preference=job;task=alt_title;job=\ref[job]\">\[[GetPlayerAltTitle(job)]\]</a></td></tr>"
+			HTML += "<font color=[prefLevelColor]>[prefLevelLabel]</font>"
 			HTML += "</a></td></tr>"
 
+		for(var/i = 1, i < (limit - index), i += 1) // Finish the column so it is even
+			HTML += "<tr bgcolor='[lastJob.selection_color]'><td width='60%' align='right'>&nbsp</td><td>&nbsp</td></tr>"
 
-		// AUTOFIXED BY fix_string_idiocy.py
-		// C:\Users\Rob\Documents\Projects\vgstation13\code\modules\client\preferences.dm:450: HTML += "</td'></tr></table>"
-		HTML += {"</td'></tr></table>
-			</center></table>"}
-		// END AUTOFIX
-		switch(alternate_option)
-			if(GET_RANDOM_JOB)
-				HTML += "<center><br><u><a href='?_src_=prefs;preference=job;task=random'><font color=green>Get random job if preferences unavailable</font></a></u></center><br>"
-			if(BE_ASSISTANT)
-				HTML += "<center><br><u><a href='?_src_=prefs;preference=job;task=random'><font color=red>Be assistant if preference unavailable</font></a></u></center><br>"
-			if(RETURN_TO_LOBBY)
-				HTML += "<center><br><u><a href='?_src_=prefs;preference=job;task=random'><font color=purple>Return to lobby if preference unavailable</font></a></u></center><br>"
+		HTML += "</td'></tr></table>"
 
+		HTML += "</center></table>"
 
-		// AUTOFIXED BY fix_string_idiocy.py
-		// C:\Users\Rob\Documents\Projects\vgstation13\code\modules\client\preferences.dm:462: HTML += "<center><a href='?_src_=prefs;preference=job;task=reset'>\[Reset\]</a></center>"
-		HTML += {"<center><a href='?_src_=prefs;preference=job;task=reset'>\[Reset\]</a></center>
-			</tt>"}
-		// END AUTOFIX
+//		HTML += "<center><br><a href='?_src_=prefs;preference=job;task=random'>[userandomjob ? "Get random job if preferences unavailable" : "Be an Assistant if preference unavailable"]</a></center>"
+		HTML += "<center><a href='?_src_=prefs;preference=job;task=reset'>Reset</a></center>"
+
 		user << browse(null, "window=preferences")
-		user << browse(HTML, "window=mob_occupation;size=[width]x[height]")
+		//user << browse(HTML, "window=mob_occupation;size=[width]x[height]")
+		var/datum/browser/popup = new(user, "mob_occupation", "<div align='center'>Occupation Preferences</div>", width, height)
+		popup.set_window_options("can_close=0")
+		popup.set_content(HTML)
+		popup.open(0)
 		return
 
 	proc/ShowDisabilityState(mob/user,flag,label)
@@ -526,7 +536,10 @@ var/const/MAX_SAVE_SLOTS = 8
 			</center></tt>"}
 		// END AUTOFIX
 		user << browse(null, "window=preferences")
-		user << browse(HTML, "window=disabil;size=350x300")
+		var/datum/browser/popup = new(user, "disabil", "<div align='center'>Character disabilities</div>", 350, 300)
+		popup.set_window_options("can_close=0")
+		popup.set_content(HTML)
+		popup.open(0)
 		return
 
 	proc/SetRecords(mob/user)
@@ -565,7 +578,10 @@ var/const/MAX_SAVE_SLOTS = 8
 			</center></tt>"}
 		// END AUTOFIX
 		user << browse(null, "window=preferences")
-		user << browse(HTML, "window=records;size=350x300")
+		var/datum/browser/popup = new(user, "records", "<div align='center'>Character Records</div>", 350, 300)
+		popup.set_window_options("can_close=0")
+		popup.set_content(HTML)
+		popup.open(0)
 		return
 
 	proc/GetPlayerAltTitle(datum/job/job)
@@ -606,6 +622,93 @@ var/const/MAX_SAVE_SLOTS = 8
 			SetJobDepartment(job, 4)
 
 		SetChoices(user)
+		return 1
+
+	proc/SetJobPreferenceLevel(var/datum/job/job, var/level)
+		if (!job)
+			return 0
+
+		if (level == 1) // to high
+			// remove any other job(s) set to high
+			job_civilian_med |= job_civilian_high
+			job_engsec_med |= job_engsec_high
+			job_medsci_med |= job_medsci_high
+			job_civilian_high = 0
+			job_engsec_high = 0
+			job_medsci_high = 0
+
+		if (job.department_flag == CIVILIAN)
+			job_civilian_low &= ~job.flag
+			job_civilian_med &= ~job.flag
+			job_civilian_high &= ~job.flag
+
+			switch(level)
+				if (1)
+					job_civilian_high |= job.flag
+				if (2)
+					job_civilian_med |= job.flag
+				if (3)
+					job_civilian_low |= job.flag
+
+			return 1
+		else if (job.department_flag == ENGSEC)
+			job_engsec_low &= ~job.flag
+			job_engsec_med &= ~job.flag
+			job_engsec_high &= ~job.flag
+
+			switch(level)
+				if (1)
+					job_engsec_high |= job.flag
+				if (2)
+					job_engsec_med |= job.flag
+				if (3)
+					job_engsec_low |= job.flag
+
+			return 1
+		else if (job.department_flag == MEDSCI)
+			job_medsci_low &= ~job.flag
+			job_medsci_med &= ~job.flag
+			job_medsci_high &= ~job.flag
+
+			switch(level)
+				if (1)
+					job_medsci_high |= job.flag
+				if (2)
+					job_medsci_med |= job.flag
+				if (3)
+					job_medsci_low |= job.flag
+
+			return 1
+
+		return 0
+
+
+	proc/UpdateJobPreference(mob/user, role, desiredLvl)
+		if(!job_master)
+			return
+		var/datum/job/job = job_master.GetJob(role)
+
+		if(!job)
+			user << browse(null, "window=mob_occupation")
+			ShowChoices(user)
+			return
+
+		if (!isnum(desiredLvl))
+			user << "\red UpdateJobPreference - desired level was not a number. Please notify coders!"
+			ShowChoices(user)
+			return
+
+		if(role == "Assistant")
+			if(job_civilian_low & job.flag)
+				job_civilian_low &= ~job.flag
+			else
+				job_civilian_low |= job.flag
+			SetChoices(user)
+			return 1
+
+		SetJobPreferenceLevel(job, desiredLvl)
+		SetChoices(user)
+
 		return 1
 
 	proc/ResetJobs()
@@ -787,6 +890,8 @@ NOTE:  The change will take effect AFTER any current recruiting periods."}
 					else
 						return 0
 					SetChoices(user)
+				if("setJobLevel")
+					UpdateJobPreference(user, href_list["text"], text2num(href_list["level"]))
 				if ("alt_title")
 					var/datum/job/job = locate(href_list["job"])
 					if (job)
@@ -1094,7 +1199,7 @@ NOTE:  The change will take effect AFTER any current recruiting periods."}
 							msg = copytext(msg, 1, MAX_MESSAGE_LEN)
 							msg = rhtml_encode(msg)
 
-							flavor_text = msg
+							flavor_text = sanitize_russian(msg)
 
 					if("limbs")
 						var/limb_name = input(user, "Which limb do you want to change?") as null|anything in list("Left Leg","Right Leg","Left Arm","Right Arm","Left Foot","Right Foot","Left Hand","Right Hand")
