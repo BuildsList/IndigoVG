@@ -6,6 +6,10 @@ pomf123 - unathi, diona
 
 # Whitelist one species for everyone:
 * - vox
+* - skrell
+* - tajaran
+* - unathi
+* - hylotl
 
 # Whitelist unathi for everyone IF they're a janitor:
 job=janitor - unathi

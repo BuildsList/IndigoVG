@@ -55,8 +55,7 @@
 	bald
 		name = "Bald"
 		icon_state = "bald"
-		gender = MALE
-		species_allowed = list("Human","Unathi","Grey","Plasmaman","Skellington")
+		species_allowed = list("Human","Unathi","Grey","Plasmaman","Skellington","Hylotl")
 
 	short
 		name = "Short Hair"	  // try to capatilize the names please~
@@ -150,19 +149,19 @@
 		name = "Beehive"
 		icon_state = "hair_beehive"
 		gender = FEMALE
-		species_allowed = list("Human","Unathi")
+		species_allowed = list("Human","Unathi","Hylotl")
 
 	bobcurl
 		name = "Bobcurl"
 		icon_state = "hair_bobcurl"
 		gender = FEMALE
-		species_allowed = list("Human","Unathi")
+		species_allowed = list("Human","Unathi","Hylotl")
 
 	bob
 		name = "Bob"
 		icon_state = "hair_bobcut"
 		gender = FEMALE
-		species_allowed = list("Human","Unathi")
+		species_allowed = list("Human","Unathi","Hylotl")
 
 	bowl
 		name = "Bowl"
@@ -173,7 +172,7 @@
 		name = "Buzzcut"
 		icon_state = "hair_buzzcut"
 		gender = MALE
-		species_allowed = list("Human","Unathi")
+		species_allowed = list("Human","Unathi","Hylotl")
 
 	crew
 		name = "Crewcut"
@@ -245,7 +244,7 @@
 	spiky
 		name = "Spiky"
 		icon_state = "hair_spikey"
-		species_allowed = list("Human","Unathi")
+		species_allowed = list("Human","Unathi","Hylotl")
 	kusangi
 		name = "Kusanagi Hair"
 		icon_state = "hair_kusanagi"

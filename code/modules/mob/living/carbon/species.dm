@@ -348,6 +348,10 @@ var/global/list/whitelisted_species = list("Human")
 
 	flags = HAS_SKIN_TONE | HAS_LIPS | HAS_UNDERWEAR | CAN_BE_FAT
 
+/datum/species/changeling
+	name = "changeling"
+	icobase = 'icons/mob/human_races/r_chan.dmi'
+
 /datum/species/unathi
 	name = "Unathi"
 	icobase = 'icons/mob/human_races/r_lizard.dmi'
@@ -680,3 +684,19 @@ var/global/list/whitelisted_species = list("Human")
 
 	has_mutant_race = 0
 
+
+/datum/species/hylotl
+	name = "Hylotl"
+	primitive = /mob/living/carbon/monkey/skrell
+	icobase = 'icons/mob/human_races/r_hylotl.dmi'
+	deform = 'icons/mob/human_races/r_hylotl.dmi'
+	eyes = "hylotl_eyes_s"
+	language = "Hylotl"
+	brute_resist = 10    // Physical damage reduction.
+	burn_resist = 15
+	flags = WHITELISTED | HAS_LIPS
+
+
+	cold_level_1 = 265  // Cold damage level 1 below this point.
+	cold_level_2 = 260  // Cold damage level 2 below this point.
+	cold_level_3 = 150  // Cold damage level 3 below this point.

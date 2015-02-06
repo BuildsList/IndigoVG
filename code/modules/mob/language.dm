@@ -110,6 +110,18 @@
 			message += " CL[pick("A","I")]CK"
 	return message+"!"
 
+/datum/language/hylotl
+	name = "Hylotl"
+	desc = "Мелодичный и простой &#255;зык."
+	speech_verb = "chants"
+	colour = "soghun"
+	key = "4"
+	flags = RESTRICTED
+
+/datum/language/hylotl/say_misunderstood(mob/M, message)
+	for (var/mob/living/T as mob in oview())
+		T << sound(pick('sound/voice/hylotl_song_1.ogg','sound/voice/hylotl_song_2.ogg')) // I love it.
+
 /*
 // Language handling.
 /mob/proc/add_language(var/language)
