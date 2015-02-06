@@ -925,7 +925,7 @@ var/list/slot_equipment_priority = list( \
 
 	if(msg != null)
 		msg = copytext(msg, 1, MAX_MESSAGE_LEN)
-		msg = rhtml_encode(msg)
+		msg = sanitize_russian(rhtml_encode(msg))
 
 		flavor_text = msg
 
@@ -939,9 +939,9 @@ var/list/slot_equipment_priority = list( \
 		var/msg = replacetext(flavor_text, "\n", "<br />")
 
 		if(length(msg) <= 32)
-			return "<font color='#ffa000'><b>[msg]</b></font>"
+			return "<font color='#ffa000'><b>[sanitize_russian(msg)]</b></font>"
 		else
-			return "<font color='#ffa000'><b>[copytext(msg, 1, 32)]...<a href='?src=\ref[src];flavor_text=more'>More</a></b></font>"
+			return "<font color='#ffa000'><b>[sanitize_russian(copytext(msg, 1, 32))]...<a href='?src=\ref[src];flavor_text=more'>More</a></b></font>"
 
 /*
 /mob/verb/help()
