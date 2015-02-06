@@ -378,6 +378,10 @@ macro "hotkeymode"
 		command = ".options"
 		is-disabled = false
 	elem 
+		name = "F2"
+		command = "ooc"
+		is-disabled = false
+	elem 
 		name = "F2+REP"
 		command = ".screenshot auto"
 		is-disabled = false
@@ -1061,15 +1065,15 @@ window "mainwindow"
 		on-close = ""
 	elem "oocbutton"
 		type = BUTTON
-		pos = 464,420
-		size = 32x20
+		pos = 440,420
+		size = 40x20
 		anchor1 = 100,100
 		anchor2 = none
 		font-family = ""
 		font-size = 0
 		font-style = ""
 		text-color = #000000
-		background-color = #fffdd0
+		background-color = none
 		is-visible = true
 		is-disabled = false
 		is-transparent = false
@@ -1089,8 +1093,8 @@ window "mainwindow"
 		button-type = pushbox
 	elem "mebutton"
 		type = BUTTON
-		pos = 496,420
-		size = 48x20
+		pos = 480,420
+		size = 40x20
 		anchor1 = 100,100
 		anchor2 = none
 		font-family = ""
@@ -1107,7 +1111,7 @@ window "mainwindow"
 		right-click = false
 		saved-params = "is-checked"
 		on-size = ""
-		text = "Эмоция"
+		text = "Me"
 		image = ""
 		command = ".winset \"mebutton.is-checked=true?input.command=\"!me \\\"\" macrobutton.is-checked=false:input.command=\"\"mebutton.is-checked=true?saybutton.is-checked=false\"\"mebutton.is-checked=true?oocbutton.is-checked=false\""
 		is-flat = false
@@ -1117,8 +1121,8 @@ window "mainwindow"
 		button-type = pushbox
 	elem "hotkey_toggle"
 		type = BUTTON
-		pos = 592,420
-		size = 48x20
+		pos = 560,420
+		size = 80x20
 		anchor1 = 100,100
 		anchor2 = none
 		font-family = ""
@@ -1135,7 +1139,7 @@ window "mainwindow"
 		right-click = false
 		saved-params = ""
 		on-size = ""
-		text = "Хоткеи"
+		text = "Hotkey Toggle"
 		image = ""
 		command = ".winset \"mainwindow.macro!=macro ? mainwindow.macro=macro hotkey_toggle.is-checked=false input.focus=true : mainwindow.macro=hotkeymode hotkey_toggle.is-checked=true mapwindow.map.focus=true\""
 		is-flat = false
@@ -1172,14 +1176,14 @@ window "mainwindow"
 	elem "input"
 		type = INPUT
 		pos = 3,420
-		size = 461x20
+		size = 437x20
 		anchor1 = 0,100
 		anchor2 = 100,100
 		font-family = ""
 		font-size = 0
 		font-style = ""
-		text-color = #ffffff
-		background-color = #400080
+		text-color = #000000
+		background-color = #d3b5b5
 		is-visible = true
 		is-disabled = false
 		is-transparent = false
@@ -1195,8 +1199,8 @@ window "mainwindow"
 		no-command = false
 	elem "saybutton"
 		type = BUTTON
-		pos = 544,420
-		size = 48x20
+		pos = 520,420
+		size = 40x20
 		anchor1 = 100,100
 		anchor2 = none
 		font-family = ""
@@ -1213,7 +1217,7 @@ window "mainwindow"
 		right-click = false
 		saved-params = "is-checked"
 		on-size = ""
-		text = "Сказать"
+		text = "Chat"
 		image = ""
 		command = ".winset \"saybutton.is-checked=true?input.command=\"!say \\\"\" macrobutton.is-checked=false:input.command=\"\"saybutton.is-checked=true?mebutton.is-checked=false\"\"saybutton.is-checked=true?oocbutton.is-checked=false\""
 		is-flat = false
@@ -1423,37 +1427,9 @@ window "rpane"
 		splitter = 50
 		show-splitter = true
 		lock = none
-	elem "special_button"
-		type = BUTTON
-		pos = 456,0
-		size = 60x16
-		anchor1 = none
-		anchor2 = none
-		font-family = ""
-		font-size = 0
-		font-style = ""
-		text-color = #000000
-		background-color = none
-		is-visible = true
-		is-disabled = false
-		is-transparent = false
-		is-default = false
-		border = none
-		drop-zone = false
-		right-click = false
-		saved-params = "is-checked"
-		on-size = ""
-		text = "Special"
-		image = ""
-		command = ".winset \"rpanewindow.left=window1\""
-		is-flat = false
-		stretch = false
-		is-checked = false
-		group = "rpanemode"
-		button-type = pushbox
 	elem "map"
 		type = BUTTON
-		pos = 386,0
+		pos = 404,0
 		size = 67x16
 		anchor1 = none
 		anchor2 = none
@@ -1507,7 +1483,7 @@ window "rpane"
 		on-hide = ""
 	elem "rulesb"
 		type = BUTTON
-		pos = 253,0
+		pos = 260,0
 		size = 60x16
 		anchor1 = none
 		anchor2 = none
@@ -1535,7 +1511,7 @@ window "rpane"
 		button-type = pushbutton
 	elem "changelog"
 		type = BUTTON
-		pos = 316,0
+		pos = 332,0
 		size = 67x16
 		anchor1 = none
 		anchor2 = none
@@ -1563,7 +1539,7 @@ window "rpane"
 		button-type = pushbutton
 	elem "forumb"
 		type = BUTTON
-		pos = 190,0
+		pos = 196,0
 		size = 60x16
 		anchor1 = none
 		anchor2 = none
@@ -1591,7 +1567,7 @@ window "rpane"
 		button-type = pushbutton
 	elem "wikib"
 		type = BUTTON
-		pos = 127,0
+		pos = 131,0
 		size = 60x16
 		anchor1 = none
 		anchor2 = none
@@ -1675,7 +1651,7 @@ window "rpane"
 		button-type = pushbox
 	elem "infob"
 		type = BUTTON
-		pos = 64,0
+		pos = 67,0
 		size = 60x16
 		anchor1 = none
 		anchor2 = none

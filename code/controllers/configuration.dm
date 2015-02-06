@@ -113,6 +113,8 @@
 	var/bones_can_break = 0
 	var/limbs_can_break = 0
 
+	var/emojis = 0
+
 	var/revival_pod_plants = 1
 	var/revival_cloning = 1
 	var/revival_brain_life = -1
@@ -295,6 +297,9 @@
 
 				if("allow_admin_rev")
 					config.allow_admin_rev = 1
+
+				if("emojis")
+					config.emojis					= 1
 
 				if ("allow_admin_spawning")
 					config.allow_admin_spawning = 1

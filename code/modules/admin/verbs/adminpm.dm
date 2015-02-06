@@ -77,6 +77,7 @@
 	var/send_pm_type = " "
 	var/recieve_pm_type = "Player"
 
+	msg = emoji_parse(msg)
 
 	if(holder)
 		//mod PMs are maroon
