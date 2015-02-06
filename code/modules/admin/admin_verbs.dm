@@ -63,6 +63,8 @@ var/list/admin_verbs_admin = list(
 	/client/proc/cmd_mod_say,
 	/client/proc/cmd_mod_window,
 	/datum/admins/proc/show_player_info,
+	/datum/admins/verb/nanomapgen_DumpImage,
+	/datum/admins/verb/nanomapgen_DumpImageAll,
 	/client/proc/free_slot,			/*frees slot for chosen job*/
 	/client/proc/cmd_admin_change_custom_event,
 	/client/proc/cmd_admin_rejuvenate,
@@ -156,6 +158,8 @@ var/list/admin_verbs_debug = list(
 	/client/proc/qdel_toggle,              // /vg/
 	/client/proc/cmd_admin_dump_instances, // /vg/
 	/client/proc/disable_bloodvirii,       // /vg/
+	/datum/admins/verb/gc_dump_hdl,              // /vg/
+	/datum/admins/verb/check_mob_list,              // /vg/
 	/client/proc/reload_style_sheet,
 	/client/proc/reset_style_sheet,
 	/client/proc/configFood,
@@ -208,6 +212,10 @@ var/list/admin_verbs_hideable = list(
 	/client/proc/cmd_admin_gib_self,
 	/client/proc/drop_bomb,
 	/client/proc/cinematic,
+	/datum/admins/verb/nanomapgen_DumpImage,
+	/datum/admins/verb/nanomapgen_DumpImageAll,
+	/datum/admins/verb/gc_dump_hdl,
+	/datum/admins/verb/check_mob_list,
 	/datum/admins/proc/toggle_aliens,
 	/datum/admins/proc/toggle_space_ninja,
 	/client/proc/send_space_ninja,
