@@ -139,6 +139,8 @@ BLIND     // can't see anything
 	var/can_flip = null
 	var/is_flipped = 1
 	var/ignore_flip = 0
+	var/see_invisible = 0
+	var/see_in_dark = 0
 
 /obj/item/clothing/mask/verb/togglemask()
 	set name = "Toggle Mask"
