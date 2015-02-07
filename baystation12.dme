@@ -87,6 +87,7 @@
 #define FILE_DIR "sound/turntable"
 #define FILE_DIR "sound/violin"
 #define FILE_DIR "sound/voice"
+#define FILE_DIR "sound/voice/paydaycloaker"
 #define FILE_DIR "sound/voice/Serithi"
 #define FILE_DIR "sound/voice/toy"
 #define FILE_DIR "sound/vox"
