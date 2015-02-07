@@ -7,8 +7,9 @@ var/list/admin_verbs_default = list(
 	/client/proc/hide_most_verbs,		/*hides all our hideable adminverbs*/
 	/client/proc/debug_variables,		/*allows us to -see- the variables of any instance in the game. +VAREDIT needed to modify*/
 	/client/proc/check_antagonists,		/*shows all antags*/
-	/datum/admins/proc/checkCID,
-	/datum/admins/proc/checkCKEY
+	/client/proc/checkAccount
+//	/datum/admins/proc/checkCID,
+//	/datum/admins/proc/checkCKEY
 //	/client/proc/deadchat				/*toggles deadchat on/off*/
 	)
 var/list/admin_verbs_admin = list(
@@ -72,18 +73,16 @@ var/list/admin_verbs_admin = list(
 	/client/proc/toggledebuglogs,
 	/datum/admins/proc/show_skills,
 	/client/proc/check_customitem_activity,
-	// /client/proc/man_up,
-	// /client/proc/global_man_up,
 	/client/proc/response_team, // Response Teams admin verb
 	/client/proc/toggle_antagHUD_use,
 	/client/proc/toggle_antagHUD_restrictions,
 	/client/proc/allow_character_respawn    /* Allows a ghost to respawn */
 )
 var/list/admin_verbs_ban = list(
-	/client/proc/unban_panel,
-	/client/proc/jobbans,
-	/client/proc/unjobban_panel
-	// /client/proc/DB_ban_panel
+//	/client/proc/unban_panel,
+//	/client/proc/jobbans,
+//	/client/proc/unjobban_panel,
+	/client/proc/DB_ban_panel  // - Banning Panel for all!
 	)
 var/list/admin_verbs_sounds = list(
 	/client/proc/play_local_sound,
@@ -104,6 +103,8 @@ var/list/admin_verbs_fun = list(
 	/client/proc/cmd_admin_add_freeform_ai_law,
 	/client/proc/cmd_admin_add_random_ai_law,
 	/client/proc/make_sound,
+	/client/proc/man_up,
+	/client/proc/global_man_up,
 	/client/proc/toggle_random_events,
 	/client/proc/set_ooc,
 	/client/proc/editappear,

@@ -300,8 +300,8 @@
 /obj/item/weapon/reagent_containers/food/snacks/chocolatebar is missing right hand icon called "chocolatebarunwrapped".
 /obj/item/weapon/reagent_containers/food/snacks/chocolateegg is missing left hand icon called "chocolateegg".
 /obj/item/weapon/reagent_containers/food/snacks/chocolateegg is missing right hand icon called "chocolateegg".
-/obj/item/weapon/reagent_containers/food/snacks/donut/jelly is missing left hand icon called "jdonut2".
-/obj/item/weapon/reagent_containers/food/snacks/donut/jelly is missing right hand icon called "jdonut2".
+/obj/item/weapon/reagent_containers/food/snacks/donut/jelly is missing left hand icon called "jdonut1".
+/obj/item/weapon/reagent_containers/food/snacks/donut/jelly is missing right hand icon called "jdonut1".
 /obj/item/weapon/reagent_containers/food/snacks/donut/slimejelly is missing left hand icon called "jdonut1".
 /obj/item/weapon/reagent_containers/food/snacks/donut/slimejelly is missing right hand icon called "jdonut1".
 /obj/item/weapon/reagent_containers/food/snacks/donut/cherryjelly is missing left hand icon called "jdonut1".
@@ -835,8 +835,8 @@
 /obj/item/weapon/reagent_containers/food/drinks/flour is missing right hand icon called "flour".
 /obj/item/weapon/reagent_containers/food/drinks/dry_ramen is missing left hand icon called "ramen".
 /obj/item/weapon/reagent_containers/food/drinks/dry_ramen is missing right hand icon called "ramen".
-/obj/item/weapon/reagent_containers/food/drinks/groans is missing left hand icon called "groans_nutriment".
-/obj/item/weapon/reagent_containers/food/drinks/groans is missing right hand icon called "groans_nutriment".
+/obj/item/weapon/reagent_containers/food/drinks/groans is missing left hand icon called "groans_cold".
+/obj/item/weapon/reagent_containers/food/drinks/groans is missing right hand icon called "groans_cold".
 /obj/item/weapon/reagent_containers/food/drinks/filk is missing left hand icon called "filk".
 /obj/item/weapon/reagent_containers/food/drinks/filk is missing right hand icon called "filk".
 /obj/item/weapon/reagent_containers/food/drinks/groansbanned is missing left hand icon called "groansevil".
@@ -1161,7 +1161,7 @@
 /obj/item/weapon/tray/robotray is missing right hand icon called "tray".
 /obj/item/weapon/tray is missing left hand icon called "tray".
 /obj/item/weapon/tray is missing right hand icon called "tray".
-/obj/item/weapon/shard/shrapnel is missing normal icon called "shrapnelmedium" in "icons/obj/shards.dmi".
+/obj/item/weapon/shard/shrapnel is missing normal icon called "shrapnellarge" in "icons/obj/shards.dmi".
 /obj/item/weapon/revivalprod is missing left hand icon called "stun baton".
 /obj/item/weapon/revivalprod is missing right hand icon called "stun baton".
 /obj/item/weapon/switchtool/surgery is missing left hand icon called "surg_switchtool".
@@ -1282,20 +1282,28 @@
 /obj/item/weapon/robot_module is missing normal icon called "std_module" in "icons/obj/module.dmi".
 /obj/item/weapon/organ/l_arm is missing left hand icon called "l_arm".
 /obj/item/weapon/organ/l_arm is missing right hand icon called "l_arm".
+/obj/item/weapon/organ/l_arm is missing normal icon called "l_arm" in "icons/mob/human_races/r_human.dmi".
 /obj/item/weapon/organ/l_foot is missing left hand icon called "l_foot".
 /obj/item/weapon/organ/l_foot is missing right hand icon called "l_foot".
+/obj/item/weapon/organ/l_foot is missing normal icon called "l_foot" in "icons/mob/human_races/r_human.dmi".
 /obj/item/weapon/organ/l_hand is missing left hand icon called "l_hand".
 /obj/item/weapon/organ/l_hand is missing right hand icon called "l_hand".
+/obj/item/weapon/organ/l_hand is missing normal icon called "l_hand" in "icons/mob/human_races/r_human.dmi".
 /obj/item/weapon/organ/l_leg is missing left hand icon called "l_leg".
 /obj/item/weapon/organ/l_leg is missing right hand icon called "l_leg".
+/obj/item/weapon/organ/l_leg is missing normal icon called "l_leg" in "icons/mob/human_races/r_human.dmi".
 /obj/item/weapon/organ/r_arm is missing left hand icon called "r_arm".
 /obj/item/weapon/organ/r_arm is missing right hand icon called "r_arm".
+/obj/item/weapon/organ/r_arm is missing normal icon called "r_arm" in "icons/mob/human_races/r_human.dmi".
 /obj/item/weapon/organ/r_foot is missing left hand icon called "r_foot".
 /obj/item/weapon/organ/r_foot is missing right hand icon called "r_foot".
+/obj/item/weapon/organ/r_foot is missing normal icon called "r_foot" in "icons/mob/human_races/r_human.dmi".
 /obj/item/weapon/organ/r_hand is missing left hand icon called "r_hand".
 /obj/item/weapon/organ/r_hand is missing right hand icon called "r_hand".
+/obj/item/weapon/organ/r_hand is missing normal icon called "r_hand" in "icons/mob/human_races/r_human.dmi".
 /obj/item/weapon/organ/r_leg is missing left hand icon called "r_leg".
 /obj/item/weapon/organ/r_leg is missing right hand icon called "r_leg".
+/obj/item/weapon/organ/r_leg is missing normal icon called "r_leg" in "icons/mob/human_races/r_human.dmi".
 /obj/item/weapon/organ/head/posi is missing left hand icon called "head_m".
 /obj/item/weapon/organ/head/posi is missing right hand icon called "head_m".
 /obj/item/weapon/organ/head is missing left hand icon called "head_m".
@@ -1335,8 +1343,8 @@
 /obj/item/weapon/groans is missing right hand icon called "toddler".
 /obj/item/weapon/packageWrap is missing left hand icon called "deliveryPaper".
 /obj/item/weapon/packageWrap is missing right hand icon called "deliveryPaper".
-/obj/item/weapon/rocksliver is missing left hand icon called "sliver3".
-/obj/item/weapon/rocksliver is missing right hand icon called "sliver3".
+/obj/item/weapon/rocksliver is missing left hand icon called "sliver1".
+/obj/item/weapon/rocksliver is missing right hand icon called "sliver1".
 /obj/item/weapon/strangerock is missing left hand icon called "strange".
 /obj/item/weapon/strangerock is missing right hand icon called "strange".
 /obj/item/weapon/fossil/bone is missing left hand icon called "bone".
@@ -1347,8 +1355,8 @@
 /obj/item/weapon/fossil/skull is missing right hand icon called "skull".
 /obj/item/weapon/fossil/shell is missing left hand icon called "shell".
 /obj/item/weapon/fossil/shell is missing right hand icon called "shell".
-/obj/item/weapon/fossil/plant is missing left hand icon called "plant1".
-/obj/item/weapon/fossil/plant is missing right hand icon called "plant1".
+/obj/item/weapon/fossil/plant is missing left hand icon called "plant4".
+/obj/item/weapon/fossil/plant is missing right hand icon called "plant4".
 /obj/item/weapon/fossil is missing left hand icon called "bone".
 /obj/item/weapon/fossil is missing right hand icon called "bone".
 /obj/item/weapon/anobattery is missing left hand icon called "anobattery0".
@@ -2259,7 +2267,6 @@
 /obj/item/device/modkit is missing right hand icon called "modkit".
 /obj/item/device/pipe_painter is missing left hand icon called "labeler1".
 /obj/item/device/pipe_painter is missing right hand icon called "labeler1".
-/obj/item/device/tape is missing normal icon called "tape_white" in "icons/obj/device.dmi".
 /obj/item/device/transfer_valve is missing left hand icon called "valve_1".
 /obj/item/device/transfer_valve is missing right hand icon called "valve_1".
 /obj/item/device/pda/ai/pai is missing normal icon called "NONE" in "icons/obj/pda.dmi".
@@ -2908,8 +2915,8 @@
 /obj/item/weedkiller is missing right hand icon called "bottle16".
 /obj/item/seeds/cutting is missing left hand icon called "seed".
 /obj/item/seeds/cutting is missing right hand icon called "seed".
-/obj/item/seeds/random is missing left hand icon called "seed-poisonberry".
-/obj/item/seeds/random is missing right hand icon called "seed-poisonberry".
+/obj/item/seeds/random is missing left hand icon called "mycelium-angel".
+/obj/item/seeds/random is missing right hand icon called "mycelium-angel".
 /obj/item/seeds/replicapod is missing left hand icon called "seed-replicapod".
 /obj/item/seeds/replicapod is missing right hand icon called "seed-replicapod".
 /obj/item/seeds/poppyseed is missing left hand icon called "seed-poppy".
