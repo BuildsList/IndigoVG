@@ -7,7 +7,8 @@ var/list/admin_verbs_default = list(
 	/client/proc/hide_most_verbs,		/*hides all our hideable adminverbs*/
 	/client/proc/debug_variables,		/*allows us to -see- the variables of any instance in the game. +VAREDIT needed to modify*/
 	/client/proc/check_antagonists,		/*shows all antags*/
-	/client/proc/checkAccount
+	/client/proc/checkAccount,			/*unlimate tool to check multiaccount without hub*/
+	/client/verb/adminwho				/*adminwho only for admins*/
 //	/datum/admins/proc/checkCID,
 //	/datum/admins/proc/checkCKEY
 //	/client/proc/deadchat				/*toggles deadchat on/off*/
@@ -678,7 +679,7 @@ var/list/admin_verbs_mod = list(
 	message_admins("\blue [key_name_admin(usr)] used 'kill air'.", 1)
 
 /client/proc/deadmin_self()
-	set name = "De-admin self"
+	set name = "UNPEDAL ME!"
 	set category = "Admin"
 
 	if(holder)
@@ -686,6 +687,7 @@ var/list/admin_verbs_mod = list(
 		message_admins("[src] deadminned themself.")
 		deadmin()
 		verbs += /client/proc/readmin
+		verbs += /client/verb/adminwho
 		deadmins += ckey
 		src << "<span class='interface'>You are now a normal player.</span>"
 	feedback_add_details("admin_verb","DAS") //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!
@@ -854,7 +856,7 @@ var/list/admin_verbs_mod = list(
 
 
 /client/proc/readmin()
-	set name = "Re-admin self"
+	set name = "PEDAL ME!"
 	set category = "Admin"
 	set desc = "Regain your admin powers."
 	var/datum/admins/D = admin_datums[ckey]

@@ -53,13 +53,13 @@
 	set name = "Adminwho"
 
 	var/aNames = ""
-	var/mNames = ""
-	var/numAdminsOnline = 0
-	var/numModsOnline = 0
+//	var/mNames = ""
+//	var/numAdminsOnline = 0
+//	var/numModsOnline = 0
 
 	if (holder)
 		for (var/client/C in admins)
-			if (R_ADMIN & C.holder.rights || !(R_MOD & C.holder.rights))
+			if (R_ADMIN & C.holder.rights || (R_MOD & C.holder.rights))
 				aNames += "\t[C] is a [C.holder.rank]"
 
 				if (C.holder.fakekey)
@@ -76,8 +76,8 @@
 					aNames += " (AFK)"
 
 				aNames += "\n"
-				numAdminsOnline++
-			else
+//				numAdminsOnline++
+/*			else
 				mNames += "\t[C] is a [C.holder.rank]"
 
 				if (C.holder.fakekey)
@@ -94,16 +94,16 @@
 					mNames += " (AFK)"
 
 				mNames += "\n"
-				numModsOnline++
+				numModsOnline++ */
 	else
 		for (var/client/C in admins)
-			if (R_ADMIN & C.holder.rights || !(R_MOD & C.holder.rights))
+			if (R_ADMIN & C.holder.rights || (R_MOD & C.holder.rights))
 				if (!C.holder.fakekey)
 					aNames += "\t[C] is a [C.holder.rank]\n"
-					numAdminsOnline++
+/*					numAdminsOnline++
 			else
 				if (!C.holder.fakekey)
 					mNames += "\t[C] is a [C.holder.rank]\n"
-					numModsOnline++
+					numModsOnline++ */
 
-	src << "\n<b>Current Admins ([numAdminsOnline]):</b>\n" + aNames + "\n<b>Current Moderators ([numModsOnline]):</b>\n" + mNames + "\n"
+	src << "\n<b>Administators Online:</b>\n" + aNames + "\n"/*<b>Current Moderators ([numModsOnline]):</b>\n" + mNames + "\n"*/

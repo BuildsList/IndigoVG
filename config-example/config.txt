@@ -141,6 +141,8 @@ DEFAULT_NO_VOTE
 ## allow AI job
 ALLOW_AI
 
+## Uncomment if you are ZloHub user
+# ZLOHUB
 
 ## disable abandon mob
 # NORESPAWN
