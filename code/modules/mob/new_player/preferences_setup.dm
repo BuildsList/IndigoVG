@@ -216,13 +216,13 @@ datum/preferences
 
 		if(!for_observer)
 			// Commenting this check so that, if all else fails, the preview icon is never naked. - N3X
-		//if(job_civilian_low & ASSISTANT)//This gives the preview icon clothes depending on which job(if any) is set to 'high'
-			clothes_s = new /icon(g=="m"?'icons/mob/uniform.dmi':'icons/mob/uniform_f.dmi', "grey_s")
-			clothes_s.Blend(new /icon(g=="m"?'icons/mob/feet.dmi':'icons/mob/feet_f.dmi', "black"), ICON_UNDERLAY)
-			if(backbag == 2)
-				clothes_s.Blend(new /icon(g=="m"?'icons/mob/back.dmi':'icons/mob/back_f.dmi', "backpack"), ICON_OVERLAY)
-			else if(backbag == 3 || backbag == 4)
-				clothes_s.Blend(new /icon(g=="m"?'icons/mob/back.dmi':'icons/mob/back_f.dmi', "satchel"), ICON_OVERLAY)
+			if(job_civilian_low & ASSISTANT)//This gives the preview icon clothes depending on which job(if any) is set to 'high'
+				clothes_s = new /icon(g=="m"?'icons/mob/uniform.dmi':'icons/mob/uniform_f.dmi', "grey_s")
+				clothes_s.Blend(new /icon(g=="m"?'icons/mob/feet.dmi':'icons/mob/feet_f.dmi', "black"), ICON_UNDERLAY)
+				if(backbag == 2)
+					clothes_s.Blend(new /icon(g=="m"?'icons/mob/back.dmi':'icons/mob/back_f.dmi', "backpack"), ICON_OVERLAY)
+				else if(backbag == 3 || backbag == 4)
+					clothes_s.Blend(new /icon(g=="m"?'icons/mob/back.dmi':'icons/mob/back_f.dmi', "satchel"), ICON_OVERLAY)
 
 			if(job_civilian_high)//I hate how this looks, but there's no reason to go through this switch if it's empty
 				switch(job_civilian_high)

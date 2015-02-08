@@ -73,9 +73,9 @@
 		name = "Shoulder-length Hair Alt"
 		icon_state = "hair_longfringe"
 
-	/*longish
+	longish
 		name = "Longer Hair"
-		icon_state = "hair_b2"*/
+		icon_state = "hair_b2"
 
 	longer
 		name = "Long Hair"
@@ -112,7 +112,7 @@
 	ponytail2
 		name = "Ponytail 2"
 		icon_state = "hair_pa"
-		gender = FEMALE
+//		gender = FEMALE
 
 	ponytail3
 		name = "Ponytail 3"
@@ -125,13 +125,13 @@
 	pompadour
 		name = "Pompadour"
 		icon_state = "hair_pompadour"
-		gender = MALE
+//		gender = MALE
 		species_allowed = list("Human","Unathi")
 
 	quiff
 		name = "Quiff"
 		icon_state = "hair_quiff"
-		gender = MALE
+//		gender = MALE
 
 	bedhead
 		name = "Bedhead"
@@ -148,41 +148,41 @@
 	beehive
 		name = "Beehive"
 		icon_state = "hair_beehive"
-		gender = FEMALE
+//		gender = FEMALE
 		species_allowed = list("Human","Unathi","Hylotl")
 
 	bobcurl
 		name = "Bobcurl"
 		icon_state = "hair_bobcurl"
-		gender = FEMALE
+//		gender = FEMALE
 		species_allowed = list("Human","Unathi","Hylotl")
 
 	bob
 		name = "Bob"
 		icon_state = "hair_bobcut"
-		gender = FEMALE
+//		gender = FEMALE
 		species_allowed = list("Human","Unathi","Hylotl")
 
 	bowl
 		name = "Bowl"
 		icon_state = "hair_bowlcut"
-		gender = MALE
+//		gender = MALE
 
 	buzz
 		name = "Buzzcut"
 		icon_state = "hair_buzzcut"
-		gender = MALE
+//		gender = MALE
 		species_allowed = list("Human","Unathi","Hylotl")
 
 	crew
 		name = "Crewcut"
 		icon_state = "hair_crewcut"
-		gender = MALE
+//		gender = MALE
 
 	combover
 		name = "Combover"
 		icon_state = "hair_combover"
-		gender = MALE
+//		gender = MALE
 
 	devillock
 		name = "Devil Lock"
@@ -212,7 +212,7 @@
 	sargeant
 		name = "Flat Top"
 		icon_state = "hair_sargeant"
-		gender = MALE
+//		gender = MALE
 
 	emo
 		name = "Emo"
@@ -234,12 +234,12 @@
 	jensen
 		name = "Adam Jensen Hair"
 		icon_state = "hair_jensen"
-		gender = MALE
+//		gender = MALE
 
 	gelled
 		name = "Gelled Back"
 		icon_state = "hair_gelled"
-		gender = FEMALE
+//		gender = FEMALE
 
 	spiky
 		name = "Spiky"
@@ -252,33 +252,33 @@
 	kagami
 		name = "Pigtails"
 		icon_state = "hair_kagami"
-		gender = FEMALE
+//		gender = FEMALE
 
 	himecut
 		name = "Hime Cut"
 		icon_state = "hair_himecut"
-		gender = FEMALE
+//		gender = FEMALE
 
 	braid
 		name = "Floorlength Braid"
 		icon_state = "hair_braid"
-		gender = FEMALE
+//		gender = FEMALE
 		flags = HAIRSTYLE_CANTRIP
 
 	odango
 		name = "Odango"
 		icon_state = "hair_odango"
-		gender = FEMALE
+//		gender = FEMALE
 
 	ombre
 		name = "Ombre"
 		icon_state = "hair_ombre"
-		gender = FEMALE
+//		gender = FEMALE
 
 	updo
 		name = "Updo"
 		icon_state = "hair_updo"
-		gender = FEMALE
+//		gender = FEMALE
 
 	skinhead
 		name = "Skinhead"
@@ -287,69 +287,69 @@
 	balding
 		name = "Balding Hair"
 		icon_state = "hair_e"
-		gender = MALE // turnoff!
+//		gender = MALE // turnoff!
 
 	familyman
 		name = "The Family Man"
 		icon_state = "hair_thefamilyman"
-		gender = MALE
+//		gender = MALE
 
 	mahdrills
 		name = "Drillruru"
 		icon_state = "hair_drillruru"
-		gender = FEMALE
+//		gender = FEMALE
 
 	dandypomp
 		name = "Dandy Pompadour"
 		icon_state = "hair_dandypompadour"
-		gender = MALE
+//		gender = MALE
 
 	poofy
 		name = "Poofy"
 		icon_state = "hair_poofy"
-		gender = FEMALE
+//		gender = FEMALE
 
 	crono
 		name = "Toriyama"
 		icon_state = "hair_toriyama"
-		gender = MALE
+//		gender = MALE
 
 	vegeta
 		name = "Toriyama 2"
 		icon_state = "hair_toriyama2"
-		gender = MALE
+//		gender = MALE
 
 	cia
 		name = "CIA"
 		icon_state = "hair_cia"
-		gender = MALE
+//		gender = MALE
 
 	mulder
 		name = "Mulder"
 		icon_state = "hair_mulder"
-		gender = MALE
+//		gender = MALE
 
 	scully
 		name = "Scully"
 		icon_state = "hair_scully"
-		gender = FEMALE
+//		gender = FEMALE
 
 	marisa
 		name = "Marisa"
 		icon_state = "hair_marisa"
-		gender = FEMALE
+//		gender = FEMALE
 		additional_accessories = 1
 
 	nitori
 		name = "Nitori"
 		icon_state = "hair_nitori"
-		gender = FEMALE
+//		gender = FEMALE
 		additional_accessories = 1
 
 	joestar
 		name = "Joestar"
 		icon_state = "hair_joestar"
-		gender = MALE
+//		gender = MALE
 
 	metal
 		name = "Metal"
@@ -358,57 +358,67 @@
 	edgeworth
 		name = "Edgeworth"
 		icon_state = "hair_edgeworth"
-		gender = MALE
+//		gender = MALE
 
 	objection
 		name = "Objection!"
 		icon_state = "hair_objection"
-		gender = MALE
+//		gender = MALE
 
 	dubs
 		name = "Check 'Em"
 		icon_state = "hair_dubs"
-		gender = MALE
+//		gender = MALE
 
 	swordsman
 		name = "Black Swordsman"
 		icon_state = "hair_blackswordsman"
-		gender = MALE
+//		gender = MALE
 
 	mentalist
 		name = "Mentalist"
 		icon_state = "hair_mentalist"
-		gender = MALE
+//		gender = MALE
 
 	fujisaki
 		name = "Fujisaki"
 		icon_state = "hair_fujisaki"
-		gender = FEMALE
+//		gender = FEMALE
 
 	schierke
 		name = "Schierke"
 		icon_state = "hair_schierke"
-		gender = FEMALE
+//		gender = FEMALE
 
 	akari
 		name = "Akari"
 		icon_state = "hair_akari"
-		gender = FEMALE
+//		gender = FEMALE
 
 	fujiyabashi
 		name = "Fujuyabashi"
 		icon_state = "hair_fujiyabashi"
-		gender = FEMALE
+//		gender = FEMALE
 
 	nia
 		name = "Nia"
 		icon_state = "hair_nia"
-		gender = FEMALE
+//		gender = FEMALE
 
 	shinobu
 		name = "Shinobu"
 		icon_state = "hair_shinobu"
-		gender = FEMALE
+//		gender = FEMALE
+
+// TestUnit strike's back!
+	ladylike
+		name = "Ladylike"
+		icon_state = "hair_ladylike"
+
+	ladyalt
+		name = "Ladyblades"
+		icon_state = "hair_ladyalt"
+		species_allowed = list("Human","Hylotl")
 
 	bald
 		name = "Bald"
@@ -430,7 +440,7 @@
 		name = "Shaved"
 		icon_state = "bald"
 		gender = NEUTER
-		species_allowed = list("Human","Unathi","Tajaran","Skrell","Vox","Grey","Plasmaman","Skellington")
+		species_allowed = list("Human","Unathi","Tajaran","Skrell","Vox","Grey","Plasmaman","Skellington","Hylotl")
 
 	watson
 		name = "Watson Mustache"

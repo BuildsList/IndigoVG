@@ -32,6 +32,43 @@
 		if(istype(M, /mob/living/carbon/human))
 			var/mob/living/carbon/human/H = M
 
+			if(istype(H.shoes, /obj/item/clothing/shoes/))
+				var/steppath
+				if(istype(H.shoes, /obj/item/clothing/shoes/clown_shoes))
+					steppath = "clownstep"
+				else
+					if(istype(H.loc, /turf/simulated/floor/carpet))
+						steppath = "step_carpet"
+					else if(istype(H.loc, /turf/simulated/floor/beach/sand))
+						steppath = "step_sand"
+					else if(istype(H.loc, /turf/simulated/floor/wood))
+						steppath = "step_wood"
+					else if(istype(H.loc, /turf/simulated/floor/engine))
+						steppath = "step_metall"
+					else if(istype(H.loc, /turf/simulated/floor/vault))
+						steppath = "step_panel"
+					else if(istype(H.loc, /turf/simulated/floor/grass))
+						steppath = "step_grass"
+		/*			else if(istype(H.loc, /turf/simulated/floor/music))
+						if(O.footstep >= 2)
+							steppath = "din_don_step"
+							flick("light_on-b", src)
+							O.footstep = 0
+						else
+							steppath = "din_don_step"
+							flick("light_on-r", src)
+							O.footstep ++
+						return*/
+					else if(istype(H.loc, /turf/simulated/floor))
+						steppath = "step_concrete"
+					else if(istype(H.loc, /turf/simulated))
+						steppath = "step_rubber"
+				if(M.m_intent == "run")
+					playsound(src, steppath, pick(60,20,0,0), 1)
+				else
+					playsound(src, steppath, pick(5,10,0,0), 1)
+
+
 			// Tracking blood
 			var/list/bloodDNA = null
 			var/bloodcolor=""

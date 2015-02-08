@@ -377,7 +377,7 @@ var/global/list/whitelisted_species = list("Human")
 
 /datum/species/unathi/say_filter(mob/M, message, datum/language/speaking)
 	if(copytext(message, 1, 2) != "*")
-		message = replacetext(message, "s", stutter("ss"))
+		message = replacetext(message, "с", stutter("сс"))
 	return message
 
 /datum/species/skellington // /vg/
@@ -690,11 +690,11 @@ var/global/list/whitelisted_species = list("Human")
 	primitive = /mob/living/carbon/monkey/skrell
 	icobase = 'icons/mob/human_races/r_hylotl.dmi'
 	deform = 'icons/mob/human_races/r_hylotl.dmi'
-	eyes = "hylotl_eyes_s"
+//	eyes = "hylotl_eyes_s"
 	language = "Hylotl"
 	brute_resist = 10    // Physical damage reduction.
 	burn_resist = 15
-	flags = WHITELISTED | HAS_LIPS
+	flags = WHITELISTED | HAS_LIPS | HAS_SKIN_TONE | HAS_UNDERWEAR
 
 
 	cold_level_1 = 265  // Cold damage level 1 below this point.

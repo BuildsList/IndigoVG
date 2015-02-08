@@ -1106,13 +1106,13 @@ NOTE:  The change will take effect AFTER any current recruiting periods."}
 						if(new_b_type)
 							b_type = new_b_type
 
-					if("hair")
-						if(species == "Human" || species == "Unathi")
-							var/new_hair = input(user, "Choose your character's hair colour:", "Character Preference") as color|null
-							if(new_hair)
-								r_hair = hex2num(copytext(new_hair, 2, 4))
-								g_hair = hex2num(copytext(new_hair, 4, 6))
-								b_hair = hex2num(copytext(new_hair, 6, 8))
+					if("hair") // H_style for everybody! TestUnit
+//						if(species == "Human" || species == "Unathi")
+						var/new_hair = input(user, "Choose your character's hair colour:", "Character Preference") as color|null
+						if(new_hair)
+							r_hair = hex2num(copytext(new_hair, 2, 4))
+							g_hair = hex2num(copytext(new_hair, 4, 6))
+							b_hair = hex2num(copytext(new_hair, 6, 8))
 
 					if("h_style")
 						var/list/valid_hairstyles = list()
@@ -1171,8 +1171,8 @@ NOTE:  The change will take effect AFTER any current recruiting periods."}
 							b_eyes = hex2num(copytext(new_eyes, 6, 8))
 
 					if("s_tone")
-						if(species != "Human")
-							return
+//						if(species != "Human")
+//							return
 						var/new_s_tone = input(user, "Choose your character's skin-tone:\n(Light 1 - 220 Dark)", "Character Preference")  as num|null
 						if(new_s_tone)
 							s_tone = 35 - max(min( round(new_s_tone), 220),1)

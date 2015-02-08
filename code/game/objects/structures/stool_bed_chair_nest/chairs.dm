@@ -133,6 +133,11 @@
 	else
 		..()
 
+/obj/structure/stool/bed/chair/schair
+	name = "Comfy seat"
+	desc = "It looks really comfy instead of chair"
+	icon_state = "schair"
+
 /obj/structure/stool/bed/chair/comfy
 	name = "comfy chair"
 	desc = "It looks comfy."

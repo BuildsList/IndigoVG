@@ -11,6 +11,20 @@ var/list/mechstep_sound = list('sound/mecha/mechstep1.ogg', 'sound/mecha/mechste
 var/list/gib_sound = list('sound/effects/gib1.ogg', 'sound/effects/gib2.ogg', 'sound/effects/gib3.ogg')
 var/list/mommicomment_sound = list('sound/voice/mommi_comment1.ogg', 'sound/voice/mommi_comment2.ogg', 'sound/voice/mommi_comment3.ogg', 'sound/voice/mommi_comment5.ogg', 'sound/voice/mommi_comment6.ogg', 'sound/voice/mommi_comment7.ogg', 'sound/voice/mommi_comment8.ogg')
 //var/list/gun_sound = list('sound/weapons/Gunshot.ogg', 'sound/weapons/Gunshot2.ogg','sound/weapons/Gunshot3.ogg','sound/weapons/Gunshot4.ogg')
+var/list/clownstep = list('sound/effects/clownstep1.ogg','sound/effects/clownstep2.ogg')
+var/list/swing_hit = list('sound/weapons/genhit1.ogg', 'sound/weapons/genhit2.ogg', 'sound/weapons/genhit3.ogg')
+var/list/hiss = list('sound/voice/hiss1.ogg','sound/voice/hiss2.ogg','sound/voice/hiss3.ogg','sound/voice/hiss4.ogg')
+var/list/pageturn = list('sound/effects/pageturn1.ogg', 'sound/effects/pageturn2.ogg','sound/effects/pageturn3.ogg')
+var/list/step_concrete = list('sound/effects/footsteps/concrete_step1.ogg', 'sound/effects/footsteps/concrete_step2.ogg', 'sound/effects/footsteps/concrete_step3.ogg', 'sound/effects/footsteps/concrete_step4.ogg')
+var/list/step_wood = list('sound/effects/footsteps/wood_step2.ogg', 'sound/effects/footsteps/wood_step3.ogg')
+var/list/step_metall = list('sound/effects/footsteps/metalgrate_step1.ogg', 'sound/effects/footsteps/metalgrate_step2.ogg', 'sound/effects/footsteps/metalgrate_step3.ogg', 'sound/effects/footsteps/metalsolid_step1.ogg', 'sound/effects/footsteps/metalsolid_step2.ogg', 'sound/effects/footsteps/metalsolid_step3.ogg')
+var/list/step_panel = list('sound/effects/footsteps/panel_step1.ogg', 'sound/effects/footsteps/panel_step2.ogg', 'sound/effects/footsteps/panel_step3.ogg')
+var/list/step_sand = list('sound/effects/footsteps/sand_step1.ogg', 'sound/effects/footsteps/sand_step2.ogg', 'sound/effects/footsteps/sand_step3.ogg')
+var/list/step_carpet = list('sound/effects/footsteps/carpet_step1.ogg', 'sound/effects/footsteps/carpet_step2.ogg', 'sound/effects/footsteps/carpet_step3.ogg', 'sound/effects/footsteps/carpet_step4.ogg')
+var/list/step_grass = list('sound/effects/footsteps/earth_step1.ogg', 'sound/effects/footsteps/earth_step2.ogg', 'sound/effects/footsteps/earth_step3.ogg')
+var/list/step_rubber = list('sound/effects/footsteps/rubber_step1.ogg', 'sound/effects/footsteps/rubber_step2.ogg', 'sound/effects/footsteps/rubber_step3.ogg', 'sound/effects/footsteps/rubber_step4.ogg')
+var/list/step_dindon = list('sound/effects/footsteps/1.ogg', 'sound/effects/footsteps/2.ogg', 'sound/effects/footsteps/3.ogg', 'sound/effects/footsteps/4.ogg', 'sound/effects/footsteps/5.ogg', 'sound/effects/footsteps/6.ogg', 'sound/effects/footsteps/7.ogg', 'sound/effects/footsteps/8.ogg', 'sound/effects/footsteps/9.ogg', 'sound/effects/footsteps/10.ogg', 'sound/effects/footsteps/11.ogg', 'sound/effects/footsteps/12.ogg', 'sound/effects/footsteps/13.ogg', 'sound/effects/footsteps/14.ogg','sound/effects/footsteps/15.ogg','sound/effects/footsteps/16.ogg','sound/effects/footsteps/17.ogg','sound/effects/footsteps/18.ogg','sound/effects/footsteps/19.ogg','sound/effects/footsteps/20.ogg','sound/effects/footsteps/21.ogg','sound/effects/footsteps/22.ogg')
+
 
 //gas_modified controls if a sound is affected by how much gas there is in the atmosphere of the source
 //space sounds have no gas modification, for example. Though >space sounds
@@ -143,4 +157,14 @@ var/const/SURROUND_CAP = 7
 			if ("gib") soundin = pick(gib_sound)
 			if ("mommicomment") soundin = pick(mommicomment_sound)
 			//if ("gunshot") soundin = pick(gun_sound)
+			if ("step_concrete") soundin = pick(step_concrete)
+			if ("step_wood") soundin = pick(step_wood)
+			if ("step_metall") soundin = pick(step_metall)
+			if ("step_panel") soundin = pick(step_panel)
+			if ("step_sand") soundin = pick(step_sand)
+			if ("step_carpet") soundin = pick(step_carpet)
+			if ("step_grass") soundin = pick(step_grass)
+			if ("step_rubber") soundin = pick(step_rubber)
+			if ("step_dindon") soundin = pick(step_dindon)
+
 	return soundin
