@@ -57,7 +57,7 @@
 		reversedir = 2
 	if(istype(mover) && mover.checkpass(PASSGLASS))
 		return 0
-	if(reversedir == dir)
+	if(reversedir == dir && !locate(/obj/structure/stool/bed/chair) in get_turf(usr))
 		return 0
 	else
 		return 1
@@ -74,7 +74,7 @@
 
 	if(istype(O) && O.checkpass(PASSGLASS))
 		return 1
-	if(reversedir == dir)
+	if(reversedir == dir && !locate(/obj/structure/stool/bed/chair) in get_turf(usr))
 		return 0
 	return 1
 
