@@ -1020,6 +1020,12 @@ var/global/list/obj/item/device/pda/PDAs = list()
 	dat += "</body></html>"
 	user << browse(dat, "window=pda;size=400x444;border=1;can_resize=1;can_close=0;can_minimize=0")
 	onclose(user, "pda", src)
+/*	var/datum/browser/popup = new(user, "pda", "<div align='center'>Character disabilities</div>", 400, 444)
+	popup.set_window_options("can_close=0;can_minimize=0;border=1;can_resize=1")
+	popup.set_content(dat)
+	popup.open(0)*/
+	return
+
 
 /obj/item/device/pda/Topic(href, href_list)
 	..()
