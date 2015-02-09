@@ -28,7 +28,8 @@
 */
 	new_player_panel()
 	if(ckey in deadmins)
-		verbs += /client/proc/readmin
+		verbs += /client/proc/reload_admins
+		verbs += /client/verb/adminwho
 	spawn(0)
 		if(client)
 			//If the changelog has changed, show it to them

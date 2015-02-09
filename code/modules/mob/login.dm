@@ -57,6 +57,7 @@
 		if(H.species && H.species.abilities)
 			H.verbs |= H.species.abilities
 	if(ckey in deadmins)
-		verbs += /client/proc/readmin
+		verbs += /client/proc/reload_admins
+		verbs += /client/verb/adminwho
 
 	CallHook("Login", list("client" = src.client, "mob" = src))

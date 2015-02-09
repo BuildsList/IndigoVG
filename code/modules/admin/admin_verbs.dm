@@ -328,7 +328,7 @@ var/list/admin_verbs_mod = list(
 		/client/proc/kaboom,
 		/client/proc/splash,
 		/client/proc/cmd_admin_areatest,
-		/client/proc/readmin,
+//		/client/proc/readmin,
 		)
 
 /client/proc/hide_most_verbs()//Allows you to keep some functionality while hiding some verbs
@@ -686,7 +686,7 @@ var/list/admin_verbs_mod = list(
 		log_admin("[src] deadminned themself.")
 		message_admins("[src] deadminned themself.")
 		deadmin()
-		verbs += /client/proc/readmin
+		verbs += /client/proc/reload_admins
 		verbs += /client/verb/adminwho
 		deadmins += ckey
 		src << "<span class='interface'>You are now a normal player.</span>"
@@ -854,7 +854,7 @@ var/list/admin_verbs_mod = list(
 	log_admin("[key_name(usr)] told everyone to man up and deal with it.")
 	message_admins("\blue [key_name_admin(usr)] told everyone to man up and deal with it.", 1)
 
-
+/*
 /client/proc/readmin()
 	set name = "PEDAL ME!"
 	set category = "Admin"
@@ -889,5 +889,5 @@ var/list/admin_verbs_mod = list(
 			message_admins("[src] re-adminned themselves.")
 			log_admin("[src] re-adminned themselves.")
 			feedback_add_details("admin_verb","RAS")
-			verbs -= /client/proc/readmin
-			return
+			verbs -=
+			return */
