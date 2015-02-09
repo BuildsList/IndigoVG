@@ -17,16 +17,18 @@ info.json
 #ignore any files in config/, except those in subdirectories.
 /config/*
 !/config/*/*
-/DLLSocket
-/Trash
-/bot
-/maptools
 
 # OpenBYOND-generated crap
 /dmis
 /interface-indented
 /code-indented
 *.new.dmi
+
+#zlofenix required
+/DLLSocket
+/Trash
+/bot
+/maptools
 
 .metadata
 /bot/config.yml
