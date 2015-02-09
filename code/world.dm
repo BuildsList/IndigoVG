@@ -364,9 +364,9 @@ proc/setup_database_connection()
 	if(!dbcon)
 		dbcon = new()
 
-	var/user = sqllogin
-	var/pass = sqlpass
-	var/db = sqldb
+	var/user = sqlfdbklogin
+	var/pass = sqlfdbkpass
+	var/db = sqlfdbkdb
 	var/address = sqladdress
 	var/port = sqlport
 

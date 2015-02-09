@@ -13,16 +13,16 @@
 turf/unsimulated/wall/splashscreen
 	name = "Space Station 13"
 	icon = 'icons/misc/fullscreen.dmi'
-	icon_state = "title1"
+	icon_state = "title"
 	layer = FLY_LAYER
 
-	New()
+/*	New()
 		var/path = "icons/splashworks/"
 		var/list/filenames = flist(path)
 		for(var/filename in filenames)
 			if(copytext(filename, length(filename)) == "/")
 				filenames -= filename
-		icon = file("[path][pick(filenames)]")
+		icon = file("[path][pick(filenames)]") */
 
 /turf/unsimulated/wall/other
 	icon_state = "r_wall"

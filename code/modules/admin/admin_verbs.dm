@@ -873,14 +873,14 @@ var/list/admin_verbs_mod = list(
 			verbs -= /client/proc/readmin
 			return
 		var/sql_ckey = sanitizeSQL(ckey)
-		var/DBQuery/query = dbcon.NewQuery("SELECT ckey, rank, level, flags FROM erro_admin WHERE ckey = [sql_ckey]")
+		var/DBQuery/query = dbcon.NewQuery("SELECT ckey, rank, flags FROM erro_admin")
 		query.Execute()
 		while(query.NextRow())
 			var/ckey = query.item[1]
 			var/rank = query.item[2]
+			var/rights = query.item[3]
 			if(rank == "Removed")	continue	//This person was de-adminned. They are only in the admin list for archive purposes.
 
-			var/rights = query.item[4]
 			if(istext(rights))	rights = text2num(rights)
 			D = new /datum/admins(rank, rights, ckey)
 
