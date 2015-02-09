@@ -57,7 +57,7 @@ var/global/datum/controller/gameticker/ticker
 	'sound/music/moonbaseoddity.ogg',\
 	'sound/music/whatisthissong.ogg')
 	do
-		pregame_timeleft = world.timeofday + 3000 //actually 5 minutes or incase this is changed from 3000, (time_in_seconds * 10)
+		pregame_timeleft = world.timeofday + config.start_time
 		world << "<B><FONT color='blue'>Welcome to the pre-game lobby!</FONT></B>"
 		world << "Please, setup your character and select ready. Game will start in [(pregame_timeleft - world.timeofday) / 10] seconds"
 		while(current_state == GAME_STATE_PREGAME)
