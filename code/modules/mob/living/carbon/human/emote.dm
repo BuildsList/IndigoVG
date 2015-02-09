@@ -30,15 +30,15 @@
 	switch(act)
 		if ("airguitar")
 			if (!src.restrained())
-				message = "<B>[src]</B> is strumming the air and headbanging like a safari chimp."
+				message = "<B>[src]</B> бренчит по воздуху и дергает головой, как дика&#255; обезь&#255;на." // Translate it 2916
 				m_type = VISIBLE
 
 		if ("blink")
-			message = "<B>[src]</B> blinks."
+			message = "<B>[src]</B> моргает." // Translate it 2917
 			m_type = VISIBLE
 
 		if ("blink_r")
-			message = "<B>[src]</B> blinks rapidly."
+			message = "<B>[src]</B> быстро моргает." // Translate it 2918
 			m_type = VISIBLE
 
 		if ("bow")
@@ -53,9 +53,9 @@
 					param = null
 
 				if (param)
-					message = "<B>[src]</B> bows to [param]."
+					message = "<B>[src]</B> клан&#255;етс&#255; [param]." // Translate it 2919
 				else
-					message = "<B>[src]</B> bows."
+					message = "<B>[src]</B> клан&#255;етс&#255;." // Translate it 2920
 			m_type = VISIBLE
 
 		if ("custom")
@@ -70,7 +70,7 @@
 					return
 				m_type = HEARABLE
 			else
-				alert("Unable to use this emote, must be either hearable or visible.")
+				alert("Невозможно использовать эту эмоцию, она должна быть видима&#255; или слышима&#255;.") // Translate it 2922
 				return
 			return custom_emote(m_type, message)
 
@@ -101,49 +101,48 @@
 					param = null
 
 				if (param)
-					message = "<B>[src]</B> salutes to [param]."
+					message = "<B>[src]</B> отдает честь [param]." // Translate it 2924
 				else
-					message = "<B>[src]</b> salutes."
+					message = "<B>[src]</b> салютует." // Translate it 2925
 			m_type = VISIBLE
 
 		if ("choke")
 			if(miming)
-				message = "<B>[src]</B> clutches his throat desperately!"
+				message = "<B>[src]</B> отча&#255;нно хватаетс&#255; за горло!" // Translate it 2926
 				m_type = VISIBLE
 			else
 				if (!muzzled)
-					message = "<B>[src]</B> chokes!"
+					message = "<B>[src]</B> задыхаетс&#255;!" // Translate it 2927
 					m_type = HEARABLE
-				else
-					message = "<B>[src]</B> makes a strong noise."
+					message = "<B>[src]</B> издает сильный шум." // Translate it 2928
 					m_type = HEARABLE
 
 		if ("clap")
 			if (!src.restrained())
-				message = "<B>[src]</B> claps."
+				message = "<B>[src]</B> хлопает." // Translate it 2929
 				m_type = HEARABLE
 				if(miming)
 					m_type = VISIBLE
 		if ("flap")
 			if (!src.restrained())
-				message = "<B>[src]</B> flaps his wings."
+				message = "<B>[src]</B> хлопает крыльями." // Translate it 2930
 				m_type = HEARABLE
 				if(miming)
 					m_type = VISIBLE
 
 		if ("aflap")
 			if (!src.restrained())
-				message = "<B>[src]</B> flaps his wings ANGRILY!"
+				message = "<B>[src]</B> ЗЛОБНО хлопает крыльями!" // Translate it 2931
 				m_type = HEARABLE
 				if(miming)
 					m_type = VISIBLE
 
 		if ("drool")
-			message = "<B>[src]</B> drools."
+			message = "<B>[src]</B> пускает слюни." // Translate it 2932
 			m_type = VISIBLE
 
 		if ("eyebrow")
-			message = "<B>[src]</B> raises an eyebrow."
+			message = "<B>[src]</B> поднимает бровь." // Translate it 2933
 			m_type = VISIBLE
 
 		if ("chuckle")
@@ -152,22 +151,22 @@
 				m_type = VISIBLE
 			else
 				if (!muzzled)
-					message = "<B>[src]</B> chuckles."
+					message = "<B>[src]</B> хихикает." // Translate it 2935
 					m_type = HEARABLE
 				else
-					message = "<B>[src]</B> makes a noise."
+					message = "<B>[src]</B> издаёт невнятный звук."
 					m_type = HEARABLE
 
 		if ("twitch")
-			message = "<B>[src]</B> twitches violently."
+			message = "<B>[src]</B> &#255;ростно дергаетс&#255;." // Translate it 2937
 			m_type = VISIBLE
 
 		if ("twitch_s")
-			message = "<B>[src]</B> twitches."
+			message = "<B>[src]</B> дергаетс&#255;." // Translate it 2938
 			m_type = VISIBLE
 
 		if ("faint")
-			message = "<B>[src]</B> faints."
+			message = "<B>[src]</B> падает в обморок." // Translate it 2939
 			if(src.sleeping)
 				return //Can't faint while asleep
 			src.sleeping += 10 //Short-short nap
@@ -179,38 +178,38 @@
 				m_type = VISIBLE
 			else
 				if (!muzzled)
-					message = "<B>[src]</B> coughs!"
+					message = "<B>[src]</B> кашл&#255;ет!" // Translate it 2941
 					m_type = HEARABLE
 				else
-					message = "<B>[src]</B> makes a strong noise."
+					message = "<B>[src]</B> издает сильный шум." // Translate it 2942
 					m_type = HEARABLE
 
 		if ("frown")
-			message = "<B>[src]</B> frowns."
+			message = "<B>[src]</B> хмуритс&#255;." // Translate it 2943
 			m_type = VISIBLE
 
 		if ("nod")
-			message = "<B>[src]</B> nods."
+			message = "<B>[src]</B> кивает." // Translate it 2944
 			m_type = VISIBLE
 
 		if ("blush")
-			message = "<B>[src]</B> blushes."
+			message = "<B>[src]</B> [src.gender==FEMALE?"покраснела":"краснеет"]." // Translate it 2945
 			m_type = VISIBLE
 
 		if ("wave")
-			message = "<B>[src]</B> waves."
+			message = "<B>[src]</B> шатаетс&#255;." // Translate it 2946
 			m_type = VISIBLE
 
 		if ("gasp")
 			if(miming)
-				message = "<B>[src]</B> appears to be gasping!"
+				message = "<B>[src]</B>  по видимому, задыхаетс&#255;!" // Translate it 2947
 				m_type = VISIBLE
 			else
 				if (!muzzled)
-					message = "<B>[src]</B> gasps!"
+					message = "<B>[src]</B> задыхаетс&#255;!" // Translate it 2948
 					m_type = HEARABLE
 				else
-					message = "<B>[src]</B> makes a weak noise."
+					message = "<B>[src]</B> издает слабый шум." // Translate it 2949
 					m_type = HEARABLE
 
 		if ("deathgasp")
@@ -225,14 +224,14 @@
 
 		if ("giggle")
 			if(miming)
-				message = "<B>[src]</B> giggles silently!"
+				message = "<B>[src]</B> тихо хихикает!" // Translate it 2951
 				m_type = VISIBLE
 			else
 				if (!muzzled)
-					message = "<B>[src]</B> giggles."
+					message = "<B>[src]</B> хихикает." // Translate it 2952
 					m_type = HEARABLE
 				else
-					message = "<B>[src]</B> makes a noise."
+					message = "<B>[src]</B> шумит." // Translate it 2953
 					m_type = HEARABLE
 
 		if ("glare")
@@ -246,9 +245,9 @@
 				param = null
 
 			if (param)
-				message = "<B>[src]</B> glares at [param]."
+				message = "<B>[src]</B> п&#255;литс&#255; на [param]." // Translate it 2954
 			else
-				message = "<B>[src]</B> glares."
+				message = "<B>[src]</B> смотрит." // Translate it 2955
 
 		if ("stare")
 			var/M = null
@@ -261,7 +260,7 @@
 				param = null
 
 			if (param)
-				message = "<B>[src]</B> stares at [param]."
+				message = "<B>[src]</B> наблюдает за [param]." // Translate it 2956
 			else
 				message = "<B>[src]</B> stares."
 
@@ -277,86 +276,110 @@
 				param = null
 
 			if (param)
-				message = "<B>[src]</B> looks at [param]."
+				message = "<B>[src]</B> смотрит на [param]." // Translate it 2958
 			else
-				message = "<B>[src]</B> looks."
+				message = "<B>[src]</B> смотрит." // Translate it 2959
 			m_type = VISIBLE
 
 		if ("grin")
-			message = "<B>[src]</B> grins."
+			message = "<B>[src]</B> скалит зубы." // Translate it 2960
 			m_type = VISIBLE
 
 		if ("cry")
 			if(miming)
-				message = "<B>[src]</B> cries."
+				message = "<B>[src]</B> плачет." // Translate it 2961
 				m_type = VISIBLE
 			else
 				if (!muzzled)
-					message = "<B>[src]</B> cries."
+					message = "<B>[src]</B> плачет." // Translate it 2962
 					m_type = HEARABLE
 				else
-					message = "<B>[src]</B> makes a weak noise. \He frowns."
+					message = "<B>[src]</B> насуплив брови издает слабый шум."// \He frowns. // Translate it 2963
 					m_type = HEARABLE
 
 		if ("sigh")
 			if(miming)
-				message = "<B>[src]</B> sighs."
+				message = "<B>[src]</B> вздыхает." // Translate it 2964
 				m_type = VISIBLE
 			else
 				if (!muzzled)
-					message = "<B>[src]</B> sighs."
+					message = "<B>[src]</B> охает." // Translate it 2965
 					m_type = HEARABLE
 				else
-					message = "<B>[src]</B> makes a weak noise."
+					message = "<B>[src]</B> издает слабый шум." // Translate it 2966
 					m_type = HEARABLE
 
 		if ("laugh")
 			if(miming)
-				message = "<B>[src]</B> acts out a laugh."
+				message = "<B>[src]</B> издает смешок." // Translate it 2967
 				m_type = VISIBLE
 			else
 				if (!muzzled)
-					message = "<B>[src]</B> laughs."
+					message = "<B>[src]</B> смеетс&#255;." // Translate it 2968
 					m_type = HEARABLE
 				else
-					message = "<B>[src]</B> makes a noise."
+					message = "<B>[src]</B> шумит." // Translate it 2969
 					m_type = HEARABLE
-
+/*
+		if("elaugh")
+			if(miming)
+				message = "<B>[src]</B> acts out a laugh."
+				m_type = 1
+			else if (mind.special_role)
+				if(!(world.time-lastElaugh >= 600))
+					usr << "<span class='warning'>You not ready to laugh again!"
+				else
+					message = "<B>[src]</B> laugh like a true evil! Mu-ha-ha!"
+					m_type = 2
+					call_sound_emote("elaugh")
+					lastElaugh=world.time
+			else
+				if (!muzzled)
+					if (!(world.time-lastElaugh >= 600))
+						usr << "<span class='warning'>You not ready to laugh again!"
+					else
+						message = "<B>[src]</B> laughs."
+						m_type = 2
+						call_sound_emote("laugh")
+				else
+					message = "<B>[src]</B> makes a noise."
+					m_type = 2
+*/
 		if ("mumble")
-			message = "<B>[src]</B> mumbles!"
+			message = "<B>[src]</B> бормочет!" // Translate it 2970
 			m_type = HEARABLE
 			if(miming)
 				m_type = VISIBLE
 
 		if ("grumble")
 			if(miming)
-				message = "<B>[src]</B> grumbles!"
+				message = "<B>[src]</B> ворчит!" // Translate it 2971
 				m_type = VISIBLE
 			if (!muzzled)
-				message = "<B>[src]</B> grumbles!"
+				message = "<B>[src]</B> ворчит!" // Translate it 2971
 				m_type = HEARABLE
 			else
-				message = "<B>[src]</B> makes a noise."
+				message = "<B>[src]</B> шумит." // Translate it 2973
 				m_type = HEARABLE
 
 		if ("groan")
 			if(miming)
-				message = "<B>[src]</B> appears to groan!"
+				message = "<B>[src]</B> издает стон!" // Translate it 2974
 				m_type = VISIBLE
 			else
 				if (!muzzled)
-					message = "<B>[src]</B> groans!"
+					message = "<B>[src]</B> cтонет!" // Translate it 2975
 					m_type = HEARABLE
 				else
-					message = "<B>[src]</B> makes a loud noise."
+					message = "<B>[src]</B> издает громкий шум." // Translate it 2976
 					m_type = HEARABLE
 
 		if ("moan")
 			if(miming)
-				message = "<B>[src]</B> appears to moan!"
+				message = "<B>[src]</B> стонет!" // Translate it 2977
 				m_type = VISIBLE
 			else
-				message = "<B>[src]</B> moans!"
+				message = "<B>[src]</B> стонет от наслаждени&#255;!" // Translate it 2978
 				m_type = HEARABLE
 
 		if ("johnny")
@@ -367,10 +390,10 @@
 				param = null
 			else
 				if(miming)
-					message = "<B>[src]</B> takes a drag from a cigarette and blows \"[M]\" out in smoke."
+					message = "<B>[src]</B>  затягиваетс&#255; сигаретой и выдыхает дым \"[M]\" в дыму." // Translate it 2979
 					m_type = VISIBLE
 				else
-					message = "<B>[src]</B> says, \"[M], please. He had a family.\" [src.name] takes a drag from a cigarette and blows his name out in smoke."
+					message = "<B>[src]</B> says, \"[M], please. He had a family.\" [src.name] затягиваетс&#255; сигаретой и выдувает свое им&#255;." // Translate it 2980
 					m_type = HEARABLE
 
 		if ("point")
@@ -384,7 +407,7 @@
 							break
 
 				if(isnull(object_pointed))
-					message = "<B>[src]</B> points."
+					message = "<B>[src]</B> тычет пальцем." // Translate it 2981
 				else
 					pointed(object_pointed)
 
@@ -392,15 +415,15 @@
 
 		if ("raise")
 			if (!src.restrained())
-				message = "<B>[src]</B> raises a hand."
+				message = "<B>[src]</B> поднимает руки." // Translate it 2983
 			m_type = VISIBLE
 
 		if("shake")
-			message = "<B>[src]</B> shakes \his head."
+			message = "<B>[src]</B> тр&#255;сет головой." // Translate it 2984
 			m_type = VISIBLE
 
 		if ("shrug")
-			message = "<B>[src]</B> shrugs."
+			message = "<B>[src]</B> пожимает плечами." // Translate it 2985
 			m_type = VISIBLE
 
 		if ("signal")
@@ -408,85 +431,85 @@
 				var/t1 = round(text2num(param))
 				if (isnum(t1))
 					if (t1 <= 5 && (!src.r_hand || !src.l_hand))
-						message = "<B>[src]</B> raises [t1] finger\s."
+						message = "<B>[src]</B> поднимает [t1] пальцев." // Translate it 2986
 					else if (t1 <= 10 && (!src.r_hand && !src.l_hand))
-						message = "<B>[src]</B> raises [t1] finger\s."
+						message = "<B>[src]</B> поднимает [t1] пальцев." // Translate it 2987
 			m_type = VISIBLE
 
 		if ("smile")
-			message = "<B>[src]</B> smiles."
+			message = "<B>[src]</B> улыбаетс&#255;." // Translate it 2988
 			m_type = VISIBLE
 
 		if ("shiver")
-			message = "<B>[src]</B> shivers."
+			message = "<B>[src]</B> вздрагивает." // Translate it 2989
 			m_type = HEARABLE
 			if(miming)
 				m_type = VISIBLE
 
 		if ("pale")
-			message = "<B>[src]</B> goes pale for a second."
+			message = "<B>[src]</B> бледнеет на секунду." // Translate it 2990
 			m_type = VISIBLE
 
 		if ("tremble")
-			message = "<B>[src]</B> trembles in fear!"
+			message = "<B>[src]</B> дрожит в страхе!" // Translate it 2991
 			m_type = VISIBLE
 
 		if ("sneeze")
 			if (miming)
-				message = "<B>[src]</B> sneezes."
+				message = "<B>[src]</B> чихает." // Translate it 2992
 				m_type = VISIBLE
 			else
 				if (!muzzled)
-					message = "<B>[src]</B> sneezes."
+					message = "<B>[src]</B> чихает." // Translate it 2993
 					m_type = HEARABLE
 				else
-					message = "<B>[src]</B> makes a strange noise."
+					message = "<B>[src]</B> издает странный шум." // Translate it 2994
 					m_type = HEARABLE
 
 		if ("sniff")
-			message = "<B>[src]</B> sniffs."
+			message = "<B>[src]</B> нюхает." // Translate it 2995
 			m_type = HEARABLE
 			if(miming)
 				m_type = VISIBLE
 
 		if ("snore")
 			if (miming)
-				message = "<B>[src]</B> sleeps soundly."
+				message = "<B>[src]</B> громко сопит." // Translate it 2996
 				m_type = VISIBLE
 			else
 				if (!muzzled)
-					message = "<B>[src]</B> snores."
+					message = "<B>[src]</B> храпит." // Translate it 2997
 					m_type = HEARABLE
 				else
-					message = "<B>[src]</B> makes a noise."
+					message = "<B>[src]</B> шумит." // Translate it 2998
 					m_type = HEARABLE
 
 		if ("whimper")
 			if (miming)
-				message = "<B>[src]</B> appears hurt."
+				message = "<B>[src]</B> стонет от боли." // Translate it 2999
 				m_type = VISIBLE
 			else
 				if (!muzzled)
-					message = "<B>[src]</B> whimpers."
+					message = "<B>[src]</B> хнычет." // Translate it 3000
 					m_type = HEARABLE
 				else
-					message = "<B>[src]</B> makes a weak noise."
+					message = "<B>[src]</B> издает слабый шум." // Translate it 3001
 					m_type = HEARABLE
 
 		if ("wink")
-			message = "<B>[src]</B> winks."
+			message = "<B>[src]</B> подмигивает." // Translate it 3002
 			m_type = VISIBLE
 
 		if ("yawn")
 			if (!muzzled)
-				message = "<B>[src]</B> yawns."
+				message = "<B>[src]</B> зевает." // Translate it 3003
 				m_type = HEARABLE
 				if(miming)
 					m_type = VISIBLE
 
 		if ("collapse")
 			Paralyse(2)
-			message = "<B>[src]</B> collapses!"
+			message = "<B>[src]</B> падает!" // Translate it 3004
 			m_type = HEARABLE
 			if(miming)
 				m_type = VISIBLE
@@ -496,7 +519,7 @@
 			if (!src.restrained())
 				var/M = null
 				if (param)
-					for (var/mob/A in view(1, null))
+					for (var/mob/A in view(2, src))
 						if (param == A.name)
 							M = A
 							break
@@ -504,9 +527,9 @@
 					M = null
 
 				if (M)
-					message = "<B>[src]</B> hugs [M]."
+					message = "<B>[src]</B> обнимает [M]." // Translate it 3005
 				else
-					message = "<B>[src]</B> hugs \himself."
+					message = "<B>[src]</B> обнимает себ&#255;." // Translate it 3006
 
 		if ("handshake")
 			m_type = VISIBLE
@@ -522,9 +545,9 @@
 
 				if (M)
 					if (M.canmove && !M.r_hand && !M.restrained())
-						message = "<B>[src]</B> shakes hands with [M]."
+						message = "<B>[src]</B> пожимает руку [M]." // Translate it 3007
 					else
-						message = "<B>[src]</B> holds out \his hand to [M]."
+						message = "<B>[src]</B> прот&#255;гивает руку [M]." // Translate it 3008
 
 		if("dap")
 			m_type = VISIBLE
@@ -536,9 +559,9 @@
 							M = A
 							break
 				if (M)
-					message = "<B>[src]</B> gives daps to [M]."
+					message = "<B>[src]</B> даёт пощёчину [M]." // Translate it 3009
 				else
-					message = "<B>[src]</B> sadly can't find anybody to give daps to, and daps \himself. Shameful."
+					message = "<B>[src]</B> разочаровавшись что не может найти кому дать пощёчину даёт пощёчину себе. Позорище." // Translate it 3010
 
 		if ("scream")
 			if (miming)
@@ -549,19 +572,20 @@
 					if (!muzzled)
 						if (auto == 1)
 							if(world.time-lastScream >= 30)//prevent scream spam with things like poly spray
-								message = "<B>[src]</B> screams in agony!"
-								var/list/screamSound = list('sound/misc/malescream1.ogg', 'sound/misc/malescream2.ogg', 'sound/misc/malescream3.ogg', 'sound/misc/malescream4.ogg', 'sound/misc/malescream5.ogg', 'sound/misc/wilhelm.ogg', 'sound/misc/goofy.ogg')
-								if (src.gender == FEMALE) //Females have their own screams. Trannys be damned.
-									screamSound = list('sound/misc/femalescream1.ogg', 'sound/misc/femalescream2.ogg', 'sound/misc/femalescream3.ogg', 'sound/misc/femalescream4.ogg', 'sound/misc/femalescream5.ogg')
-								var/scream = pick(screamSound)//AUUUUHHHHHHHHOOOHOOHOOHOOOOIIIIEEEEEE
-								playsound(get_turf(src), scream, 50, 0)
+//								message = "<B>[src]</B> screams in agony!"
+//								var/list/screamSound = list('sound/misc/malescream1.ogg', 'sound/misc/malescream2.ogg', 'sound/misc/malescream3.ogg', 'sound/misc/malescream4.ogg', 'sound/misc/malescream5.ogg', 'sound/misc/wilhelm.ogg', 'sound/misc/goofy.ogg')
+//								if (src.gender == FEMALE) //Females have their own screams. Trannys be damned.
+//									screamSound = list('sound/misc/femalescream1.ogg', 'sound/misc/femalescream2.ogg', 'sound/misc/femalescream3.ogg', 'sound/misc/femalescream4.ogg', 'sound/misc/femalescream5.ogg')
+//								var/scream = pick(screamSound)//AUUUUHHHHHHHHOOOHOOHOOHOOOOIIIIEEEEEE
+//								playsound(get_turf(src), scream, 50, 0)
+								call_sound_emote("scream")
 								m_type = HEARABLE
 								lastScream = world.time
 						else
-							message = "<B>[src]</B> screams!"
+							message = "<B>[src]</B> кричит!" // Translate it 3011
 							m_type = HEARABLE
 					else
-						message = "<B>[src]</B> makes a very loud noise."
+						message = "<B>[src]</B> издает очень громкий шум." // Translate it 3013
 						m_type = HEARABLE
 
 		// Needed for M_TOXIC_FART
@@ -729,3 +753,33 @@
 	set category = "IC"
 
 	flavor_text =  copytext(sanitize(input(usr, "Please enter your new flavour text.", "Flavour text", null)  as text), 1)
+
+/mob/living/carbon/human/proc/call_sound_emote(var/E)
+	switch(E)
+		if("scream")
+			if (src.gender == "male")
+				playsound(src.loc, pick('sound/emotions/male/Screams_Male_1.ogg', 'sound/emotions/male/Screams_Male_2.ogg', 'sound/emotions/male/Screams_Male_3.ogg', 'sound/misc/malescream1.ogg', 'sound/misc/malescream2.ogg', 'sound/misc/malescream3.ogg', 'sound/misc/malescream4.ogg', 'sound/misc/malescream5.ogg', 'sound/misc/wilhelm.ogg', 'sound/misc/goofy.ogg'), 100, 1)
+			else
+				playsound(src.loc, pick('sound/emotions/female/Screams_Woman_1.ogg', 'sound/emotions/female/Screams_Woman_2.ogg', 'sound/emotions/female/Screams_Woman_3.ogg', 'sound/misc/femalescream1.ogg', 'sound/misc/femalescream2.ogg', 'sound/misc/femalescream3.ogg', 'sound/misc/femalescream4.ogg', 'sound/misc/femalescream5.ogg'), 100, 1)
+
+		if("laugh")
+			if (src.gender == "male")
+				playsound(src.loc, pick('sound/emotions/male/male_laugh_1.ogg', 'sound/emotions/male/male_laugh_2.ogg', 'sound/emotions/male/male_laugh_3.ogg'), 100, 1)
+			else
+				playsound(src.loc, pick('sound/emotions/female/female_laugh_1.ogg', 'sound/emotions/female/female_laugh_2.ogg'), 100, 1)
+/*
+		if("fart")
+			playsound(playsound(src.loc, 'fart.ogg', 65, 1))
+
+		if("elaugh")
+			playsound(src.loc, 'sound/voice/elaugh.ogg', 100, 1)
+
+		if("z_roar")
+			playsound(src.loc, 'sound/voice/z_roar.ogg', 100, 1)
+
+		if("z_shout")
+			playsound(src.loc, 'sound/voice/z_shout.ogg', 100, 1)
+
+		if("z_mutter")
+			playsound(src.loc, 'sound/voice/z_mutter.ogg', 100, 1)
+*/
