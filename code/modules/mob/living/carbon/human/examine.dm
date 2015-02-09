@@ -472,7 +472,8 @@
 		msg += "\n[t_He] is [pose]"
 
 	user << msg
-	if(istype(src,/mob/living))
+
+	if(!use_me && istype(src,/mob/living) && !istype(user,/mob/dead/observer))
 		visible_message("<B>[user]</B> смотрит на <B>[src]</B>.")
 
 //Helper procedure. Called by /mob/living/carbon/human/examine() and /mob/living/carbon/human/Topic() to determine HUD access to security and medical records.

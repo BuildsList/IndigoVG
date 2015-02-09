@@ -45,23 +45,23 @@
 
 	if(!IsGuestKey(src.key))
 		establish_db_connection()
-
+/*
 		if(dbcon.IsConnected())
 			var/isadmin = 0
 			if(src.client && src.client.holder)
 				isadmin = 1
 			var/DBQuery/query = dbcon.NewQuery("SELECT id FROM erro_poll_question WHERE [(isadmin ? "" : "adminonly = false AND")] Now() BETWEEN starttime AND endtime AND id NOT IN (SELECT pollid FROM erro_poll_vote WHERE ckey = \"[ckey]\") AND id NOT IN (SELECT pollid FROM erro_poll_textreply WHERE ckey = \"[ckey]\")")
 			query.Execute()
-			var/newpoll = 0
+//			var/newpoll = 0
 			while(query.NextRow())
-				newpoll = 1
+//				newpoll = 1
 				break
 
 			if(newpoll)
 				output += "<p><b><a href='byond://?src=\ref[src];showpoll=1'>Show Player Polls</A> (NEW!)</b></p>"
 			else
 				output += "<p><a href='byond://?src=\ref[src];showpoll=1'>Show Player Polls</A></p>"
-
+*/
 	output += "</div>"
 	var/datum/browser/popup = new(usr, "playersetup", "<div align='center'>Player Setup</div>", 210, 240)
 	popup.set_window_options("can_close=0")
@@ -224,7 +224,7 @@
 	else if(!href_list["late_join"])
 		new_player_panel()
 
-	if(href_list["showpoll"])
+/*	if(href_list["showpoll"])
 
 		handle_player_polling()
 		return
@@ -278,7 +278,7 @@
 				for(var/optionid = id_min; optionid <= id_max; optionid++)
 					if(!isnull(href_list["option_[optionid]"]))	//Test if this optionid was selected
 						vote_on_poll(pollid, optionid, 1)
-
+*/
 /mob/new_player/proc/IsJobAvailable(rank)
 	var/datum/job/job = job_master.GetJob(rank)
 	if(!job)	return 0
