@@ -72,7 +72,7 @@
 /mob/new_player/Stat()
 	..()
 
-
+//	client.GetHighJob()
 	if(statpanel("Status") && ticker)
 		if (ticker.current_state != GAME_STATE_PREGAME)
 			stat(null, "Station Time: [worldtime2text()]")
@@ -93,7 +93,7 @@
 			totalPlayers = 0
 			totalPlayersReady = 0
 			for(var/mob/new_player/player in player_list)
-				stat("[player.key]", (player.ready)?("(Playing)"):(null))
+				stat("[player.key]", (player.ready)?("(Playing as [player.client.work_chosen])"):(null))
 				totalPlayers++
 				if(player.ready)totalPlayersReady++
 
@@ -111,6 +111,7 @@
 
 	if(href_list["ready"])
 		ready = !ready
+		client.GetHighJob()
 		new_player_panel_proc()
 		//testing("[usr] topic call took [(world.timeofday - timestart)/10] seconds")
 		return 1

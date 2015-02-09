@@ -249,6 +249,87 @@
 	query_connection_log.Execute()
 
 
+/client/proc/GetHighJob()
+	if(src.prefs.job_civilian_low & ASSISTANT)//This gives the preview icon clothes depending on which job(if any) is set to 'high'
+		work_chosen = "Assistant"
+	if(src.prefs.job_civilian_high)
+		switch(src.prefs.job_civilian_high)
+			if(HOP)
+				work_chosen = "Head of Personnel"
+			if(BARTENDER)
+				work_chosen = "Bartender"
+			if(BOTANIST)
+				work_chosen = "Botanist"
+			if(CHEF)
+				work_chosen = "Chef"
+			if(JANITOR)
+				work_chosen = "Janitor"
+			if(LIBRARIAN)
+				work_chosen = "Librarian"
+			if(QUARTERMASTER)
+				work_chosen = "Quartermaster"
+			if(CARGOTECH)
+				work_chosen = "Cargotech"
+			if(MINER)
+				work_chosen = "Miner"
+			if(LAWYER)
+				work_chosen = "Lewyer"
+			if(CHAPLAIN)
+				work_chosen = "Chaplain"
+			if(CLOWN)
+				work_chosen = "Clown"
+			if(MIME)
+				work_chosen = "Mime"
+	else if(src.prefs.job_medsci_high)
+		switch(src.prefs.job_medsci_high)
+			if(RD)
+				work_chosen = "Research Director"
+			if(SCIENTIST)
+				work_chosen = "Scientist"
+			if(CHEMIST)
+				work_chosen = "Chemist"
+			if(CMO)
+				work_chosen = "Chief Medical Officer"
+			if(DOCTOR)
+				work_chosen = "Medical Doctor"
+			if(PARAMEDIC)
+				work_chosen = "Paramedic"
+			if(GENETICIST)
+				work_chosen = "Geneticist"
+			if(VIROLOGIST)
+				work_chosen = "Virologist"
+//			if(PSYHIATRIST)
+//				work_chosen = "Psyhyatrist"
+			if(ROBOTICIST)
+				work_chosen = "Roboticist"
+	else if(src.prefs.job_engsec_high)
+		switch(src.prefs.job_engsec_high)
+			if(CAPTAIN)
+				work_chosen = "Captain"
+			if(HOS)
+				work_chosen = "Head of Security"
+			if(WARDEN)
+				work_chosen = "Warden"
+			if(DETECTIVE)
+				work_chosen = "Detective"
+			if(OFFICER)
+				work_chosen = "Security Officer"
+			if(CHIEF)
+				work_chosen = "Chief Engineer"
+			if(ENGINEER)
+				work_chosen = "Station Engineer"
+			if(MECHANIC)
+				work_chosen = "Mechanic"
+			if(ATMOSTECH)
+				work_chosen = "Atmospheric Technician"
+			if(AI)
+				work_chosen = "AI"
+			if(CYBORG)
+				work_chosen = "Cyborg"
+	else
+		work_chosen = "Random"
+
+
 #undef TOPIC_SPAM_DELAY
 #undef UPLOAD_LIMIT
 #undef MIN_CLIENT_VERSION
