@@ -149,7 +149,7 @@ var/global/datum/controller/gameticker/ticker
 	collect_minds()
 	equip_characters()
 	data_core.manifest()
-	send_resources()
+	nanomanager.send_resources(src)
 	current_state = GAME_STATE_PLAYING
 
 	//here to initialize the random events nicely at round start
