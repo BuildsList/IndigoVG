@@ -873,7 +873,7 @@ var/list/admin_verbs_mod = list(
 			verbs -= /client/proc/readmin
 			return
 		var/sql_ckey = sanitizeSQL(ckey)
-		var/DBQuery/query = dbcon.NewQuery("SELECT ckey, rank, flags FROM erro_admin")
+		var/DBQuery/query = dbcon.NewQuery("SELECT ckey, rank, flags FROM erro_admin WHERE ckey = [sql_ckey]")
 		query.Execute()
 		while(query.NextRow())
 			var/ckey = query.item[1]
