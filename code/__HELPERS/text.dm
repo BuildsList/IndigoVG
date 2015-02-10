@@ -54,7 +54,7 @@ var/global/list/watt_suffixes = list("W", "KW", "MW", "GW", "TW", "PW", "EW", "Z
  */
 
 //Simply removes < and > and limits the length of the message
-/proc/strip_html_properly_simple(var/t,var/limit=MAX_MESSAGE_LEN)
+/proc/strip_html_simple(var/t,var/limit=MAX_MESSAGE_LEN)
 	var/list/strip_chars = list("<",">")
 	t = copytext(t,1,limit)
 	for(var/char in strip_chars)
