@@ -28,7 +28,7 @@
 		else
 			targets["(No Mob) - [T]"] = T
 	var/list/sorted = sortList(targets)
-	var/target = input(src,"To whom shall we send a message?","Admin PM",null) in sorted|null
+	var/target = stripped_input(src,"To whom shall we send a message?","Admin PM",null) in sorted|null
 	cmd_admin_pm(targets[target],null)
 	feedback_add_details("admin_verb","APM") //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!
 
@@ -55,7 +55,7 @@
 
 	//get message text, limit it's length.and clean/escape html
 	if(!msg)
-		msg = input(src, "Message:", "Private message to [key_name(C, 0, 0)]", "") as text | null
+		msg = stripped_input(src, "Message:", "Private message to [key_name(C, 0, 0)]", "") as text | null
 
 		if(!msg)
 			return
@@ -104,7 +104,7 @@
 			spawn(0)	//so we don't hold the caller proc up
 				var/sender = src
 				var/sendername = key
-				var/reply = input(C, msg,"[recieve_pm_type] PM from-[sendername]", "") as text|null		//show message and await a reply
+				var/reply = stripped_input(C, msg,"[recieve_pm_type] PM from-[sendername]", "") as text|null		//show message and await a reply
 				if(C && reply)
 					if(sender)
 						C.cmd_admin_pm(sender,reply)										//sender is still about, let's reply to them
@@ -169,7 +169,7 @@
 				spawn()	//so we don't hold the caller proc up
 					var/sender = src
 					var/sendername = key
-					var/reply = input(C, msg,"Admin PM from-[sendername]", "") as text|null		//show message and await a reply
+					var/reply = stripped_input(C, msg,"Admin PM from-[sendername]", "") as text|null		//show message and await a reply
 					if(C && reply)
 						if(sender)
 							C.cmd_admin_pm(sender,reply)										//sender is still about, let's reply to them
