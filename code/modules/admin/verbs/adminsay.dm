@@ -4,7 +4,7 @@
 	set hidden = 1
 	if(!check_rights(R_ADMIN))	return
 
-	msg = copytext(sanitize(msg), 1, MAX_MESSAGE_LEN)
+	msg = copytext(sanitize_simple(msg), 1, MAX_MESSAGE_LEN)
 	if(!msg)	return
 
 	log_admin("[key_name(src)] : [msg]")

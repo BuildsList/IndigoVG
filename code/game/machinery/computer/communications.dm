@@ -143,10 +143,10 @@ var/shuttle_call/shuttle_calls[0]
 			if(src.authenticated)
 				var/response = alert("Are you sure you wish to call the shuttle?", "Confirm", "Yes", "No")
 				if(response == "Yes")
-					var/justification = sanitize_russian(stripped_input(usr, "Please input a concise justification for the shuttle call. Note that failure to properly justify a shuttle call may lead to recall or termination", "Nanotrasen Anti-Comdom Systems"))
-					if(!justification || !(usr in view(1,src)))
+//					var/justification = sanitize_russian(stripped_input(usr, "Please input a concise justification for the shuttle call. Note that failure to properly justify a shuttle call may lead to recall or termination", "Nanotrasen Anti-Comdom Systems"))
+					if(!(usr in view(1,src)))
 						return
-					call_shuttle_proc(usr, justification)
+					call_shuttle_proc(usr)
 					if(emergency_shuttle.online)
 						post_status("shuttle")
 			setMenuState(usr,COMM_SCREEN_MAIN)
@@ -389,11 +389,9 @@ var/shuttle_call/shuttle_calls[0]
 		return
 
 	emergency_shuttle.incall()
-	if(!justification)
-		justification = "#??!7E/_1$*/ARR-CON²FAIL!!*$^?" //Can happen for reasons, let's deal with it IC
-	log_game("[key_name(user)] has called the shuttle. Justification given : '[justification]'")
-	message_admins("[key_name_admin(user)] has called the shuttle. Justification given : '[justification]'. You are encouraged to act if that justification is shit", 1)
-	captain_announce("The emergency shuttle has been called. It will arrive in [round(emergency_shuttle.timeleft()/60)] minutes. Justification : '[justification]'")
+	log_game("[key_name(user)] has called the shuttle.")
+	message_admins("[key_name_admin(user)] has called the shuttle.", 1)
+	captain_announce("The emergency shuttle has been called. It will arrive in [round(emergency_shuttle.timeleft()/60)] minutes.")
 	world << sound('sound/AI/shuttlecalled.ogg')
 
 	return

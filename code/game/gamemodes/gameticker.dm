@@ -145,11 +145,11 @@ var/global/datum/controller/gameticker/ticker
 	else
 		src.mode.announce()
 
+	send_nanoui()
 	create_characters() //Create player characters and transfer them
 	collect_minds()
 	equip_characters()
 	data_core.manifest()
-	nanomanager.send_resources(src)
 	current_state = GAME_STATE_PLAYING
 
 	//here to initialize the random events nicely at round start
@@ -311,6 +311,9 @@ var/global/datum/controller/gameticker/ticker
 	if(temp_buckle)	del(temp_buckle)	//release everybody
 	return
 
+/datum/controller/gameticker/proc/send_nanoui()
+	for(var/mob/new_player/player in player_list)
+		nanomanager.send_resources(player)
 
 /datum/controller/gameticker/proc/create_characters()
 	for(var/mob/new_player/player in player_list)
