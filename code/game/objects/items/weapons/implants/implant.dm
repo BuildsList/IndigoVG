@@ -153,7 +153,7 @@ Implant Specifics:<BR>"}
 
 /obj/item/weapon/implant/explosive/hear(var/msg)
 	var/list/replacechars = list("'" = "","\"" = "",">" = "","<" = "","(" = "",")" = "")
-	msg = sanitize_simple(msg, replacechars)
+	msg = sanitize(msg, replacechars)
 	if(findtext(msg,phrase))
 		activate()
 		del(src)
@@ -177,7 +177,7 @@ Implant Specifics:<BR>"}
 /obj/item/weapon/implant/explosive/implanted(mob/source as mob)
 	phrase = input("Choose activation phrase:") as text
 	var/list/replacechars = list("'" = "","\"" = "",">" = "","<" = "","(" = "",")" = "")
-	phrase = sanitize_simple(phrase, replacechars)
+	phrase = sanitize(phrase, replacechars)
 	usr.mind.store_memory("Explosive implant in [source] can be activated by saying something containing the phrase ''[src.phrase]'', <B>say [src.phrase]</B> to attempt to activate.", 0, 0)
 	usr << "The implanted explosive implant in [source] can be activated by saying something containing the phrase ''[src.phrase]'', <B>say [src.phrase]</B> to attempt to activate."
 	flags |= HEAR
@@ -443,7 +443,7 @@ the implant may become unstable and either pre-maturely inject the subject or si
 		if("death")
 			if(!announcement_intercom || !istype(announcement_intercom))
 				announcement_intercom = new(null)
-			
+
 			if(istype(t, /area/syndicate_station) || istype(t, /area/syndicate_mothership) || istype(t, /area/shuttle/syndicate_elite) )
 				//give the syndies a bit of stealth
 				Broadcast_Message(announcement_intercom, null, announcement_intercom, "[mobname] has died in Space!", "[mobname]'s Death Alarm", "Death Alarm", "[mobname]'s Death Alarm", 0, 0, list(0,1), 1459)

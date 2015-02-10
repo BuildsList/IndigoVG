@@ -35,7 +35,7 @@
 					var/newname = input(M,"You are a death commando. Would you like to change your name?", "Character Creation", randomname)
 					if(!length(newname))
 						newname = randomname
-					newname = strip_html(newname,40)
+					newname = strip_html_properly(newname,40)
 
 					M.real_name = newname
 					M.name = newname // there are WAY more things than this to change, I'm almost certain

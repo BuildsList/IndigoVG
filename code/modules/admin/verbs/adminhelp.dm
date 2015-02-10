@@ -27,7 +27,7 @@ var/list/adminhelp_ignored_words = list("unknown","the","a","an","of","monkey","
 
 	//clean the input msg
 	if(!msg)	return
-	msg = copytext(sanitize_simple(msg), 1, MAX_MESSAGE_LEN)
+	msg = copytext(sanitize(msg), 1, MAX_MESSAGE_LEN)
 	if(!msg)	return
 	var/original_msg = msg
 

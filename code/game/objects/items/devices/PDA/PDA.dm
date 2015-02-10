@@ -1199,7 +1199,7 @@ var/global/list/obj/item/device/pda/PDAs = list()
 //MESSENGER/NOTE FUNCTIONS===================================
 
 			if ("Edit")
-				var/n = sanitize_russian(input(U, "Please enter message", name, notehtml) as message)
+				var/n = sanitize(input(U, "Please enter message", name, notehtml) as message)
 				if (in_range(src, U) && loc == U)
 					n = copytext(adminscrub(n), 1, MAX_MESSAGE_LEN)
 					if (mode == 1)

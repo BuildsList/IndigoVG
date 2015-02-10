@@ -129,7 +129,7 @@ var/shuttle_call/shuttle_calls[0]
 		if("announce")
 			if(src.authenticated==2 && !issilicon(usr))
 				if(message_cooldown)	return
-				var/input = sanitize_russian(stripped_input(usr, "Please choose a message to announce to the station crew.", "What?"))
+				var/input = sanitize(stripped_input(usr, "Please choose a message to announce to the station crew.", "What?"))
 				if(!input || !(usr in view(1,src)))
 					return
 				captain_announce(input)//This should really tell who is, IE HoP, CE, HoS, RD, Captain
@@ -143,7 +143,7 @@ var/shuttle_call/shuttle_calls[0]
 			if(src.authenticated)
 				var/response = alert("Are you sure you wish to call the shuttle?", "Confirm", "Yes", "No")
 				if(response == "Yes")
-//					var/justification = sanitize_russian(stripped_input(usr, "Please input a concise justification for the shuttle call. Note that failure to properly justify a shuttle call may lead to recall or termination", "Nanotrasen Anti-Comdom Systems"))
+//					var/justification = sanitize(stripped_input(usr, "Please input a concise justification for the shuttle call. Note that failure to properly justify a shuttle call may lead to recall or termination", "Nanotrasen Anti-Comdom Systems"))
 					if(!(usr in view(1,src)))
 						return
 					call_shuttle_proc(usr)
@@ -208,7 +208,7 @@ var/shuttle_call/shuttle_calls[0]
 				if(centcomm_message_cooldown)
 					usr << "\red Сервера перегружены. Пожалуйста подождите." // Arrays recycling.  Please stand by.
 					return
-				var/input = sanitize_russian(stripped_input(usr, "Please choose a message to transmit to Centcomm via quantum entanglement.  Please be aware that this process is very expensive, and abuse will lead to... termination.  Transmission does not guarantee a response. There is a 30 second delay before you may send another message, be clear, full and concise.", "To abort, send an empty message.", ""))
+				var/input = sanitize(stripped_input(usr, "Please choose a message to transmit to Centcomm via quantum entanglement.  Please be aware that this process is very expensive, and abuse will lead to... termination.  Transmission does not guarantee a response. There is a 30 second delay before you may send another message, be clear, full and concise.", "To abort, send an empty message.", ""))
 				if(!input || !(usr in view(1,src)))
 					return
 				Centcomm_announce(input, usr)
@@ -226,7 +226,7 @@ var/shuttle_call/shuttle_calls[0]
 				if(centcomm_message_cooldown)
 					usr << "\red Сервера перегружены. Пожалуйста подождите." // Arrays recycling.  Please stand by.
 					return
-				var/input = sanitize_russian(stripped_input(usr, "Please choose a message to transmit to \[ABNORMAL ROUTING CORDINATES\] via quantum entanglement.  Please be aware that this process is very expensive, and abuse will lead to... termination. Transmission does not guarantee a response. There is a 30 second delay before you may send another message, be clear, full and concise.", "To abort, send an empty message.", ""))
+				var/input = sanitize(stripped_input(usr, "Please choose a message to transmit to \[ABNORMAL ROUTING CORDINATES\] via quantum entanglement.  Please be aware that this process is very expensive, and abuse will lead to... termination. Transmission does not guarantee a response. There is a 30 second delay before you may send another message, be clear, full and concise.", "To abort, send an empty message.", ""))
 				if(!input || !(usr in view(1,src)))
 					return
 				Syndicate_announce(input, usr)

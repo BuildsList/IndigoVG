@@ -541,7 +541,7 @@ var/list/obj/machinery/newscaster/allCasters = list() //Global list that will co
 			if(isobserver(usr) && !canGhostWrite(usr,src,"set a channel's name"))
 				usr << "<span class='warning'>You can't do that.</span>"
 				return
-			src.channel_name = strip_html_simple(input(usr, "Provide a Feed Channel Name", "Network Channel Handler", ""))
+			src.channel_name = strip_html_properly(input(usr, "Provide a Feed Channel Name", "Network Channel Handler", ""))
 			while (findtext(src.channel_name," ") == 1)
 				src.channel_name = copytext(src.channel_name,2,length(src.channel_name)+1)
 			src.updateUsrDialog()
@@ -598,7 +598,7 @@ var/list/obj/machinery/newscaster/allCasters = list() //Global list that will co
 			for(var/datum/feed_channel/F in news_network.network_channels)
 				if( (!F.locked || F.author == scanned_user) && !F.censored)
 					available_channels += F.channel_name
-			src.channel_name = strip_html_simple(input(usr, "Choose receiving Feed Channel", "Network Channel Handler") in available_channels )
+			src.channel_name = strip_html_properly(input(usr, "Choose receiving Feed Channel", "Network Channel Handler") in available_channels )
 			src.updateUsrDialog()
 
 		else if(href_list["set_new_message"])
@@ -607,7 +607,7 @@ var/list/obj/machinery/newscaster/allCasters = list() //Global list that will co
 				return
 			if(isnull(src.msg))
 				src.msg = ""
-			src.msg = strip_html(input(usr, "Write your Feed story", "Network Channel Handler", src.msg))
+			src.msg = strip_html_properly(input(usr, "Write your Feed story", "Network Channel Handler", src.msg))
 			while (findtext(src.msg," ") == 1)
 				src.msg = copytext(src.msg,2,length(src.msg)+1)
 			src.updateUsrDialog()
@@ -705,7 +705,7 @@ var/list/obj/machinery/newscaster/allCasters = list() //Global list that will co
 			if(isobserver(usr) && !canGhostWrite(usr,src,"tried to set the name of a wanted person"))
 				usr << "<span class='warning'>You can't do that.</span>"
 				return
-			src.channel_name = strip_html(input(usr, "Provide the name of the Wanted person", "Network Security Handler", ""))
+			src.channel_name = strip_html_properly(input(usr, "Provide the name of the Wanted person", "Network Security Handler", ""))
 			while (findtext(src.channel_name," ") == 1)
 				src.channel_name = copytext(src.channel_name,2,length(src.channel_name)+1)
 			src.updateUsrDialog()
@@ -714,7 +714,7 @@ var/list/obj/machinery/newscaster/allCasters = list() //Global list that will co
 			if(isobserver(usr) && !canGhostWrite(usr,src,"tried to set the description of a wanted person"))
 				usr << "<span class='warning'>You can't do that.</span>"
 				return
-			src.msg = strip_html(input(usr, "Provide the a description of the Wanted person and any other details you deem important", "Network Security Handler", ""))
+			src.msg = strip_html_properly(input(usr, "Provide the a description of the Wanted person and any other details you deem important", "Network Security Handler", ""))
 			while (findtext(src.msg," ") == 1)
 				src.msg = copytext(src.msg,2,length(src.msg)+1)
 			src.updateUsrDialog()
@@ -1087,7 +1087,7 @@ obj/item/weapon/newspaper/attackby(obj/item/weapon/W as obj, mob/user as mob)
 		if(src.scribble_page == src.curr_page)
 			user << "<FONT COLOR='blue'>There's already a scribble in this page... You wouldn't want to make things too cluttered, would you?</FONT>"
 		else
-			var/s = strip_html( input(user, "Write something", "Newspaper", "") )
+			var/s = strip_html_properly( input(user, "Write something", "Newspaper", "") )
 			s = copytext(sanitize(s), 1, MAX_MESSAGE_LEN)
 			if (!s)
 				return

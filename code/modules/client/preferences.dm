@@ -1199,7 +1199,7 @@ NOTE:  The change will take effect AFTER any current recruiting periods."}
 							msg = copytext(msg, 1, MAX_MESSAGE_LEN)
 							msg = rhtml_encode(msg)
 
-							flavor_text = sanitize_russian(msg)
+							flavor_text = sanitize(msg)
 
 					if("limbs")
 						var/limb_name = input(user, "Which limb do you want to change?") as null|anything in list("Left Leg","Right Leg","Left Arm","Right Arm","Left Foot","Right Foot","Left Hand","Right Hand")
