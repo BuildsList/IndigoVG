@@ -435,6 +435,7 @@
 		'nano/templates/pda_terminal.tmpl',
 		'nano/templates/smes.tmpl',
 		'nano/templates/tanks.tmpl',
+		'nano/templates/flatpacker.tmpl',
 		'nano/templates/telescience_console.tmpl',
 		'nano/templates/transfer_valve.tmpl',
 		'nano/templates/uplink.tmpl',
