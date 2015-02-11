@@ -415,6 +415,7 @@
 		'nano/templates/engines_control.tmpl',
 		'nano/templates/escape_pod_berth_console.tmpl',
 		'nano/templates/escape_pod_console.tmpl',
+		'nano/templates/exofab.tmpl',
 		'nano/templates/air_alarm.tmpl',
 		'nano/templates/rev-engine.tmpl',
 		'nano/templates/podfab.tmpl',
