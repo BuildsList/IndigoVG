@@ -30,3 +30,7 @@ info.json
 /bot/config.yml
 /bot/data
 /analysis
+
+/config/*
+!/config/*/*
+!/config/alienwhitelist.txt
