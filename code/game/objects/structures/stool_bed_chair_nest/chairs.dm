@@ -76,7 +76,8 @@
 		return 1
 	if(reversedir == dir && !locate(/obj/structure/stool/bed/chair) in get_turf(usr))
 		return 0
-	return 1
+	else
+		return 1
 
 /obj/structure/stool/bed/chair/verb/rotate()
 	set name = "Rotate Chair"
