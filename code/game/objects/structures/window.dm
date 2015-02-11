@@ -73,9 +73,19 @@
 /obj/structure/window/CheckExit(var/atom/movable/O, var/turf/target)
 	if(istype(O) && O.checkpass(PASSGLASS))
 		return 1
-	if(get_dir(O.loc, target) == dir)
+/*	if(get_dir(O.loc, target) == dir)
 		return !density
-	return 1
+	return 1*/
+
+	var/list/availabledir = cardinal
+	availabledir |= dir
+	if(get_dir(loc, target) == dir)
+		return !density
+	else
+		if(get_dir(loc, target) in availabledir)
+			return 1
+		else
+			return !density
 
 /obj/structure/window/CanPass(atom/movable/mover, turf/target, height=0)
 	if(istype(mover) && mover.checkpass(PASSGLASS))
@@ -86,6 +96,8 @@
 		return !density
 	else
 		return 1
+
+//cardinal = list( NORTH 1, SOUTH 2, EAST 4, WEST 8 )
 
 /obj/structure/window/hitby(AM as mob|obj)
 	..()

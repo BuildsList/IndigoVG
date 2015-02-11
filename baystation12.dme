@@ -93,10 +93,6 @@
 #define FILE_DIR "sound/vox"
 #define FILE_DIR "sound/vox_fem"
 #define FILE_DIR "sound/weapons"
-#define FILE_DIR "Trash"
-#define FILE_DIR "Trash/tools"
-#define FILE_DIR "Trash/tools/AddToChangelog"
-#define FILE_DIR "Trash/tools/AddToChangelog/AddToChangelog"
 // END_FILE_DIR
 // BEGIN_PREFERENCES
 #define DEBUG

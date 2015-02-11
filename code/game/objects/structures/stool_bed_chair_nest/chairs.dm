@@ -45,7 +45,7 @@
 				buckled_mob.buckled = src //Restoring
 		if(buckled_mob)
 			buckled_mob.dir = dir
-/* “ехническа€ накладка, временно выпилено.
+
 /obj/structure/stool/bed/chair/CanPass(atom/movable/mover, turf/target, height=0, air_group=0)
 	if(get_dir(loc, target) == 2)
 		reversedir = 1
@@ -77,7 +77,7 @@
 	if(reversedir == dir && !locate(/obj/structure/stool/bed/chair) in get_turf(usr))
 		return 0
 	return 1
-*/
+
 /obj/structure/stool/bed/chair/verb/rotate()
 	set name = "Rotate Chair"
 	set category = "Object"
