@@ -53,6 +53,8 @@
 	load_admins()
 	load_mods()
 	LoadBansjob()
+	if(config.usebwhitelist)
+		load_bwhitelist()
 	if(config.usewhitelist)
 		load_whitelist()
 	if(config.usealienwhitelist)
