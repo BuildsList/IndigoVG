@@ -373,7 +373,7 @@
 				if ("usewhitelist")
 					config.usewhitelist = 1
 
-				if ("config.usebwhitelist")
+				if ("usebwhitelist")
 					config.usebwhitelist = 1
 
 				if ("feature_object_spell_system")
