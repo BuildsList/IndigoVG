@@ -2,7 +2,6 @@
 	name = "chair"
 	desc = "You sit in this. Either by will or force."
 	icon_state = "chair"
-	var/reversedir = 0
 
 /obj/structure/stool/MouseDrop(atom/over_object)
 	return
@@ -45,39 +44,6 @@
 				buckled_mob.buckled = src //Restoring
 		if(buckled_mob)
 			buckled_mob.dir = dir
-
-/obj/structure/stool/bed/chair/CanPass(atom/movable/mover, turf/target, height=0, air_group=0)
-	if(get_dir(loc, target) == 2)
-		reversedir = 1
-	else if(get_dir(loc, target) == 4)
-		reversedir = 8
-	else if(get_dir(loc, target) == 8)
-		reversedir = 4
-	else
-		reversedir = 2
-	if(istype(mover) && mover.checkpass(PASSGLASS))
-		return 0
-	if(reversedir == dir && !locate(/obj/structure/stool/bed/chair) in get_turf(usr))
-		return 0
-	else
-		return 1
-
-/obj/structure/stool/bed/chair/CheckExit(atom/movable/O as mob|obj, target as turf)
-	if(get_dir(loc, target) == 2)
-		reversedir = 1
-	else if(get_dir(loc, target) == 4)
-		reversedir = 8
-	else if(get_dir(loc, target) == 8)
-		reversedir = 4
-	else
-		reversedir = 2
-
-	if(istype(O) && O.checkpass(PASSGLASS))
-		return 1
-	if(reversedir == dir && !locate(/obj/structure/stool/bed/chair) in get_turf(usr))
-		return 0
-	else
-		return 1
 
 /obj/structure/stool/bed/chair/verb/rotate()
 	set name = "Rotate Chair"
@@ -193,6 +159,9 @@
 
 /obj/structure/stool/bed/chair/comfy/lime
 	icon_state = "comfychair_lime"
+
+/obj/structure/stool/bed/chair/comfy/alt
+	icon_state = "comfychair2"
 
 /obj/structure/stool/bed/chair/office/Move()
 	..()

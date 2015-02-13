@@ -53,6 +53,10 @@
 			buckled_mob.buckled = null
 			buckled_mob.anchored = initial(buckled_mob.anchored)
 			buckled_mob.update_canmove()
+			if(buckled_mob.pixel_x && buckled_mob.pixel_x >= src.pixel_x)
+				buckled_mob.pixel_x -= src.pixel_x
+			if(buckled_mob.pixel_y && buckled_mob.pixel_y >= src.pixel_y)
+				buckled_mob.pixel_y -= src.pixel_y
 			buckled_mob = null
 	return
 
@@ -76,7 +80,7 @@
 /obj/structure/stool/bed/proc/buckle_mob(mob/M as mob, mob/user as mob)
 	if (!ticker)
 		user << "You can't buckle anyone in before the game starts."
-	if ( !ismob(M) || (get_dist(src, user) > 1) || (M.loc != src.loc) || user.restrained() || user.lying || user.stat || M.buckled || istype(user, /mob/living/silicon/pai) )
+	if ( !ismob(M) || isanimal(M) || (get_dist(src, user) > 1) || (M.loc != src.loc) || user.restrained() || user.lying || user.stat || M.buckled || istype(user, /mob/living/silicon/pai) )
 		return
 
 	if (istype(M, /mob/living/carbon/slime))
@@ -87,12 +91,12 @@
 
 	if (M == usr)
 		M.visible_message(\
-			"\blue [M.name] buckles in!",\
+			"<span class='notice'>[M.name] buckles in!</span>",\
 			"You buckle yourself to [src].",\
 			"You hear metal clanking")
 	else
 		M.visible_message(\
-			"\blue [M.name] is buckled in to [src] by [user.name]!",\
+			"<span class='notice'>[M.name] is buckled in to [src] by [user.name]!</span>",\
 			"You are buckled in to [src] by [user.name].",\
 			"You hear metal clanking")
 	M.buckled = src
@@ -100,6 +104,10 @@
 	M.dir = src.dir
 	M.update_canmove()
 	src.buckled_mob = M
+	if(src.buckled_mob.pixel_x && src.buckled_mob.pixel_x >= src.pixel_x)
+		src.buckled_mob.pixel_x += src.pixel_x
+	if(src.buckled_mob.pixel_y && src.buckled_mob.pixel_y >= src.pixel_y)
+		src.buckled_mob.pixel_y += src.pixel_y
 	src.add_fingerprint(user)
 	return
 

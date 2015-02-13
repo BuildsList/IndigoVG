@@ -77,6 +77,11 @@
 			else
 				user << "<span class='notice'>You need a tighter grip.</span>"
 
+	if(istype(I,/obj/item/weapon/reagent_containers/glass/beaker))
+		user << "It looks like a botanist dumped some compost in [src] during a previous shift. You scoop it up with [I]."
+		reagents.add_reagent("poo", 5)
+		return
+
 	if(cistern)
 		if(I.w_class > 3)
 			user << "<span class='notice'>\The [I] does not fit.</span>"
@@ -113,6 +118,10 @@
 				GM.adjustBruteLoss(8)
 			else
 				user << "<span class='notice'>You need a tighter grip.</span>"
+
+	if(istype(I,/obj/item/weapon/reagent_containers/glass/beaker))
+		user << "You scoop up the contained reagents with [I]."
+		reagents.add_reagent("urine", 5)
 
 
 
