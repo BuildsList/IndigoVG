@@ -31,6 +31,12 @@
 	see_in_dark = 8
 	species_fit = list("Vox")
 
+/obj/item/clothing/glasses/night/cloaker
+	name = "Spec Ops NV-Goggles"
+	desc = "You can totally see in the dark now! With GenSec style!"
+	icon_state = "clok_glass"
+	flags_inv = HIDEEYES
+
 /obj/item/clothing/glasses/eyepatch
 	name = "eyepatch"
 	desc = "Yarr."

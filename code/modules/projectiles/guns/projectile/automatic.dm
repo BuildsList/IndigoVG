@@ -45,6 +45,11 @@
 	else
 		..()
 
+/obj/item/weapon/gun/projectile/automatic/mpfive
+	name = "Maschinenpistole 5 Kompact"
+	desc = "A perfect replica of old Heckler & Koch MP5K. Uses 9mm rounds."
+	icon_state = "mpfive"
+
 /obj/item/weapon/gun/projectile/automatic/mini_uzi
 	name = "Uzi"
 	desc = "A lightweight, fast firing gun, for when you want someone dead. Uses .45 rounds."

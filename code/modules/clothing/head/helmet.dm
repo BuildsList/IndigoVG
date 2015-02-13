@@ -42,6 +42,11 @@
 	min_cold_protection_temperature = SPACE_HELMET_MIN_COLD_PROTECTION_TEMPERATURE
 	siemens_coefficient = 0.5
 
+/obj/item/clothing/head/helmet/swat/cloaker
+	name = "Spec Ops helmet"
+	desc = "They're often used by highly trained GenSec Members. Beat the shit out of shit!"
+	icon_state = "clok_helm"
+
 /obj/item/clothing/head/helmet/thunderdome
 	name = "\improper Thunderdome helmet"
 	desc = "<i>'Let the battle commence!'</i>"

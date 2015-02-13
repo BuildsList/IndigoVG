@@ -77,9 +77,9 @@
 	var/darkness_view = 0//Base human is 2
 	var/invisa_view = 0
 	var/cover_hair = 0
+	var/prescription = 0
 	var/see_invisible = 0
 	var/see_in_dark = 0
-	var/prescription = 0
 	species_restricted = list("exclude","Muton")
 /*
 SEE_SELF  // can see self, no matter what
@@ -139,8 +139,6 @@ BLIND     // can't see anything
 	var/can_flip = null
 	var/is_flipped = 1
 	var/ignore_flip = 0
-	var/see_invisible = 0
-	var/see_in_dark = 0
 
 /obj/item/clothing/mask/verb/togglemask()
 	set name = "Toggle Mask"

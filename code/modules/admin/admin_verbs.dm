@@ -153,6 +153,7 @@ var/list/admin_verbs_debug = list(
 	/client/proc/cmd_debug_tog_aliens,
 	/client/proc/air_report,
 	/client/proc/reload_admins,
+	/client/proc/reload_bwhitelist,        // костыльно, но пусть пока будет
 	/client/proc/restart_controller,
 	/client/proc/enable_debug_verbs,
 	/client/proc/callproc,

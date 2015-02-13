@@ -131,19 +131,19 @@
 /////////////////////////////////// PAYDAY 2 CLOAKER GASMASK /////////////////////////////////////
 //////////////////////////////////        by Loly            /////////////////////////////////////
 
-/obj/item/clothing/mask/gas/clocker
+/obj/item/clothing/mask/gas/cloaker
 	name = "cloaker gas mask"
 	desc = "A high-tier issue gas mask with integrated 'Cloak-o-nator 3000' device, plays over a dozen pre-recorded compliance phrases designed to get scumbags to stand still whilst you taze them. Do not tamper with the device."
 	action_button_name = "Say something funny!"
-	icon_state = "cloaker"
+	icon_state = "clok_gas"
+	flags_inv = HIDEFACE
+	body_parts_covered = null
 	can_flip = null
 	origin_tech = "magnets=2"
-	see_invisible = SEE_INVISIBLE_OBSERVER_NOLIGHTING
-	see_in_dark = 8
 	var/cooldown = 0
 	var/aggressiveness = 2
 
-/obj/item/clothing/mask/gas/clocker/attackby(obj/item/weapon/W as obj, mob/user as mob)
+/obj/item/clothing/mask/gas/cloaker/attackby(obj/item/weapon/W as obj, mob/user as mob)
 	if(istype(W, /obj/item/weapon/screwdriver))
 		switch(aggressiveness)
 			if(1)
@@ -164,10 +164,10 @@
 	else
 		..()
 
-/obj/item/clothing/mask/gas/clocker/attack_self()
+/obj/item/clothing/mask/gas/cloaker/attack_self()
 	catchphaze()
 
-/obj/item/clothing/mask/gas/clocker/verb/wululu()
+/obj/item/clothing/mask/gas/cloaker/verb/wululu()
 	set category = "Object"
 	set name = "Get a noise"
 	set src in usr
@@ -178,7 +178,7 @@
 	usr.visible_message("<span class='warning'>[usr]'s [name] is going <b>MAD!</b></span>")
 
 
-/obj/item/clothing/mask/gas/clocker/verb/catchphaze()
+/obj/item/clothing/mask/gas/cloaker/verb/catchphaze()
 	set category = "Object"
 	set name = "Say something funny!"
 	set src in usr
@@ -258,5 +258,5 @@
 				phrase_sound = "beat"
 
 		usr.visible_message("<b>[usr]</b> exclaims, <font color='red' size='4'><b>\"[phrase_text]\"</b></font>")
-		playsound(src.loc, "sound/voice/paydaycloaker/[phrase_sound].ogg", 100, 0, 4)
+		playsound(get_turf(src), "sound/voice/paydaycloaker/[phrase_sound].ogg", 100, 1, vary = 0)
 		cooldown = world.time

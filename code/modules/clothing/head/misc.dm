@@ -272,7 +272,7 @@
 	desc = "Ein Helm, um die Nazi-Interesse an fremden Raumstationen zu sichern."
 	icon_state = "stalhelm"
 	item_state = "stalhelm"
-	flags = FPRINT  | BLOCKHEADHAIR
+	flags = FPRINT
 	flags_inv = HIDEEARS
 
 /obj/item/clothing/head/panzer
@@ -287,7 +287,7 @@
 	desc = "Ein Hut von Offizieren in der Nazi-Partei getragen."
 	icon_state = "officercap"
 	item_state = "officercap"
-	flags = FPRINT  | BLOCKHEADHAIR
+	flags = FPRINT
 	flags_inv = HIDEEARS
 
 /obj/item/clothing/head/russobluecamohat
@@ -302,7 +302,7 @@
 	desc = "Russian winter got you down? Maybe your enemy, but not you!"
 	icon_state = "russofurhat"
 	item_state = "russofurhat"
-	flags = FPRINT  | BLOCKHEADHAIR
+	flags = FPRINT
 	flags_inv = HIDEEARS
 
 /obj/item/clothing/head/lordadmiralhat

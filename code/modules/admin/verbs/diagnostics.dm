@@ -141,6 +141,18 @@
 	load_admins()
 	feedback_add_details("admin_verb","RLDA") //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!
 
+/client/proc/reload_bwhitelist()
+	set name = "Reload Whitelist"
+	set category = "Debug"
+
+	if(config.usebwhitelist)
+		message_admins("[usr] manually reloaded whitelist")
+		load_bwhitelist()
+	else
+		message_admins("[usr] tried to reload whitelist, but it not configured.")
+		return
+	feedback_add_details("admin_verb","RLDW") //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!
+
 //todo:
 /client/proc/jump_to_dead_group()
 	set name = "Jump to dead group"

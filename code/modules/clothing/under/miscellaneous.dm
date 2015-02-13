@@ -76,6 +76,15 @@
 	item_state = "dg_suit"
 	_color = "centcom"
 
+/obj/item/clothing/under/cloaker
+	name = "Spec Ops jumpsuit"
+	desc = "Someone who wears this means your soon death."
+	icon_state = "clok_jump"
+	item_state = "gy_suit"
+	armor = list(melee = 10, bullet = 10, laser = 20,energy = 10, bomb = 5, bio = 0, rad = 0)
+	flags = FPRINT  | ONESIZEFITSALL
+	siemens_coefficient = 0.9
+
 /obj/item/clothing/under/space
 	name = "\improper NASA jumpsuit"
 	desc = "It has a NASA logo on it and is made of space-proofed materials."

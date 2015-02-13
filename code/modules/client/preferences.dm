@@ -1361,13 +1361,8 @@ NOTE:  The change will take effect AFTER any current recruiting periods."}
 						toggles ^= CHAT_GHOSTPDA
 
 					if("save")
-						if(world.timeofday >= (lastPolled + POLLED_LIMIT))
-							save_preferences_sqlite(user, user.ckey)
-							save_character_sqlite(user.ckey, user, default_slot)
-							lastPolled = world.timeofday
-						else
-							user << "You need to wait [round((((lastPolled + POLLED_LIMIT) - world.timeofday) / 10))] seconds before you can save again."
-						//random_character_sqlite(user, user.ckey)
+						save_preferences_sqlite(user, user.ckey)
+						save_character_sqlite(user.ckey, user, default_slot)
 
 					if("reload")
 						load_preferences_sqlite(user, user.ckey)

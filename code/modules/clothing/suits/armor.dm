@@ -32,6 +32,11 @@
 	icon_state = "warden_jacket"
 	item_state = "armor"
 
+/obj/item/clothing/suit/armor/vest/cloaker
+	name = "Spec Ops armor"
+	desc = "An armored vest that protects against some damage. This one has GenSec corporate badge."
+	icon_state = "clok_arm"
+	item_state = "armor"
 
 /obj/item/clothing/suit/armor/riot
 	name = "Riot Suit"
