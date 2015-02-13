@@ -41,10 +41,19 @@
 	admin_diary << log_start
 
 	changelog_hash = md5('html/changelog.html')					//used for telling if the changelog has changed recently
-
+/*
+ * IF YOU HAVE BYOND VERSION BELOW 507.1248 OR ARE ABLE TO WALK THROUGH WINDOORS/BORDER WINDOWS COMMENT OUT
+ * #define BORDER_USE_TURF_EXIT
+ * FOR MORE INFORMATION SEE: http://www.byond.com/forum/?post=1666940
+ */
 	if(byond_version < RECOMMENDED_VERSION)
 		world.log << "Your server's byond version does not meet the recommended requirements for this code. Please update BYOND"
-
+/*
+#ifdef BORDER_USE_TURF_EXIT
+	if(byond_version < 507)
+		warning("Your server's byond version does not meet the recommended requirements for this code. Please update BYOND to atleast 507.1248 or comment BORDER_USE_TURF_EXIT in setup.dm")
+#endif
+*/
 	make_datum_references_lists()	//initialises global lists for referencing frequently used datums (so that we only ever do it once)
 
 	load_configuration()
@@ -73,76 +82,53 @@
 	if(config && config.server_name != null && config.server_suffix && world.port > 0)
 		// dumb and hardcoded but I don't care~
 		config.server_name += " #[(world.port % 1000) / 100]"
-
 	Get_Holiday()	//~Carn, needs to be here when the station is named so :P
-
 	src.update_status()
-
 	makepowernets()
-
 	//sun = new /datum/sun()
 	radio_controller = new /datum/controller/radio()
 	data_core = new /obj/effect/datacore()
 	paiController = new /datum/paiController()
-
 	if(!setup_database_connection())
-		world.log << "Your server failed to establish a connection with the feedback database."
+		world.log << "Your server failed to establish a connection with the database."
 	else
-		world.log << "Feedback database connection established."
-/*
-	if(!setup_old_database_connection())
-		world.log << "Your server failed to establish a connection with the tgstation database."
-	else
-		world.log << "Tgstation database connection established."
-*/
+		world.log << "Database connection established."
+		migration_controller = new
 	plmaster = new /obj/effect/overlay()
 	plmaster.icon = 'icons/effects/tile_effects.dmi'
 	plmaster.icon_state = "plasma"
 	plmaster.layer = FLY_LAYER
 	plmaster.mouse_opacity = 0
-
 	slmaster = new /obj/effect/overlay()
 	slmaster.icon = 'icons/effects/tile_effects.dmi'
 	slmaster.icon_state = "sleeping_agent"
 	slmaster.layer = FLY_LAYER
 	slmaster.mouse_opacity = 0
-
 	src.update_status()
-
 	sleep_offline = 1
-
 	send2mainirc("Server starting up on [config.server? "byond://[config.server]" : "byond://[world.address]:[world.port]"]")
-
 	processScheduler = new
 	master_controller = new /datum/controller/game_controller()
-
 	spawn(1)
 		processScheduler.deferSetupFor(/datum/controller/process/ticker)
 		processScheduler.setup()
-
 		master_controller.setup()
-
 		setup_species()
-
 	for(var/plugin_type in typesof(/plugin))
 		var/plugin/P = new plugin_type()
 		plugins[P.name] = P
 		P.on_world_loaded()
-
-	process_teleport_locs()			//Sets up the wizard teleport locations
-	process_ghost_teleport_locs()	//Sets up ghost teleport locations.
+	process_teleport_locs()				//Sets up the wizard teleport locations
+	process_ghost_teleport_locs()		//Sets up ghost teleport locations.
 	process_adminbus_teleport_locs()	//Sets up adminbus teleport locations.
-
+	SortAreas()							//Build the list of all existing areas and sort it alphabetically
 	spawn(3000)		//so we aren't adding to the round-start lag
 		if(config.ToRban)
 			ToRban_autoupdate()
 		/*if(config.kick_inactive)
 			KickInactiveClients()*/
-
 #undef RECOMMENDED_VERSION
-
 	return ..()
-
 //world/Topic(href, href_list[])
 //		world << "Received a Topic() call!"
 //		world << "[href]"
@@ -245,7 +231,7 @@
 				if(C.is_afk(INACTIVITY_KICK))
 					if(!istype(C.mob, /mob/dead))
 						log_access("AFK: [key_name(C)]")
-						C << "<span class='indigo'>You have been inactive for more than 10 minutes and have been disconnected.</span>"
+						C << "<span class='warning'>You have been inactive for more than 10 minutes and have been disconnected.</span>"
 						del(C)
 //#undef INACTIVITY_KICK
 
@@ -270,7 +256,6 @@
 	config.load("config/config.txt")
 	config.load("config/game_options.txt","game_options")
 	config.loadsql("config/dbconfig.txt")
-//	config.loadforumsql("config/forumdbconfig.txt")
 	// apply some settings from config..
 	abandon_allowed = config.respawn
 
@@ -287,19 +272,14 @@
 
 				if (copytext(line, 1, 2) == ";")
 					continue
-
 				var/rights = admin_ranks["Moderator"]
 				var/ckey = copytext(line, 1, length(line)+1)
 				var/datum/admins/D = new /datum/admins("Moderator", rights, ckey)
 				D.associate(directory[ckey])
-
 /world/proc/update_status()
 	var/s = ""
-
 	if (config && config.server_name)
 		s += "<b>[config.server_name]</b> &#8212; "
-
-
 	// AUTOFIXED BY fix_string_idiocy.py
 	// C:\Users\Rob\Documents\Projects\vgstation13\code\world.dm:235: s += "<b>[station_name()]</b>";
 	s += {"<b>[station_name()]</b>"

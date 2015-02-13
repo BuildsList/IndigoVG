@@ -68,6 +68,13 @@
 	..()
 	return 0
 
+/*
+ * IF YOU HAVE BYOND VERSION BELOW 507.1248 OR ARE ABLE TO WALK THROUGH WINDOORS/BORDER WINDOWS COMMENT OUT
+ * #define BORDER_USE_TURF_EXIT
+ * FOR MORE INFORMATION SEE: http://www.byond.com/forum/?post=1666940
+ */
+/*
+#ifdef BORDER_USE_TURF_EXIT
 /turf/Exit(atom/movable/mover, atom/target)
 	if(!mover)
 		return 1
@@ -83,11 +90,28 @@
 				mover.Bump(obstacle, 1)
 				return 0
 	return 1
+#if DM_VERSION < 507
+	#warn This compiler is too far out of date! You will experience issues with windows and windoors unles you update to atleast 507.1248 or comment out BORDER_USE_TURF_EXIT in global.dm!
 
+#endif
+*/
 /turf/Enter(atom/movable/mover as mob|obj, atom/forget as mob|obj|turf|area)
 	if (!mover)
 		return 1
-
+/*
+#ifndef BORDER_USE_TURF_EXIT
+#warn BORDER_USE_TURF_EXIT is not defined, using possibly buggy turf/Enter code.
+*/
+	// First, make sure it can leave its square
+	if(isturf(mover.loc))
+		// Nothing but border objects stop you from leaving a tile, only one loop is needed
+		for(var/obj/obstacle in mover.loc)
+			if(!obstacle.CheckExit(mover, src) && obstacle != mover && obstacle != forget)
+				mover.Bump(obstacle, 1)
+				return 0
+/*
+#endif
+*/
 	var/list/large_dense = list()
 	//Next, check objects to block entry that are on the border
 	for(var/atom/movable/border_obstacle in src)
@@ -121,8 +145,7 @@
 /turf/Entered(atom/movable/Obj,atom/OldLoc)
 	var/loopsanity = 100
 	if(ismob(Obj))
-		if(!Obj:lastarea)
-			Obj:lastarea = get_area(Obj.loc)
+		Obj:lastarea = get_area(Obj.loc)
 		if(Obj:lastarea.has_gravity == 0)
 			inertial_drift(Obj)
 
@@ -261,7 +284,12 @@
 		var/turf/simulated/S = src
 		env = S.air //Get the air before the change
 		if(S.zone) S.zone.rebuild()
-
+	if(istype(src,/turf/simulated/floor))
+		var/turf/simulated/floor/F = src
+		if(F.floor_tile)
+			qdel(F.floor_tile)
+			F.floor_tile = null
+		F = null
 	if(ispath(N, /turf/simulated/floor))
 		//if the old turf had a zone, connect the new turf to it as well - Cael
 		//Adjusted by SkyMarshal 5/10/13 - The air master will handle the addition of the new turf.
@@ -350,7 +378,6 @@
 	var/atox = 0
 	var/atemp = 0
 	var/turf_count = 0
-
 	for(var/direction in cardinal)//Only use cardinals to cut down on lag
 		var/turf/T = get_step(src,direction)
 		if(istype(T,/turf/space))//Counted as no air
@@ -371,7 +398,6 @@
 	air.toxins = (atox/max(turf_count,1))
 	air.temperature = (atemp/max(turf_count,1))//Trace gases can get bant
 	air.update_values()
-
 	//cael - duplicate the averaged values across adjacent turfs to enforce a seamless atmos change
 	for(var/direction in cardinal)//Only use cardinals to cut down on lag
 		var/turf/T = get_step(src,direction)

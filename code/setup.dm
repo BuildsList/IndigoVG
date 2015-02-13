@@ -83,6 +83,7 @@ var/global/disable_vents     = 0
 
 // Factor of how fast mob nutrition decreases
 #define HUNGER_FACTOR 0.12
+#define THIRST_FACTOR 0.12
 
 // How many units of reagent are consumed per tick, by default.
 #define REAGENTS_METABOLISM 0.2
@@ -506,6 +507,7 @@ var/list/global_mutations = list() // list of hidden mutation things
 #define CANWEAKEN	2
 #define CANPARALYSE	4
 #define CANPUSH		8
+#define GOTTAGOFAST	16
 #define GODMODE		4096
 #define FAKEDEATH	8192	//Replaces stuff like changeling.changeling_fakedeath
 #define DISFIGURED	16384	//I'll probably move this elsewhere if I ever get wround to writing a bitflag mob-damage system
@@ -757,6 +759,7 @@ var/list/TAGGERLOCATIONS = list(
 #define ROLE_VAMPIRE    "vampire"
 #define ROLE_VOXRAIDER  "vox raider"
 #define ROLE_WIZARD     "wizard"
+#define ROLE_GANG     	"gangster"	// New!
 
 
 #define AGE_MIN 17			//youngest a character can be
@@ -992,7 +995,6 @@ var/list/RESTRICTED_CAMERA_NETWORKS = list( //Those networks can only be accesse
 #define STAGE_FIVE	9
 #define STAGE_SUPER	11
 
-
 //Human Overlays Indexes/////////
 #define FIRE_LAYER				1		//If you're on fire (/tg/ shit)
 #define MUTANTRACE_LAYER		2		//TODO: make part of body?
@@ -1020,3 +1022,6 @@ var/list/RESTRICTED_CAMERA_NETWORKS = list( //Those networks can only be accesse
 #define TARGETED_LAYER			24		//BS12: Layer for the target overlay from weapon targeting system
 #define TOTAL_LAYERS			25
 //////////////////////////////////
+
+//COMMENT IF YOUR DREAMDAEMON VERSION IS BELOW 507.1248
+//#define BORDER_USE_TURF_EXIT 1
