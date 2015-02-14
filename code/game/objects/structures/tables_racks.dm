@@ -269,6 +269,8 @@
 		return (check_cover(mover,target))
 	if(istype(mover) && mover.checkpass(PASSTABLE))
 		return 1
+	if(locate(/obj/structure/table) in get_turf(mover))
+		return 1
 	if (flipped)
 		if (get_dir(loc, target) == dir)
 			return !density
@@ -626,6 +628,23 @@
 		visible_message("<span class='danger'>[user] smashes [src] apart!</span>")
 		user.say(pick(";RAAAAAAAARGH!", ";HNNNNNNNNNGGGGGGH!", ";GWAAAAAAAARRRHHH!", "NNNNNNNNGGGGGGGGHH!", ";AAAAAAARRRGH!" ))
 		destroy()
+
+	if(usr.a_intent == "disarm" && get_dist(usr, src) <= 1 && !usr.buckled)
+		if(prob(70))
+			visible_message("<span class='notice'>[user] climbs on the [src].</span>")
+			usr.loc = src.loc
+		else
+			visible_message("<span class='warning'>[user] slipped off the edge of the [src].</span>")
+			playsound(get_turf(src), 'sound/weapons/tablehit1.ogg', 50, 1)
+			if(prob(10) && istype(user,/mob/living/carbon/human))
+				user.weakened += rand(4,10)
+				var/mob/living/carbon/human/H = user
+				var/organ_name = pick("l_arm","r_arm","r_leg","l_leg")
+				var/datum/organ/external/E = H.get_organ(organ_name)
+				E.fracture()
+			else
+				user.weakened += rand(4,10)
+	return
 
 /obj/structure/rack/attack_paw(mob/user)
 	if(M_HULK in user.mutations)
