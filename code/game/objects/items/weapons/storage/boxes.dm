@@ -564,9 +564,9 @@
 		new /obj/item/clothing/suit/armor/vest/cloaker(src)
 		new /obj/item/clothing/under/cloaker(src)
 		new /obj/item/weapon/gun/projectile/automatic/mpfive(src)
-		new /obj/item/weapon/melee/baton/loaded(src)
-		new /obj/item/ammo_storage/magazine/mc9mm(src)
-		new /obj/item/ammo_storage/magazine/mc9mm(src)
+		new /obj/item/weapon/melee/classic_baton(src)
+		new /obj/item/ammo_storage/magazine/smg9mm(src)
+		new /obj/item/ammo_storage/magazine/smg9mm(src)
 		new /obj/item/weapon/handcuffs/cable/white(src)
 		new /obj/item/weapon/handcuffs/cable/white(src)
 
