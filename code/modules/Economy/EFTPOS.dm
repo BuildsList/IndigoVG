@@ -8,7 +8,7 @@
 	var/transaction_locked = 0
 	var/transaction_paid = 0
 	var/transaction_amount = 0
-	var/transaction_purpose = "Default charge"
+	var/transaction_purpose = "Sample text"
 	var/access_code = 0
 	var/obj/machinery/account_database/linked_db
 	var/datum/money_account/linked_account
@@ -149,7 +149,11 @@
 				else
 					usr << "\icon[src]<span class='warning'>Unable to connect to accounts database.</span>"
 			if("trans_purpose")
-				transaction_purpose = input("Enter reason for EFTPOS transaction", "Transaction purpose")
+				var/try_reason = input("Enter reason for EFTPOS transaction", "Transaction purpose")
+				if(try_reason == "")
+					alert("That is not a valid reason!")
+				else
+					transaction_purpose = try_reason
 			if("trans_value")
 				var/try_num = input("Enter amount for EFTPOS transaction", "Transaction amount") as num
 				if(try_num < 0)

@@ -88,18 +88,67 @@
 		else
 			for(var/mob/O in viewers(user, 3))
 				O.show_message("<span class='warning'>The locker has been broken by [user] with an electromagnetic card!</span>", 1, "You hear a faint electrical spark.", 2)
+	else if(istype(W, /obj/item/weapon/weldingtool))
+		var/obj/item/weapon/weldingtool/WT = W
+		if(!WT.remove_fuel(0,user))
+			user << "<span class='notice'>You need more welding fuel to complete this task.</span>"
+			return
+		src.welded =! src.welded
+		src.update_icon()
+		for(var/mob/M in viewers(src))
+			M.show_message("<span class='warning'>[src] has been [welded?"welded shut":"unwelded"] by [user.name].</span>", 3, "You hear welding.", 2)
+	else if(istype(W, /obj/item/device/multitool) && !src.broken)
+		var/obj/item/device/multitool/multi = W
+		if(multi.is_used)
+			user << "\red This multitool is already in use!"
+			return
+		multi.is_used = 1
+		user << "\red Resetting circuitry(0/6)..."
+		playsound(user, 'sound/machines/lockreset.ogg', 50, 1)
+		var/obj/structure/closet/secure_closet/crat = src
+		src = null
+		if(do_mob(user, crat, 200))
+			user << "\red Resetting circuitry(1/6)..."
+			for(var/mob/O in viewers(world.view, user))
+				if(O != user)
+					O.show_message(text("\red <B>[] picks in wires of the [] with a multitool.</B>", user, crat), 1)
+			if(do_mob(user, crat, 200))
+				user << "\red Resetting circuitry(2/6)..."
+				for(var/mob/O in viewers(world.view, user))
+					if(O != user)
+						O.show_message(text("\red <B>[] picks in wires of the [] with a multitool.</B>", user, crat), 1)
+				if(do_mob(user, crat, 200))
+					user << "\red Resetting circuitry(3/6)..."
+					for(var/mob/O in viewers(world.view, user))
+						if(O != user)
+							O.show_message(text("\red <B>[] picks in wires of the [] with a multitool.</B>", user, crat), 1)
+					if(do_mob(user, crat, 200))
+						user << "\red Resetting circuitry(4/6)..."
+						for(var/mob/O in viewers(world.view, user))
+							if(O != user)
+								O.show_message(text("\red <B>[] picks in wires of the [] with a multitool.</B>", user, crat), 1)
+						if(do_mob(user, crat, 200))
+							user << "\red Resetting circuitry(5/6)..."
+							for(var/mob/O in viewers(world.view, user))
+								if(O != user)
+									O.show_message(text("\red <B>[] picks in wires of the [] with a multitool.</B>", user, crat), 1)
+							if(do_mob(user, crat, 200))
+								crat.locked = !crat.locked
+								if(crat.locked)
+									crat.icon_state = crat.icon_locked
+									user << "\blue You enable the locking modules."
+									for(var/mob/O in viewers(world.view, user))
+										if(O != user)
+											O.show_message(text("\red <B>[] locks [] with a multitool.</B>", user, crat), 1)
+								else
+									crat.icon_state = crat.icon_closed
+									user << "\blue You disable the locking modules."
+									for(var/mob/O in viewers(world.view, user))
+										if(O != user)
+											O.show_message(text("\red <B>[] unlocks [] with a multitool.</B>", user, crat), 1)
+		multi.is_used = 0
 	else
-		if(istype(W, /obj/item/weapon/weldingtool))
-			var/obj/item/weapon/weldingtool/WT = W
-			if(!WT.remove_fuel(0,user))
-				user << "<span class='notice'>You need more welding fuel to complete this task.</span>"
-				return
-			src.welded =! src.welded
-			src.update_icon()
-			for(var/mob/M in viewers(src))
-				M.show_message("<span class='warning'>[src] has been [welded?"welded shut":"unwelded"] by [user.name].</span>", 3, "You hear welding.", 2)
-		else
-			togglelock(user)
+		togglelock(user)
 
 /obj/structure/closet/secure_closet/relaymove(mob/user as mob)
 	if(user.stat || !isturf(src.loc))

@@ -19,6 +19,7 @@
 	throwforce = 5.0
 	throw_range = 15
 	throw_speed = 3
+	var/is_used = 0
 	m_amt = 50
 	g_amt = 20
 	w_type = RECYK_ELECTRONIC
