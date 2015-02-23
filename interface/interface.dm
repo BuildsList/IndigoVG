@@ -7,7 +7,8 @@
 	if(alert("This will open the map render(s) in your browser. Are you sure?",,"Yes","No")=="No")
 		return
 	if(map)
-		switch(map.nameShort)
+		src << link("http://wiki.ss13.ru/index.php?title=Maps")
+/*		switch(map.nameShort)
 			if("meta")
 				src << link("http://ss13.nexisonline.net/img/map-renders/metaclub/")
 			if("deff")
@@ -15,7 +16,7 @@
 			if("box")
 				src << link("http://ss13.nexisonline.net/img/map-renders/tgstation/")
 			else
-				src << "<span class='indigo'>No map render for [map.nameLong], bug nexis about it!</span>"
+				src << "<span class='indigo'>No map render for [map.nameLong], call detective!</span>" */
 	return
 
 /client/verb/wiki()
