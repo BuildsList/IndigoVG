@@ -93,6 +93,10 @@
 #define FILE_DIR "sound/vox"
 #define FILE_DIR "sound/vox_fem"
 #define FILE_DIR "sound/weapons"
+#define FILE_DIR "Trash"
+#define FILE_DIR "Trash/tools"
+#define FILE_DIR "Trash/tools/AddToChangelog"
+#define FILE_DIR "Trash/tools/AddToChangelog/AddToChangelog"
 // END_FILE_DIR
 // BEGIN_PREFERENCES
 #define DEBUG
@@ -1734,7 +1738,7 @@
 #include "interface\interface.dm"
 #include "interface\skin.dmf"
 #include "maps\_map.dm"
-#include "maps\tgstation.dm"
+#include "maps\taxistation.dm"
 #include "maps\RandomZLevels\Academy.dm"
 #include "maps\RandomZLevels\challenge.dm"
 #include "maps\RandomZLevels\stationCollision.dm"

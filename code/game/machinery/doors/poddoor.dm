@@ -3,9 +3,11 @@
 	desc = "Why it no open!!!"
 	icon = 'icons/obj/doors/rapid_pdoor.dmi'
 	icon_state = "pdoor1"
+	layer = 2.6
 	explosion_resistance = 25
 
 	var/id_tag = 1.0
+	var/dooricon = "pdoor"
 
 	prefix = "r_"
 	animation_delay = 18
@@ -15,6 +17,16 @@
 	icon_state = "pdoor0"
 	density = 0
 	opacity = 0
+
+/obj/machinery/door/poddoor/black
+	name = "Podlock"
+	desc = "Serious black podlock for serious locking"
+	icon = 'icons/obj/doors/rapid_pdoor.dmi'
+	icon_state = "bpdoor1"
+	dooricon = "bpdoor"
+
+/obj/machinery/door/poddoor/preopen
+	icon_state = "bpdoor0"
 
 /obj/machinery/door/poddoor/New()
 	. = ..()
@@ -37,8 +49,8 @@
 	if ((src.density && (stat & NOPOWER) && !( src.operating )))
 		spawn( 0 )
 			src.operating = 1
-			flick("pdoorc0", src)
-			src.icon_state = "pdoor0"
+			flick("[dooricon]c0", src)
+			src.icon_state = "[dooricon]0"
 			src.SetOpacity(0)
 			sleep(15)
 			src.density = 0
@@ -53,8 +65,8 @@
 		return 0
 	if(!src.operating) //in case of emag
 		src.operating = 1
-	flick("pdoorc0", src)
-	src.icon_state = "pdoor0"
+	flick("[dooricon]c0", src)
+	src.icon_state = "[dooricon]0"
 	src.SetOpacity(0)
 	sleep(10)
 	layer = initial(layer)
@@ -73,8 +85,8 @@
 		return
 	src.operating = 1
 	layer = 3.3
-	flick("pdoorc1", src)
-	src.icon_state = "pdoor1"
+	flick("[dooricon]c1", src)
+	src.icon_state = "[dooricon]1"
 	src.density = 1
 	src.SetOpacity(initial(opacity))
 	update_nearby_tiles()

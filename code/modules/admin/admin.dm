@@ -40,8 +40,8 @@ var/global/floorIsLava = 0
 	checkSessionKey()
 	// AUTOFIXED BY fix_string_idiocy.py
 	// C:\Users\Rob\Documents\Projects\vgstation13\code\modules\admin\admin.dm:40: var/body = "<html><head><title>Options for [M.key]</title></head>"
-	var/body = {"<html><head><title>Options for [M.key]</title></head>
-<body>Options panel for <b>[M]</b>"}
+	var/body = {"<html><head><title>Options for [M.key] </title></head>
+<body>Options panel for <b>[M]</b> "}
 	// END AUTOFIX
 	if(M.client)
 
@@ -952,7 +952,7 @@ var/global/floorIsLava = 0
 		ticker.delay_end = !ticker.delay_end
 		log_admin("[key_name(usr)] [ticker.delay_end ? "delayed the round end" : "has made the round end normally"].")
 		message_admins("\blue [key_name(usr)] [ticker.delay_end ? "delayed the round end" : "has made the round end normally"].", 1)
-		
+
 		return //alert("Round end delayed", null, null, null, null, null)
 	if (!( going ))
 		going = LOBBY_TICKING_RESTARTED

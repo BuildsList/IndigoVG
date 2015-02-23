@@ -16,6 +16,7 @@
 	icon_state = "frame"
 	name = "status display"
 	anchored = 1
+	layer = 3.3
 	density = 0
 	use_power = 1
 	idle_power_usage = 10

@@ -32,7 +32,7 @@
 	var/endy
 	var/turf/pickedstart
 	var/turf/pickedgoal
-	var/max_i = 5 //Try only five times maximum
+	var/max_i = 30 //Try only five times maximum
 
 	do
 		switch(chosen_dir)
