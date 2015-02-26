@@ -25,7 +25,7 @@
 	icon_state = "bpdoor1"
 	dooricon = "bpdoor"
 
-/obj/machinery/door/poddoor/preopen
+/obj/machinery/door/poddoor/black/preopen
 	icon_state = "bpdoor0"
 
 /obj/machinery/door/poddoor/New()
@@ -94,6 +94,30 @@
 	sleep(10)
 	src.operating = 0
 	return
+
+// MULTITILE PODLOCKS
+
+/obj/machinery/door/poddoor/multi_tile/onextwo_h
+	icon = 'icons/obj/doors/1x2blast_hor.dmi'
+	width = 2
+/obj/machinery/door/poddoor/multi_tile/onextwo_v
+	icon = 'icons/obj/doors/1x2blast_vert.dmi'
+	width = 2
+/obj/machinery/door/poddoor/multi_tile/onexfour_h
+	icon = 'icons/obj/doors/1x4blast_hor.dmi'
+	width = 4
+/obj/machinery/door/poddoor/multi_tile/onexfour_v
+	icon = 'icons/obj/doors/1x4blast_vert.dmi'
+	width = 4
+
+/obj/machinery/door/poddoor/multi_tile/onextwo_h/preopen
+	icon_state = "pdoor0"
+/obj/machinery/door/poddoor/multi_tile/onextwo_v/preopen
+	icon_state = "pdoor0"
+/obj/machinery/door/poddoor/multi_tile/onexfour_h/preopen
+	icon_state = "pdoor0"
+/obj/machinery/door/poddoor/multi_tile/onexfour_v/preopen
+	icon_state = "pdoor0"
 
 /*
 /obj/machinery/door/poddoor/two_tile_hor/open()

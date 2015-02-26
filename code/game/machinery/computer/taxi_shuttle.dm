@@ -19,6 +19,12 @@
 
 	l_color = "#B40000"
 
+/obj/machinery/computer/taxi_shuttle/attackby(I as obj, user as mob)
+	if(istype(I, /obj/item/weapon/wrench) || istype(I, /obj/item/weapon/screwdriver))
+		return
+	else
+		..()
+
 /obj/machinery/computer/taxi_shuttle/update_icon()
 	..()
 	icon_state = "syndishuttle"
@@ -76,7 +82,7 @@
 	if(allowed(user))
 		dat = {"Location: [curr_location]<br>
 		Ready to move[max(lastMove + TAXI_SHUTTLE_COOLDOWN - world.time, 0) ? " in [max(round((lastMove + TAXI_SHUTTLE_COOLDOWN - world.time) * 0.1), 0)] seconds" : ": now"]<br><br>
-		<a href='?src=\ref[src];med_sili=1'>Medical and Silicon Station</a><br>
+		<a href='?src=\ref[src];med_sili=1'>Medical and Silicon Station </a><br>
 		<a href='?src=\ref[src];engi_cargo=1'>Engineering and Cargo Station</a><br>
 		<a href='?src=\ref[src];sec_sci=1'>Security and Science Station</a><br>
 		[emagged ? "<a href='?src=\ref[src];abandoned=1'>Abandoned Station</a><br>" : ""]"}

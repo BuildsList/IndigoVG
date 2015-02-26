@@ -2,7 +2,7 @@
 ckey - diona
 
 # Whitelist one ckey for multiple species ("All" also works)
-pomf123 - unathi, diona
+thesarkazmus - All
 
 # Whitelist one species for everyone:
 * - vox
