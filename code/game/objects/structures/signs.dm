@@ -211,6 +211,11 @@
 	desc = "A direction sign, pointing out which way escape shuttle dock is."
 	icon_state = "direction_evac"
 
+/obj/structure/sign/directions/civ
+	name = "\improper Civilian Arm"
+	desc = "A direction sign, pointing out which way civilian departments are."
+	icon_state = "direction_civ"
+
 /*####################D2 SIGNS####################*/
 /obj/structure/sign/noshitlers
 	name = "No shitlers!"
