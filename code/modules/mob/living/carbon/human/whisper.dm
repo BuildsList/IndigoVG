@@ -6,11 +6,12 @@
 		usr << "<span class='danger'>Speech is currently admin-disabled.</span>"
 		return
 
+
 	if(stat == DEAD)
 		return
 
+	message = trim(copytext(sanitize(message), 1, MAX_MESSAGE_LEN))
 
-	message = trim(strip_html_properly(message))
 	if(!can_speak(message))
 		return
 
@@ -72,6 +73,7 @@
 	rendered = "<span class='game say'><span class='name'>[GetVoice()]</span>[alt_name] [whispers], <span class='message'>\"<i>[message]</i>\"</span></span>"
 	for(var/mob/M in eavesdropping)
 		M.Hear(rendered, src, languages, message)
+
 
 	if(said_last_words) //Dying words.
 		succumb(1)

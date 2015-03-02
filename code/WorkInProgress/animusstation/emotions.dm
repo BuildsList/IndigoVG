@@ -148,6 +148,12 @@
 
 	emote("cry",1)
 
+/mob/living/carbon/human/verb/tip()
+	set name = "Поправить чёлку"
+	set category = "Emotions"
+
+	emote("tip",1)
+
 /mob/living/carbon/human/verb/sigh()
 	set name = "Ох"
 	set category = "Emotions"

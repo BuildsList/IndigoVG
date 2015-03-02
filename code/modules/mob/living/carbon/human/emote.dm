@@ -563,6 +563,12 @@
 				else
 					message = "<B>[src]</B> разочаровавшись что не может найти кому дать пощёчину даёт пощёчину себе. Позорище." // Translate it 3010
 
+		if ("tip")
+			message = "<B>[src]</B> поправл&#255;ет чёлку." // Translate it 3011
+			m_type = HEARABLE
+			if(miming)
+				m_type = VISIBLE
+
 		if ("scream")
 			if (miming)
 				message = "<B>[src]</B> acts out a scream!"

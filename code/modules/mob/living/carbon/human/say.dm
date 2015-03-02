@@ -32,6 +32,7 @@
 		message = slur(message)
 
 	if(viruses)
+
 		for(var/datum/disease/pierrot_throat/D in viruses)
 			var/list/temp_message = text2list(message, " ") //List each word in the message
 			var/list/pick_list = list()
@@ -54,7 +55,7 @@
 /mob/living/carbon/human/GetVoice()
 	if(istype(wear_mask, /obj/item/clothing/mask/gas/voice))
 		var/obj/item/clothing/mask/gas/voice/V = wear_mask
-		if(V.vchange && wear_id)
+		if(V.vchange && wear_id && V.is_flipped == 1) //the mask works, we have an id, and we are wearing it on the face instead of on the head
 			var/obj/item/weapon/card/id/idcard = wear_id.GetID()
 			if(istype(idcard))
 				return idcard.registered_name
@@ -128,7 +129,7 @@
 		if(client)
 			var/virgin = 1	//has the text been modified yet?
 			var/temp = winget(client, "input", "text")
-			if(findtextEx(temp, "Say \"", 1, 7) && length(temp) > 5)	//case sensitive means
+			if(findtext(temp, "Say \"", 1, 7) && length(temp) > 5)	//case sensitive means
 
 				temp = replacetext(temp, ";", "")	//general radio
 
