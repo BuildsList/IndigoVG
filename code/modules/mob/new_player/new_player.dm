@@ -93,7 +93,7 @@
 			totalPlayers = 0
 			totalPlayersReady = 0
 			for(var/mob/new_player/player in player_list)
-				stat("[player.key]", (player.ready)?("(Playing as [player.client.work_chosen])"):(null))
+				stat("Plin", (player.ready)?("(Playing as [player.client.work_chosen])"):(null))
 				totalPlayers++
 				if(player.ready)totalPlayersReady++
 
