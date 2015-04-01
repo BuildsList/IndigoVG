@@ -3,7 +3,6 @@
 	set category = "OOC"
 
 	var/msg = "\n<b>Current Players:</b>\n"
-	var/funny_name = "Plin"
 
 	var/list/Lines = list()
 
@@ -39,14 +38,14 @@
 	else
 		for (var/client/C in clients)
 			if (C.holder && C.holder.fakekey)
-				Lines += funny_name
+				Lines += C.holder.fakekey
 			else
-				Lines += funny_name
+				Lines += C.key
 
 	for (var/line in sortList(Lines))
 		msg += "[line]\n"
 
-	msg += "<b>Total Plin's: [length(Lines)]</b>\n"
+	msg += "<b>Total Players: [length(Lines)]</b>\n"
 	src << msg
 
 /client/verb/adminwho()
@@ -54,8 +53,6 @@
 	set name = "Adminwho"
 
 	var/aNames = ""
-	var/funny_name = "Plin"
-	var/funny_rank = pick("Hui", "Dick", "Cock", "Khooy", "Xyu")
 //	var/mNames = ""
 //	var/numAdminsOnline = 0
 //	var/numModsOnline = 0
@@ -102,7 +99,7 @@
 		for (var/client/C in admins)
 			if (R_ADMIN & C.holder.rights || (R_MOD & C.holder.rights))
 				if (!C.holder.fakekey)
-					aNames += "\t[funny_name] is a [funny_rank]\n"
+					aNames += "\t[C] is a [C.holder.rank]\n"
 /*					numAdminsOnline++
 			else
 				if (!C.holder.fakekey)

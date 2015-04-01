@@ -57,9 +57,14 @@ var/global/normal_ooc_colour = "#002eb8"
 
 	for(var/client/C in clients)
 		if(C.prefs.toggles & CHAT_OOC)
-			var/display_name = "Plin"
+			var/display_name = src.key
+			if(holder)
+				if(holder.fakekey)
+					if(C.holder)
+						display_name = "[holder.fakekey]/([src.key])"
+					else
+						display_name = holder.fakekey
 			C << "<font color='[display_colour]'><span class='ooc'><span class='prefix'>OOC:</span> <EM>[display_name]:</EM> <span class='message'>[msg]</span></span></font>"
-
 			/*
 			if(holder)
 				if(!holder.fakekey || C.holder)
