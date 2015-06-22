@@ -1,36 +1,14 @@
 /turf/simulated/var/zone/zone
 /turf/simulated/var/open_directions
-/turf/simulated/var/list/gasGraphics
 
 /turf/var/needs_air_update = 0
 /turf/var/datum/gas_mixture/air
 
-/turf/simulated/proc/set_graphic(const/newGraphics)
-	if (!isnum(newGraphics))
-		return
-
-	if (!newGraphics) // Clear overlay, or simply 0.
-		if (gasGraphics)
-			overlays -= gasGraphics
-			gasGraphics = null
-
-		return
-
-	var/list/overlayGraphics = list()
-
-	if (GRAPHICS_PLASMA & newGraphics)
-		overlayGraphics += plmaster
-
-	if (GRAPHICS_N2O & newGraphics)
-		overlayGraphics += slmaster
-
-	if (overlayGraphics.len)
-		if (gasGraphics)
-			overlays -= gasGraphics
-			gasGraphics = null
-
-		overlays += overlayGraphics
-		gasGraphics = overlayGraphics.Copy()
+/turf/simulated/proc/update_graphic(list/graphic_add = null, list/graphic_remove = null)
+	if(graphic_add && graphic_add.len)
+		overlays += graphic_add
+	if(graphic_remove && graphic_remove.len)
+		overlays -= graphic_remove
 
 /turf/proc/update_air_properties()
 	var/block = c_airblock(src)
@@ -46,7 +24,7 @@
 
 		var/turf/unsim = get_step(src, d)
 
-		if(!unsim) // Edge of map.
+		if(!unsim)
 			continue
 
 		block = unsim.c_airblock(src)
@@ -67,7 +45,47 @@
 
 				air_master.connect(sim, src)
 
+/*
+	Simple heuristic for determining if removing the turf from it's zone will not partition the zone (A very bad thing).
+	Instead of analyzing the entire zone, we only check the nearest 3x3 turfs surrounding the src turf.
+	This implementation may produce false negatives but it (hopefully) will not produce any false postiives.
+*/
+
+/turf/simulated/proc/can_safely_remove_from_zone()
+	#ifdef ZLEVELS
+	return 0 //TODO generalize this to multiz.
+	#else
+	
+	if(!zone) return 1
+	
+	var/check_dirs = get_zone_neighbours(src)
+	var/unconnected_dirs = check_dirs
+	
+	for(var/dir in list(NORTHWEST, NORTHEAST, SOUTHEAST, SOUTHWEST))
+		
+		//for each pair of "adjacent" cardinals (e.g. NORTH and WEST, but not NORTH and SOUTH)
+		if((dir & check_dirs) == dir)
+			//check that they are connected by the corner turf
+			var/connected_dirs = get_zone_neighbours(get_step(src, dir))
+			if(connected_dirs && (dir & turn(connected_dirs, 180)) == dir)
+				unconnected_dirs &= ~dir //they are, so unflag the cardinals in question
+	
+	//it is safe to remove src from the zone if all cardinals are connected by corner turfs
+	return !unconnected_dirs
+	
+	#endif
+
+//helper for can_safely_remove_from_zone()
+/turf/simulated/proc/get_zone_neighbours(turf/simulated/T)
+	. = 0
+	if(istype(T) && T.zone)
+		for(var/dir in cardinal)
+			var/turf/simulated/other = get_step(T, dir)
+			if(istype(other) && other.zone == T.zone && !(other.c_airblock(T) & AIR_BLOCKED) && get_dist(src, other) <= 1)
+				. |= dir
+
 /turf/simulated/update_air_properties()
+
 	if(zone && zone.invalid)
 		c_copy_air()
 		zone = null //Easier than iterating through the list at the zone.
@@ -80,7 +98,8 @@
 		#endif
 		if(zone)
 			var/zone/z = zone
-			if(locate(/obj/machinery/door/airlock) in src) //Hacky, but prevents normal airlocks from rebuilding zones all the time
+			
+			if(can_safely_remove_from_zone()) //Helps normal airlocks avoid rebuilding zones all the time
 				z.remove(src)
 			else
 				z.rebuild()
@@ -99,7 +118,7 @@
 
 		var/turf/unsim = get_step(src, d)
 
-		if(!unsim) // Edge of map.
+		if(!unsim) //edge of map
 			continue
 
 		var/block = unsim.c_airblock(src)
@@ -135,13 +154,17 @@
 		if(istype(unsim, /turf/simulated))
 
 			var/turf/simulated/sim = unsim
+			sim.open_directions |= reverse_dir[d]
+
 			if(air_master.has_valid_zone(sim))
 
 				//Might have assigned a zone, since this happens for each direction.
 				if(!zone)
 
-					//if((block & ZONE_BLOCKED) || (r_block & ZONE_BLOCKED && !(s_block & ZONE_BLOCKED)))
-					if(((block & ZONE_BLOCKED) && !(r_block & ZONE_BLOCKED)) || (r_block & ZONE_BLOCKED && !(s_block & ZONE_BLOCKED)))
+					//We do not merge if 
+					//    they are blocking us and we are not blocking them, or if
+					//    we are blocking them and not blocking ourselves - this prevents tiny zones from forming on doorways.
+					if(((block & ZONE_BLOCKED) && !(r_block & ZONE_BLOCKED)) || ((r_block & ZONE_BLOCKED) && !(s_block & ZONE_BLOCKED)))
 						#ifdef ZASDBG
 						if(verbose) world << "[d] is zone blocked."
 						//dbg(zone_blocked, d)
@@ -202,29 +225,27 @@
 /turf/assume_air(datum/gas_mixture/giver) //use this for machines to adjust air
 	return 0
 
+/turf/proc/assume_gas(gasid, moles, temp = 0)
+	return 0
+
 /turf/return_air()
 	//Create gas mixture to hold data for passing
 	var/datum/gas_mixture/GM = new
 
-	GM.oxygen = oxygen
-	GM.carbon_dioxide = carbon_dioxide
-	GM.nitrogen = nitrogen
-	GM.toxins = toxins
-
+	GM.adjust_multi("oxygen", oxygen, "carbon_dioxide", carbon_dioxide, "nitrogen", nitrogen, "phoron", phoron)
 	GM.temperature = temperature
-	GM.update_values()
 
 	return GM
 
 /turf/remove_air(amount as num)
 	var/datum/gas_mixture/GM = new
 
-	var/sum = oxygen + carbon_dioxide + nitrogen + toxins
+	var/sum = oxygen + carbon_dioxide + nitrogen + phoron
 	if(sum>0)
-		GM.oxygen = (oxygen/sum)*amount
-		GM.carbon_dioxide = (carbon_dioxide/sum)*amount
-		GM.nitrogen = (nitrogen/sum)*amount
-		GM.toxins = (toxins/sum)*amount
+		GM.gas["oxygen"] = (oxygen/sum)*amount
+		GM.gas["carbon_dioxide"] = (carbon_dioxide/sum)*amount
+		GM.gas["nitrogen"] = (nitrogen/sum)*amount
+		GM.gas["phoron"] = (phoron/sum)*amount
 
 	GM.temperature = temperature
 	GM.update_values()
@@ -234,6 +255,16 @@
 /turf/simulated/assume_air(datum/gas_mixture/giver)
 	var/datum/gas_mixture/my_air = return_air()
 	my_air.merge(giver)
+
+/turf/simulated/assume_gas(gasid, moles, temp = null)
+	var/datum/gas_mixture/my_air = return_air()
+
+	if(isnull(temp))
+		my_air.adjust_gas(gasid, moles)
+	else
+		my_air.adjust_gas_temp(gasid, moles, temp)
+
+	return 1
 
 /turf/simulated/remove_air(amount as num)
 	var/datum/gas_mixture/my_air = return_air()
@@ -257,7 +288,7 @@
 /turf/proc/make_air()
 	air = new/datum/gas_mixture
 	air.temperature = temperature
-	air.adjust(oxygen, carbon_dioxide, nitrogen, toxins)
+	air.adjust_multi("oxygen", oxygen, "carbon_dioxide", carbon_dioxide, "nitrogen", nitrogen, "phoron", phoron)
 	air.group_multiplier = 1
 	air.volume = CELL_VOLUME
 
@@ -265,7 +296,3 @@
 	if(!air) air = new/datum/gas_mixture
 	air.copy_from(zone.air)
 	air.group_multiplier = 1
-
-
-/turf/attack_hand(mob/user as mob)
-	user.Move_Pulled(src)

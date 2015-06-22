@@ -17,20 +17,20 @@
 	"Something twinkles faintly as you look at it.",\
 	"It's mesmerizing to behold.")
 
-/obj/structure/crystal/Destroy()
+/obj/structure/crystal/Del()
 	src.visible_message("\red<b>[src] shatters!</b>")
 	if(prob(75))
-		getFromPool(/obj/item/weapon/shard/plasma, loc)
+		new /obj/item/weapon/shard/phoron(src.loc)
 	if(prob(50))
-		getFromPool(/obj/item/weapon/shard/plasma, loc)
+		new /obj/item/weapon/shard/phoron(src.loc)
 	if(prob(25))
-		getFromPool(/obj/item/weapon/shard/plasma, loc)
+		new /obj/item/weapon/shard/phoron(src.loc)
 	if(prob(75))
-		getFromPool(/obj/item/weapon/shard, loc)
+		new /obj/item/weapon/shard(src.loc)
 	if(prob(50))
-		getFromPool(/obj/item/weapon/shard, loc)
+		new /obj/item/weapon/shard(src.loc)
 	if(prob(25))
-		getFromPool(/obj/item/weapon/shard, loc)
+		new /obj/item/weapon/shard(src.loc)
 	..()
 
 //todo: laser_act

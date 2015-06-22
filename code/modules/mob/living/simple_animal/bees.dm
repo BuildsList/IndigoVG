@@ -4,38 +4,23 @@
 	icon = 'icons/obj/apiary_bees_etc.dmi'
 	icon_state = "bees1"
 	icon_dead = "bees1"
+	mob_size = 1
 	var/strength = 1
 	var/feral = 0
 	var/mut = 0
 	var/toxic = 0
 	var/turf/target_turf
-	var/mob/target
+	var/mob/target_mob
 	var/obj/machinery/apiary/parent
 	pass_flags = PASSTABLE
 	turns_per_move = 6
-	density = 0
 	var/obj/machinery/portable_atmospherics/hydroponics/my_hydrotray
-
-	// Allow final solutions.
-	min_oxy = 5
-	max_oxy = 0
-	min_tox = 0
-	max_tox = 1
-	min_co2 = 0
-	max_co2 = 5
-	min_n2 = 0
-	max_n2 = 0
-	minbodytemp = 0
-	maxbodytemp = 360
 
 /mob/living/simple_animal/bee/New(loc, var/obj/machinery/apiary/new_parent)
 	..()
 	parent = new_parent
 
-/mob/living/simple_animal/bee/CanPass(atom/movable/mover, turf/target, height=1.5, air_group = 0)
-	return 1
-
-/mob/living/simple_animal/bee/Destroy()
+/mob/living/simple_animal/bee/Del()
 	if(parent)
 		parent.owned_bee_swarms.Remove(src)
 	..()
@@ -45,38 +30,37 @@
 
 	if(stat == CONSCIOUS)
 		//if we're strong enough, sting some people
-		var/mob/living/carbon/human/M = target
-		var/sting_prob = 100 // Bees will always try to sting.
+		var/mob/living/carbon/human/M = target_mob
+		var/sting_prob = 40 // Bees will always try to sting.
 		if(M in view(src,1)) // Can I see my target?
 			if(prob(max(feral * 10, 0)))	// Am I mad enough to want to sting? And yes, when I initially appear, I AM mad enough
-				if(istype(M))
-					var/obj/item/clothing/worn_suit = M.wear_suit
-					var/obj/item/clothing/worn_helmet = M.head
-					if(worn_suit) // Are you wearing clothes?
-						sting_prob -= min(worn_suit.armor["bio"],70) // Is it sealed? I can't get to 70% of your body.
-					if(worn_helmet)
-						sting_prob -= min(worn_helmet.armor["bio"],30) // Is your helmet sealed? I can't get to 30% of your body.
+				var/obj/item/clothing/worn_suit = M.wear_suit
+				var/obj/item/clothing/worn_helmet = M.head
+				if(worn_suit) // Are you wearing clothes?
+					sting_prob -= min(worn_suit.armor["bio"],70) // Is it sealed? I can't get to 70% of your body.
+				if(worn_helmet)
+					sting_prob -= min(worn_helmet.armor["bio"],30) // Is your helmet sealed? I can't get to 30% of your body.
 				if( prob(sting_prob) && (M.stat == CONSCIOUS || (M.stat == UNCONSCIOUS && prob(25))) ) // Try to sting! If you're not moving, think about stinging.
-					M.apply_damage(min(strength,2)+mut, BRUTE) // Stinging. The more mutated I am, the harder I sting.
-					M.apply_damage((round(feral/5,1)*(max((round(strength/10,1)),1)))+toxic, TOX) // Bee venom based on how angry I am and how many there are of me!
+					M.apply_damage(min(strength,2)+mut, BRUTE, sharp=1) // Stinging. The more mutated I am, the harder I sting.
+					M.apply_damage((round(feral/10,1)*(max((round(strength/20,1)),1)))+toxic, TOX) // Bee venom based on how angry I am and how many there are of me!
 					M << "\red You have been stung!"
 					M.flash_pain()
 
 		//if we're chasing someone, get a little bit angry
-		if(target && prob(10))
+		if(target_mob && prob(5))
 			feral++
 
 		//calm down a little bit
 		if(feral > 0)
-			if(prob(feral * 10))
+			if(prob(feral * 20))
 				feral -= 1
 		else
 			//if feral is less than 0, we're becalmed by smoke or steam
 			if(feral < 0)
 				feral += 1
 
-			if(target)
-				target = null
+			if(target_mob)
+				target_mob = null
 				target_turf = null
 			if(strength > 5)
 				//calm down and spread out a little
@@ -103,16 +87,17 @@
 		/obj/effect/mist)
 
 		for(var/this_type in calmers)
-			var/check_effect = locate(this_type) in src.loc
-			if(check_effect && check_effect == this_type)
-				calming = 1
-				break
+			var/mob/living/simple_animal/check_effect = locate() in src.loc
+			if(istype(check_effect))
+				if(check_effect.type == this_type)
+					calming = 1
+					break
 
 		if(calming)
 			if(feral > 0)
 				src.visible_message("\blue The bees calm down!")
 			feral = -10
-			target = null
+			target_mob = null
 			target_turf = null
 			wander = 1
 
@@ -139,25 +124,27 @@
 						return
 					src.icon_state = "bees[B.strength]"
 					var/turf/simulated/floor/T = get_turf(get_step(src, pick(1,2,4,8)))
+					density = 1
 					if(T.Enter(src, get_turf(src)))
 						src.loc = T
+					density = 0
 				break
 
-		if(target)
-			if(target in view(src,7))
-				target_turf = get_turf(target)
+		if(target_mob)
+			if(target_mob in view(src,7))
+				target_turf = get_turf(target_mob)
 				wander = 0
 
 			else // My target's gone! But I might still be pissed! You there. You look like a good stinging target!
 				for(var/mob/living/carbon/G in view(src,7))
-					target = G
+					target_mob = G
 					break
 
 		if(target_turf)
 			if (!(DirBlocked(get_step(src, get_dir(src,target_turf)),get_dir(src,target_turf)))) // Check for windows and doors!
 				Move(get_step(src, get_dir(src,target_turf)))
 				if (prob(0.1))
-					src.visible_message("\blue The bees swarm after [target]!")
+					src.visible_message("\blue The bees swarm after [target_mob]!")
 			if(src.loc == target_turf)
 				target_turf = null
 				wander = 1

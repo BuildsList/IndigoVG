@@ -1,3 +1,4 @@
+
 var/const/ENGSEC			=(1<<0)
 
 var/const/CAPTAIN			=(1<<0)
@@ -8,11 +9,8 @@ var/const/OFFICER			=(1<<4)
 var/const/CHIEF				=(1<<5)
 var/const/ENGINEER			=(1<<6)
 var/const/ATMOSTECH			=(1<<7)
-var/const/ROBOTICIST		=(1<<8)
-var/const/AI				=(1<<9)
-var/const/CYBORG			=(1<<10)
-var/const/MOMMI				=(1<<11)
-var/const/MECHANIC			=(1<<12)
+var/const/AI				=(1<<8)
+var/const/CYBORG			=(1<<9)
 
 
 var/const/MEDSCI			=(1<<1)
@@ -24,8 +22,10 @@ var/const/CMO				=(1<<3)
 var/const/DOCTOR			=(1<<4)
 var/const/GENETICIST		=(1<<5)
 var/const/VIROLOGIST		=(1<<6)
-//var/const/PSYCHIATRIST		=(1<<7)
-var/const/PARAMEDIC			=(1<<7)
+var/const/PSYCHIATRIST		=(1<<7)
+var/const/ROBOTICIST		=(1<<8)
+var/const/XENOBIOLOGIST		=(1<<9)
+var/const/PARAMEDIC			=(1<<10)
 
 
 var/const/CIVILIAN			=(1<<2)
@@ -64,7 +64,6 @@ var/list/engineering_positions = list(
 	"Chief Engineer",
 	"Station Engineer",
 	"Atmospheric Technician",
-	"Mechanic"
 )
 
 
@@ -72,9 +71,9 @@ var/list/medical_positions = list(
 	"Chief Medical Officer",
 	"Medical Doctor",
 	"Geneticist",
-//	"Psychiatrist",
-	"Paramedic",
-	"Chemist"
+	"Psychiatrist",
+	"Chemist",
+	"Paramedic"
 )
 
 
@@ -83,14 +82,14 @@ var/list/science_positions = list(
 	"Scientist",
 	"Geneticist",	//Part of both medical and science
 	"Roboticist",
-	"Mechanic"
+	"Xenobiologist"
 )
 
 //BS12 EDIT
 var/list/civilian_positions = list(
 	"Head of Personnel",
 	"Bartender",
-	"Botanist",
+	"Gardener",
 	"Chef",
 	"Janitor",
 	"Librarian",
@@ -114,8 +113,7 @@ var/list/security_positions = list(
 var/list/nonhuman_positions = list(
 	"AI",
 	"Cyborg",
-	"pAI",
-	"Mobile MMI"
+	"pAI"
 )
 
 
@@ -138,9 +136,7 @@ var/list/nonhuman_positions = list(
 	var/list/titles = list()
 
 	for(var/datum/job/J in jobs)
-		if(!J)	continue
 		if(J.title == job)
 			titles = J.alt_titles
 
 	return titles
-

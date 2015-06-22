@@ -1,25 +1,42 @@
 /obj/machinery/computer/teleporter
-	name = "Teleporter"
+	name = "Teleporter Control Console"
 	desc = "Used to control a linked teleportation Hub and Station."
 	icon_state = "teleport"
 	circuit = "/obj/item/weapon/circuitboard/teleporter"
+	dir = 4
 	var/obj/item/locked = null
 	var/id = null
 	var/one_time_use = 0 //Used for one-time-use teleport cards (such as clown planet coordinates.)
 						 //Setting this to 1 will set src.locked to null after a player enters the portal and will not allow hand-teles to open portals to that location.
-	ghost_read=0 // #430
-	ghost_write=0
 
-	l_color = "#0000FF"
+/* Ghosts can't use this */
+/obj/machinery/computer/teleporter/attack_ghost(user as mob)
+	return 1
 
 /obj/machinery/computer/teleporter/New()
-	. = ..()
-	id = "[rand(1000, 9999)]"
+	src.id = "[rand(1000, 9999)]"
+	..()
+	underlays.Cut()
+	underlays += image('icons/obj/stationobjs.dmi', icon_state = "telecomp-wires")
+	return
+
+/obj/machinery/computer/teleporter/initialize()
+	..()
+	var/obj/machinery/teleport/station/station = locate(/obj/machinery/teleport/station, get_step(src, dir))
+	var/obj/machinery/teleport/hub/hub
+	if(station)
+		hub = locate(/obj/machinery/teleport/hub, get_step(station, dir))
+
+	if(istype(station))
+		station.com = hub
+		station.set_dir(dir)
+
+	if(istype(hub))
+		hub.com = src
+		hub.set_dir(dir)
 
 /obj/machinery/computer/teleporter/attackby(I as obj, mob/living/user as mob)
-	if(..())
-		return 1
-	else if(istype(I, /obj/item/weapon/card/data/))
+	if(istype(I, /obj/item/weapon/card/data/))
 		var/obj/item/weapon/card/data/C = I
 		if(stat & (NOPOWER|BROKEN) & (C.function != "teleporter"))
 			src.attack_hand()
@@ -42,7 +59,6 @@
 			user.drop_item()
 			del(I)
 
-			/* FUCK YOU
 			if(C.data == "Clown Land")
 				//whoops
 				for(var/mob/O in hearers(src, null))
@@ -54,24 +70,25 @@
 						new /mob/living/simple_animal/hostile/carp(get_turf(H))
 				//
 			else
-			*/
-			for(var/mob/O in hearers(src, null))
-				O.show_message("\blue Locked In", 2)
-			src.locked = L
-			one_time_use = 1
+				for(var/mob/O in hearers(src, null))
+					O.show_message("\blue Locked In", 2)
+				src.locked = L
+				one_time_use = 1
 
 			src.add_fingerprint(usr)
+	else
+		..()
+
 	return
 
-/obj/machinery/computer/teleporter/attack_paw(var/mob/user)
-	src.attack_hand(user)
+/obj/machinery/teleport/station/attack_ai()
+	src.attack_hand()
 
-/obj/machinery/teleport/station/attack_ai(var/mob/user)
-	src.attack_hand(user)
+/obj/machinery/computer/teleporter/attack_hand(user as mob)
+	if(..()) return
 
-/obj/machinery/computer/teleporter/attack_hand(var/mob/user)
-	if(stat & (NOPOWER|BROKEN))
-		return
+	/* Ghosts can't use this one because it's a direct selection */
+	if(istype(user, /mob/dead/observer)) return
 
 	var/list/L = list()
 	var/list/areaindex = list()
@@ -80,7 +97,7 @@
 		var/turf/T = get_turf(R)
 		if (!T)
 			continue
-		if(T.z == 2 || T.z > 7)
+		if(!(T.z in config.player_levels))
 			continue
 		var/tmpname = T.loc.name
 		if(areaindex[tmpname])
@@ -107,7 +124,12 @@
 				areaindex[tmpname] = 1
 			L[tmpname] = I
 
-	var/desc = input("Please select a location to lock in.", "Locking Computer") in L
+	var/desc = input("Please select a location to lock in.", "Locking Computer") in L|null
+	if(!desc)
+		return
+	if(get_dist(src, usr) > 1 && !issilicon(usr))
+		return
+
 	src.locked = L[desc]
 	for(var/mob/O in hearers(src, null))
 		O.show_message("\blue Locked In", 2)
@@ -140,64 +162,33 @@
 	density = 1
 	anchored = 1.0
 	var/lockeddown = 0
-	ghost_read=0 // #519
-	ghost_write=0
 
 
 /obj/machinery/teleport/hub
 	name = "teleporter hub"
 	desc = "It's the hub of a teleporting machine."
 	icon_state = "tele0"
+	dir = 4
 	var/accurate = 0
-	var/opened = 0.0
 	use_power = 1
 	idle_power_usage = 10
 	active_power_usage = 2000
-	var/engaged = 0
+	var/obj/machinery/computer/teleporter/com
 
-	machine_flags = SCREWTOGGLE | CROWDESTROY
 
-/obj/machinery/teleport/hub/attackby(obj/item/weapon/O as obj, mob/user as mob)
-	return(..())
-
-/********************************************************************
-**   Adding Stock Parts to VV so preconstructed shit has its candy **
-********************************************************************/
 /obj/machinery/teleport/hub/New()
-	. = ..()
-
-	component_parts = newlist(
-		/obj/item/weapon/circuitboard/telehub,
-		/obj/item/weapon/stock_parts/scanning_module/phasic,
-		/obj/item/weapon/stock_parts/scanning_module/phasic,
-		/obj/item/weapon/stock_parts/capacitor/super,
-		/obj/item/weapon/stock_parts/capacitor/super,
-		/obj/item/weapon/stock_parts/capacitor/super,
-		/obj/item/weapon/stock_parts/subspace/ansible,
-		/obj/item/weapon/stock_parts/subspace/ansible,
-		/obj/item/weapon/stock_parts/subspace/filter,
-		/obj/item/weapon/stock_parts/subspace/filter,
-		/obj/item/weapon/stock_parts/subspace/treatment,
-		/obj/item/weapon/stock_parts/subspace/crystal,
-		/obj/item/weapon/stock_parts/subspace/crystal,
-		/obj/item/weapon/stock_parts/subspace/transmitter,
-		/obj/item/weapon/stock_parts/subspace/transmitter,
-		/obj/item/weapon/stock_parts/subspace/transmitter,
-		/obj/item/weapon/stock_parts/subspace/transmitter
-	)
-
-	RefreshParts()
+	..()
+	underlays.Cut()
+	underlays += image('icons/obj/stationobjs.dmi', icon_state = "tele-wires")
 
 /obj/machinery/teleport/hub/Bumped(M as mob|obj)
 	spawn()
-		if (src.engaged)
+		if (src.icon_state == "tele1")
 			teleport(M)
 			use_power(5000)
 	return
 
 /obj/machinery/teleport/hub/proc/teleport(atom/movable/M as mob|obj)
-	var/atom/l = src.loc
-	var/obj/machinery/computer/teleporter/com = locate(/obj/machinery/computer/teleporter, locate(l.x - 2, l.y, l.z))
 	if (!com)
 		return
 	if (!com.locked)
@@ -217,6 +208,8 @@
 		var/datum/effect/effect/system/spark_spread/s = new /datum/effect/effect/system/spark_spread
 		s.set_up(5, 1, src)
 		s.start()
+		accurate = 1
+		spawn(3000)	accurate = 0 //Accurate teleporting for 5 minutes
 		for(var/mob/B in hearers(src, null))
 			B.show_message("\blue Test fire completed.")
 	return
@@ -311,51 +304,26 @@
 	name = "station"
 	desc = "It's the station thingy of a teleport thingy." //seriously, wtf.
 	icon_state = "controller"
+	dir = 4
 	var/active = 0
 	var/engaged = 0
-	var/opened = 0.0
 	use_power = 1
 	idle_power_usage = 10
 	active_power_usage = 2000
+	var/obj/machinery/teleport/hub/com
 
-	machine_flags = SCREWTOGGLE | CROWDESTROY
+/obj/machinery/teleport/station/New()
+	..()
+	overlays.Cut()
+	overlays += image('icons/obj/stationobjs.dmi', icon_state = "controller-wires")
 
+/obj/machinery/teleport/station/attackby(var/obj/item/weapon/W)
+	src.attack_hand()
 
-/********************************************************************
-**   Adding Stock Parts to VV so preconstructed shit has its candy **
-********************************************************************/
-obj/machinery/teleport/station/New()
-	. = ..()
+/obj/machinery/teleport/station/attack_ai()
+	src.attack_hand()
 
-	component_parts = newlist(
-		/obj/item/weapon/circuitboard/telestation,
-		/obj/item/weapon/stock_parts/scanning_module/phasic,
-		/obj/item/weapon/stock_parts/scanning_module/phasic,
-		/obj/item/weapon/stock_parts/capacitor/super,
-		/obj/item/weapon/stock_parts/capacitor/super,
-		/obj/item/weapon/stock_parts/subspace/ansible,
-		/obj/item/weapon/stock_parts/subspace/ansible,
-		/obj/item/weapon/stock_parts/subspace/analyzer,
-		/obj/item/weapon/stock_parts/subspace/analyzer,
-		/obj/item/weapon/stock_parts/subspace/analyzer,
-		/obj/item/weapon/stock_parts/subspace/analyzer
-	)
-
-	RefreshParts()
-
-/obj/machinery/teleport/station/attackby(var/obj/item/weapon/W, var/mob/user as mob)
-	if (..())
-		return 1
-	else
-		src.attack_hand()
-
-/obj/machinery/teleport/station/attack_paw(var/mob/user)
-	src.attack_hand(user)
-
-/obj/machinery/teleport/station/attack_ai(var/mob/user)
-	src.attack_hand(user)
-
-/obj/machinery/teleport/station/attack_hand(var/mob/user)
+/obj/machinery/teleport/station/attack_hand()
 	if(engaged)
 		src.disengage()
 	else
@@ -365,13 +333,11 @@ obj/machinery/teleport/station/New()
 	if(stat & (BROKEN|NOPOWER))
 		return
 
-	var/atom/l = src.loc
-	var/atom/com = locate(/obj/machinery/teleport/hub, locate(l.x + 1, l.y, l.z))
 	if (com)
-		var/obj/machinery/teleport/hub/H = com
-		H.engaged = 1
-		H.icon_state = "tele1"
+		com.icon_state = "tele1"
 		use_power(5000)
+		update_use_power(2)
+		com.update_use_power(2)
 		for(var/mob/O in hearers(src, null))
 			O.show_message("\blue Teleporter engaged!", 2)
 	src.add_fingerprint(usr)
@@ -382,12 +348,11 @@ obj/machinery/teleport/station/New()
 	if(stat & (BROKEN|NOPOWER))
 		return
 
-	var/atom/l = src.loc
-	var/atom/com = locate(/obj/machinery/teleport/hub, locate(l.x + 1, l.y, l.z))
 	if (com)
-		var/obj/machinery/teleport/hub/H = com
-		H.engaged = 0
-		H.icon_state = "tele0"
+		com.icon_state = "tele0"
+		com.accurate = 0
+		com.update_use_power(1)
+		update_use_power(1)
 		for(var/mob/O in hearers(src, null))
 			O.show_message("\blue Teleporter disengaged!", 2)
 	src.add_fingerprint(usr)
@@ -402,8 +367,6 @@ obj/machinery/teleport/station/New()
 	if(stat & (BROKEN|NOPOWER) || !istype(usr,/mob/living))
 		return
 
-	var/atom/l = src.loc
-	var/obj/machinery/teleport/hub/com = locate(/obj/machinery/teleport/hub, locate(l.x + 1, l.y, l.z))
 	if (com && !active)
 		active = 1
 		for(var/mob/O in hearers(src, null))
@@ -421,7 +384,7 @@ obj/machinery/teleport/station/New()
 	..()
 	if(stat & NOPOWER)
 		icon_state = "controller-p"
-		var/obj/machinery/teleport/hub/com = locate(/obj/machinery/teleport/hub, locate(x + 1, y, z))
+
 		if(com)
 			com.icon_state = "tele0"
 	else

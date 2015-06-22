@@ -18,7 +18,7 @@
 	update_icon()
 
 /obj/structure/closet/secure_closet/guncabinet/update_icon()
-	overlays.len = 0
+	overlays.Cut()
 	if(opened)
 		overlays += icon(icon,"door_open")
 	else

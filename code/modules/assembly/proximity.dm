@@ -2,9 +2,7 @@
 	name = "proximity sensor"
 	desc = "Used for scanning and alerting when someone enters a certain proximity."
 	icon_state = "prox"
-	m_amt = 800
-	g_amt = 200
-	w_type = RECYK_ELECTRONIC
+	matter = list("metal" = 800, "glass" = 200, "waste" = 50)
 	origin_tech = "magnets=1"
 
 	wires = WIRE_PULSE
@@ -92,7 +90,7 @@
 
 
 	update_icon()
-		overlays.len = 0
+		overlays.Cut()
 		attached_overlays = list()
 		if(timing)
 			overlays += "prox_timing"
@@ -122,20 +120,16 @@
 		var/minute = (time - second) / 60
 		var/dat = text("<TT><B>Proximity Sensor</B>\n[] []:[]\n<A href='?src=\ref[];tp=-30'>-</A> <A href='?src=\ref[];tp=-1'>-</A> <A href='?src=\ref[];tp=1'>+</A> <A href='?src=\ref[];tp=30'>+</A>\n</TT>", (timing ? text("<A href='?src=\ref[];time=0'>Arming</A>", src) : text("<A href='?src=\ref[];time=1'>Not Arming</A>", src)), minute, second, src, src, src, src)
 		dat += text("<BR>Range: <A href='?src=\ref[];range=-1'>-</A> [] <A href='?src=\ref[];range=1'>+</A>", src, range, src)
-
-		// AUTOFIXED BY fix_string_idiocy.py
-		// C:\Users\Rob\Documents\Projects\vgstation13\code\modules\assembly\proximity.dm:125: dat += "<BR><A href='?src=\ref[src];scanning=1'>[scanning?"Armed":"Unarmed"]</A> (Movement sensor active when armed!)"
-		dat += {"<BR><A href='?src=\ref[src];scanning=1'>[scanning?"Armed":"Unarmed"]</A> (Movement sensor active when armed!)
-			<BR><BR><A href='?src=\ref[src];refresh=1'>Refresh</A>
-			<BR><BR><A href='?src=\ref[src];close=1'>Close</A>"}
-		// END AUTOFIX
+		dat += "<BR><A href='?src=\ref[src];scanning=1'>[scanning?"Armed":"Unarmed"]</A> (Movement sensor active when armed!)"
+		dat += "<BR><BR><A href='?src=\ref[src];refresh=1'>Refresh</A>"
+		dat += "<BR><BR><A href='?src=\ref[src];close=1'>Close</A>"
 		user << browse(dat, "window=prox")
 		onclose(user, "prox")
 		return
 
 
 	Topic(href, href_list)
-		..()
+		if(..()) return 1
 		if(!usr.canmove || usr.stat || usr.restrained() || !in_range(loc, usr))
 			usr << browse(null, "window=prox")
 			onclose(usr, "prox")

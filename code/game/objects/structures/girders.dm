@@ -4,73 +4,90 @@
 	density = 1
 	layer = 2
 	var/state = 0
+	var/health = 200
+	var/cover = 50 //how much cover the girder provides against projectiles.
+
+/obj/structure/girder/attack_generic(var/mob/user, var/damage, var/attack_message = "smashes apart", var/wallbreaker)
+	if(!damage || !wallbreaker)
+		return 0
+	visible_message("<span class='danger'>[user] [attack_message] the [src]!</span>")
+	spawn(1) dismantle()
+	return 1
+
+/obj/structure/girder/bullet_act(var/obj/item/projectile/Proj)
+	//Girders only provide partial cover. There's a chance that the projectiles will just pass through. (unless you are trying to shoot the girder)
+	if(Proj.original != src && !prob(cover))
+		return -1 //pass through
+
+	//Tasers and the like should not damage girders.
+	if(!(Proj.damage_type == BRUTE || Proj.damage_type == BURN))
+		return
+
+	var/damage = Proj.damage
+	if(!istype(Proj, /obj/item/projectile/beam))
+		damage *= 0.4 //non beams do reduced damage
+
+	health -= damage
+	..()
+	if(health <= 0)
+		new /obj/item/stack/sheet/metal(get_turf(src))
+		del(src)
+
+	return
 
 /obj/structure/girder/attackby(obj/item/W as obj, mob/user as mob)
 	if(istype(W, /obj/item/weapon/wrench) && state == 0)
 		if(anchored && !istype(src,/obj/structure/girder/displaced))
-			playsound(get_turf(src), 'sound/items/Ratchet.ogg', 100, 1)
-			user << "<span class='info'>Now disassembling the girder</span>"
+			playsound(src.loc, 'sound/items/Ratchet.ogg', 100, 1)
+			user << "\blue Now disassembling the girder"
 			if(do_after(user,40))
 				if(!src) return
-				user << "<span class='info'>You dissasembled the girder!</span>"
-				//new /obj/item/stack/sheet/metal(get_turf(src))
-				var/obj/item/stack/sheet/metal/M = getFromPool(/obj/item/stack/sheet/metal, get_turf(src))
-				M.amount = 1
-				qdel(src)
+				user << "\blue You dissasembled the girder!"
+				dismantle()
 		else if(!anchored)
-			playsound(get_turf(src), 'sound/items/Ratchet.ogg', 100, 1)
-			user << "\<span class='info'>Now securing the girder</span>"
+			playsound(src.loc, 'sound/items/Ratchet.ogg', 100, 1)
+			user << "\blue Now securing the girder"
 			if(get_turf(user, 40))
-				user << "<span class='info'>You secured the girder!</span>"
-				//var/obj/structure/girder/G = new/obj/structure/girder( src.loc )
-				add_hiddenprint(user)
-				add_fingerprint(user)
-				anchored = 1
-				update_icon()
+				user << "\blue You secured the girder!"
+				new/obj/structure/girder( src.loc )
+				del(src)
 
-	else if(istype(W, /obj/item/weapon/pickaxe))
-		var/obj/item/weapon/pickaxe/PK = W
-		if(!(PK.diggables & DIG_WALLS)) //we can dig a wall, we can dig a girder
-			return
-
-		user.visible_message("<span class='warning'>[user] starts [PK.drill_verb] \the [src] with \the [PK]</span>",
-							"<span class='notice'>You start [PK.drill_verb] \the [src] with \the [PK]</span>")
+	else if(istype(W, /obj/item/weapon/pickaxe/plasmacutter))
+		user << "\blue Now slicing apart the girder"
 		if(do_after(user,30))
 			if(!src) return
-			user.visible_message("<span class='warning'>[user] destroys \the [src]!</span>",
-								"<span class='notice'>You start [PK.drill_verb] \the [src] with \the [PK]</span>")
-			var/obj/item/stack/sheet/metal/M = getFromPool(/obj/item/stack/sheet/metal, get_turf(src))
-			M.amount = 1
-			qdel(src)
+			user << "\blue You slice apart the girder!"
+			dismantle()
 
-	else if(istype(W, /obj/item/weapon/screwdriver) && state == 2)
-		playsound(get_turf(src), 'sound/items/Screwdriver.ogg', 100, 1)
-		user << "<span class='info'>Now unsecuring support struts.</span>"
+	else if(istype(W, /obj/item/weapon/pickaxe/diamonddrill))
+		user << "\blue You drill through the girder!"
+		dismantle()
+
+	else if(istype(W, /obj/item/weapon/screwdriver) && state == 2 && istype(src,/obj/structure/girder/reinforced))
+		playsound(src.loc, 'sound/items/Screwdriver.ogg', 100, 1)
+		user << "\blue Now unsecuring support struts"
 		if(do_after(user,40))
-			if(!src || !get_turf(src)) return
-			user << "<span class='info'>You unsecured the support struts!</span>"
+			if(!src) return
+			user << "\blue You unsecured the support struts!"
 			state = 1
-			update_icon()
 
-	else if(istype(W, /obj/item/weapon/wirecutters) && state == 1)
-		playsound(get_turf(src), 'sound/items/Wirecutter.ogg', 100, 1)
-		user << "<span class='info'>Now removing support struts</span>"
+	else if(istype(W, /obj/item/weapon/wirecutters) && istype(src,/obj/structure/girder/reinforced) && state == 1)
+		playsound(src.loc, 'sound/items/Wirecutter.ogg', 100, 1)
+		user << "\blue Now removing support struts"
 		if(do_after(user,40))
-			if(!src || !get_turf(src)) return
-			user << "<span class='info'>You removed the support struts!</span>"
-			state = 0
-			update_icon()
+			if(!src) return
+			user << "\blue You removed the support struts!"
+			new/obj/structure/girder( src.loc )
+			del(src)
 
 	else if(istype(W, /obj/item/weapon/crowbar) && state == 0 && anchored )
-		playsound(get_turf(src), 'sound/items/Crowbar.ogg', 100, 1)
-		user << "<span class='info'>Now dislodging the girder</span>"
+		playsound(src.loc, 'sound/items/Crowbar.ogg', 100, 1)
+		user << "\blue Now dislodging the girder"
 		if(do_after(user, 40))
 			if(!src) return
-			user << "<span class='info'>You dislodged the girder!</span>"
-			add_hiddenprint(user)
-			add_fingerprint(user)
-			anchored = 0
-			update_icon()
+			user << "\blue You dislodged the girder!"
+			new/obj/structure/girder/displaced( src.loc )
+			del(src)
 
 	else if(istype(W, /obj/item/stack/sheet))
 
@@ -79,107 +96,77 @@
 
 			if(/obj/item/stack/sheet/metal, /obj/item/stack/sheet/metal/cyborg)
 				if(!anchored)
-					if(S.amount < 2) return
-					var/pdiff=performWallPressureCheck(src.loc)
-					if(!pdiff)
-						S.use(2)
-						user << "<span class='info'>You create a false wall! Push on it to open or close the passage.</span>"
-						var/obj/structure/falsewall/FW = new /obj/structure/falsewall (src.loc)
-						FW.add_hiddenprint(user)
-						qdel(src)
-					else
-						user << "<span class='warning'>There is too much air moving through the gap!  The door wouldn't stay closed if you built it.</span>"
-						message_admins("Attempted false wall made by [user.real_name] ([formatPlayerPanel(user,user.ckey)]) at [formatJumpTo(loc)] had a pressure difference of [pdiff]!")
-						log_admin("Attempted false wall made by [user.real_name] (user.ckey) at [loc] had a pressure difference of [pdiff]!")
-						return
+					if(S.use(2))
+						user << "<span class='notice'>You create a false wall! Push on it to open or close the passage.</span>"
+						new /obj/structure/falsewall (src.loc)
+						del(src)
 				else
-					if(S.amount < 2) return ..()
-					user << "<span class='info'>Now adding plating...</span>"
+					if(S.get_amount() < 2) return ..()
+					user << "<span class='notice'>Now adding plating...</span>"
 					if (do_after(user,40))
-						if(!src || !S || S.amount < 2 || !get_turf(src)) return
-						S.use(2)
-						user << "<span class='info'>You added the plating!</span>"
-						var/turf/Tsrc = get_turf(src)
-						var/turf/simulated/wall/X = Tsrc.ChangeTurf(/turf/simulated/wall)
-						if(X)
-							X.add_hiddenprint(user)
-							X.add_fingerprint(user)
-						qdel(src)
+						if (S.use(2))
+							user << "<span class='notice'>You added the plating!</span>"
+							var/turf/Tsrc = get_turf(src)
+							Tsrc.ChangeTurf(/turf/simulated/wall)
+							for(var/turf/simulated/wall/X in Tsrc.loc)
+								if(X)	X.add_hiddenprint(usr)
+							del(src)
 					return
 
-			if(/obj/item/stack/sheet/plasteel)
+			if(/obj/item/stack/sheet/plasteel, /obj/item/stack/sheet/plasteel/cyborg)
 				if(!anchored)
-					if(S.amount < 2) return
-					var/pdiff=performWallPressureCheck(src.loc)
-					if(!pdiff)
-						S.use(2)
-						user << "<span class='info'>You create a false wall! Push on it to open or close the passage.</span>"
-						var/obj/structure/falserwall/FW = new /obj/structure/falserwall (src.loc)
-						FW.add_hiddenprint(user)
+					if(S.use(2))
+						user << "\blue You create a false wall! Push on it to open or close the passage."
+						new /obj/structure/falserwall (src.loc)
 						del(src)
-					else
-						user << "<span class='warning'>There is too much air moving through the gap!  The door wouldn't stay closed if you built it.</span>"
-						message_admins("Attempted false rwall made by [user.real_name] ([formatPlayerPanel(user,user.ckey)]) at [formatJumpTo(loc)] had a pressure difference of [pdiff]!")
-						log_admin("Attempted false rwall made by [user.real_name] ([user.ckey]) at [loc] had a pressure difference of [pdiff]!")
-						return
 				else
-					if (state == 2) //I cant believe someone would actually write this line of code...
-						if(S.amount < 1) return ..()
-						user << "<span class='info'>Now finalising reinforced wall.</span>"
+					if (src.icon_state == "reinforced") //I cant believe someone would actually write this line of code...
+						if(S.get_amount() < 1) return ..()
+						user << "<span class='notice'>Now finalising reinforced wall.</span>"
 						if(do_after(user, 50))
-							if(!src || !S || S.amount < 1) return
-							S.use(1)
-							user << "\blue Wall fully reinforced!"
-							var/turf/Tsrc = get_turf(src)
-							var/turf/simulated/wall/r_wall/X = Tsrc.ChangeTurf(/turf/simulated/wall/r_wall)
-							if(X)
-								X.add_hiddenprint(user)
-								X.add_fingerprint(user)
-							qdel(src)
+							if (S.use(1))
+								user << "<span class='notice'>Wall fully reinforced!</span>"
+								var/turf/Tsrc = get_turf(src)
+								Tsrc.ChangeTurf(/turf/simulated/wall/r_wall)
+								for(var/turf/simulated/wall/r_wall/X in Tsrc.loc)
+									if(X)	X.add_hiddenprint(usr)
+								del(src)
 						return
 					else
-						if(S.amount < 1) return ..()
-						user << "<span class='info'>Now reinforcing girders</span>"
+						if(S.get_amount() < 1) return ..()
+						user << "<span class='notice'>Now reinforcing girders...</span>"
 						if (do_after(user,60))
-							if(!src || !S || S.amount < 1 || !get_turf(src)) return
-							S.use(1)
-							user << "<span class='info'>Girders reinforced!</span>"
-							add_hiddenprint(user)
-							add_fingerprint(user)
-							state = 2
-							update_icon()
+							if(S.use(1))
+								user << "<span class='notice'>Girders reinforced!</span>"
+								new/obj/structure/girder/reinforced( src.loc )
+								del(src)
 						return
 
 		if(S.sheettype)
 			var/M = S.sheettype
+			// Ugly hack, will suffice for now. Need to fix it upstream as well, may rewrite mineral walls. ~Z
+			if(M in list("mhydrogen","osmium","tritium","platinum","iron"))
+				user << "You cannot plate the girder in that material."
+				return
 			if(!anchored)
 				if(S.amount < 2) return
-				var/pdiff=performWallPressureCheck(src.loc)
-				if(!pdiff)
-					S.use(2)
-					user << "<span class='info'>You create a false wall! Push on it to open or close the passage.</span>"
-					var/F = text2path("/obj/structure/falsewall/[M]")
-					var/obj/structure/falsewall/FW = new F (src.loc)
-					FW.add_hiddenprint(user)
-					qdel(src)
-				else
-					user << "<span class='warning'>There is too much air moving through the gap!  The door wouldn't stay closed if you built it.</span>"
-					message_admins("Attempted false [M] wall made by [user.real_name] ([formatPlayerPanel(user,user.ckey)]) at [formatJumpTo(loc)] had a pressure difference of [pdiff]!")
-					log_admin("Attempted false [M] wall made by [user.real_name] ([user.ckey]) at [loc] had a pressure difference of [pdiff]!")
-					return
+				S.use(2)
+				user << "\blue You create a false wall! Push on it to open or close the passage."
+				var/F = text2path("/obj/structure/falsewall/[M]")
+				new F (src.loc)
+				del(src)
 			else
 				if(S.amount < 2) return ..()
-				user << "<span class='info'>Now adding plating...</span>"
+				user << "\blue Now adding plating..."
 				if (do_after(user,40))
 					if(!src || !S || S.amount < 2) return
 					S.use(2)
-					user << "<span class='info'>You added the plating!</span>"
+					user << "\blue You added the plating!"
 					var/turf/Tsrc = get_turf(src)
-					var/turf/simulated/wall/mineral/X = Tsrc.ChangeTurf(text2path("/turf/simulated/wall/mineral/[M]"))
-					if(X)
-						X.add_hiddenprint(user)
-						X.add_fingerprint(user)
-					qdel(src)
+					Tsrc.ChangeTurf(text2path("/turf/simulated/wall/mineral/[M]"))
+					for(var/turf/simulated/wall/mineral/X in Tsrc.loc)
+						if(X)	X.add_hiddenprint(usr)
+					del(src)
 				return
 
 		add_hiddenprint(usr)
@@ -193,57 +180,53 @@
 	else
 		..()
 
+/obj/structure/girder/proc/dismantle()
+	new /obj/item/stack/sheet/metal(get_turf(src))
+	del(src)
+
+/obj/structure/girder/attack_hand(mob/user as mob)
+	if (HULK in user.mutations)
+		visible_message("<span class='danger'>[user] smashes [src] apart!</span>")
+		dismantle()
+		return
+	return ..()
 
 /obj/structure/girder/blob_act()
 	if(prob(40))
-		qdel(src)
+		del(src)
 
-/obj/structure/girder/bullet_act(var/obj/item/projectile/Proj)
-	if(istype(Proj ,/obj/item/projectile/beam/pulse))
-		src.ex_act(2)
-	..()
-	return 0
 
 /obj/structure/girder/ex_act(severity)
 	switch(severity)
 		if(1.0)
-			qdel(src)
+			del(src)
 			return
 		if(2.0)
 			if (prob(30))
-				if(prob(50))
-					new /obj/item/stack/rods(loc)
-				else
-					var/obj/item/stack/sheet/metal/M = getFromPool(/obj/item/stack/sheet/metal, get_turf(src))
-					M.amount = 1
-				qdel(src)
+				var/remains = pick(/obj/item/stack/rods,/obj/item/stack/sheet/metal)
+				new remains(loc)
+				del(src)
 			return
 		if(3.0)
 			if (prob(5))
-				if(prob(50))
-					new /obj/item/stack/rods(loc)
-				else
-					var/obj/item/stack/sheet/metal/M = getFromPool(/obj/item/stack/sheet/metal, get_turf(src))
-					M.amount = 1
-				qdel(src)
+				var/remains = pick(/obj/item/stack/rods,/obj/item/stack/sheet/metal)
+				new remains(loc)
+				del(src)
 			return
-	return
-/obj/structure/girder/update_icon()
-	if(anchored)
-		if(state)
-			icon_state = "reinforced"
 		else
-			icon_state = "girder"
-	else
-		icon_state = "displaced"
+	return
 
 /obj/structure/girder/displaced
 	icon_state = "displaced"
 	anchored = 0
+	health = 50
+	cover = 25
 
 /obj/structure/girder/reinforced
 	icon_state = "reinforced"
 	state = 2
+	health = 500
+	cover = 80
 
 /obj/structure/cultgirder
 	icon= 'icons/obj/cult.dmi'
@@ -251,49 +234,70 @@
 	anchored = 1
 	density = 1
 	layer = 2
+	var/health = 250
+	var/cover = 70
+
+/obj/structure/cultgirder/attack_generic(var/mob/user, var/damage, var/attack_message = "smashes apart", var/wallbreaker)
+	if(!damage || !wallbreaker)
+		return 0
+	visible_message("<span class='danger'>[user] [attack_message] the [src]!</span>")
+	dismantle()
+	return 1
+
+/obj/structure/cultgirder/proc/dismantle()
+	new /obj/effect/decal/remains/human(get_turf(src))
+	del(src)
 
 /obj/structure/cultgirder/attackby(obj/item/W as obj, mob/user as mob)
 	if(istype(W, /obj/item/weapon/wrench))
-		playsound(get_turf(src), 'sound/items/Ratchet.ogg', 100, 1)
-		user << "<span class='info'>Now disassembling the girder</span>"
+		playsound(src.loc, 'sound/items/Ratchet.ogg', 100, 1)
+		user << "\blue Now disassembling the girder"
 		if(do_after(user,40))
-			if(!src || !get_turf(src)) return
 			user << "\blue You dissasembled the girder!"
-			new /obj/effect/decal/remains/human(get_turf(src))
-			qdel(src)
+			dismantle()
 
-	else if(istype(W, /obj/item/weapon/pickaxe))
-		var/obj/item/weapon/pickaxe/PK = W
-		if(!(PK.diggables & DIG_WALLS))
-			return
-
-		user.visible_message("<span class='warning'>[user] starts [PK.drill_verb] \the [src] with \the [PK]</span>",
-							"<span class='notice'>You start [PK.drill_verb] \the [src] with \the [PK]</span>")
+	else if(istype(W, /obj/item/weapon/pickaxe/plasmacutter))
+		user << "\blue Now slicing apart the girder"
 		if(do_after(user,30))
-			if(!src || !get_turf(src)) return
-			user.visible_message("<span class='warning'>[user] destroys \the [src]!</span>",
-								"<span class='notice'>You start [PK.drill_verb] \the [src] with \the [PK]</span>")
-			new /obj/effect/decal/remains/human(loc)
-			del(src)
+			user << "\blue You slice apart the girder!"
+		dismantle()
+
+	else if(istype(W, /obj/item/weapon/pickaxe/diamonddrill))
+		user << "\blue You drill through the girder!"
+		new /obj/effect/decal/remains/human(get_turf(src))
+		dismantle()
 
 /obj/structure/cultgirder/blob_act()
 	if(prob(40))
-		del(src)
+		dismantle()
 
+/obj/structure/cultgirder/bullet_act(var/obj/item/projectile/Proj) //No beam check- How else will you destroy the cult girder with silver bullets?????
+	//Girders only provide partial cover. There's a chance that the projectiles will just pass through. (unless you are trying to shoot the girder)
+	if(Proj.original != src && !prob(cover))
+		return -1 //pass through
+
+	//Tasers and the like should not damage cultgirders.
+	if(!(Proj.damage_type == BRUTE || Proj.damage_type == BURN))
+		return
+
+	health -= Proj.damage
+	..()
+	if(health <= 0)
+		dismantle()
+	return
 
 /obj/structure/cultgirder/ex_act(severity)
 	switch(severity)
 		if(1.0)
-			qdel(src)
+			del(src)
 			return
 		if(2.0)
 			if (prob(30))
-				new /obj/effect/decal/remains/human(loc)
-				qdel(src)
+				dismantle()
 			return
 		if(3.0)
 			if (prob(5))
-				new /obj/effect/decal/remains/human(loc)
-				qdel(src)
+				dismantle()
 			return
+		else
 	return

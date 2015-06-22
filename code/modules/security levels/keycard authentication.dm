@@ -24,10 +24,6 @@
 	user << "The station AI is not to interact with these devices."
 	return
 
-/obj/machinery/keycard_auth/attack_paw(mob/user as mob)
-	user << "You are too primitive to use this device."
-	return
-
 /obj/machinery/keycard_auth/attackby(obj/item/weapon/W as obj, mob/user as mob)
 	if(stat & (NOPOWER|BROKEN))
 		user << "This device is not powered."
@@ -45,16 +41,16 @@
 				broadcast_request() //This is the device making the initial event request. It needs to broadcast to other devices
 
 /obj/machinery/keycard_auth/power_change()
-	if(powered(ENVIRON))
-		stat &= ~NOPOWER
+	..()
+	if(stat &NOPOWER)
 		icon_state = "auth_off"
-	else
-		stat |= NOPOWER
 
 /obj/machinery/keycard_auth/attack_hand(mob/user as mob)
 	if(user.stat || stat & (NOPOWER|BROKEN))
 		user << "This device is not powered."
 		return
+	if(!user.IsAdvancedToolUser())
+		return 0
 	if(busy)
 		user << "This device is busy."
 		return
@@ -63,35 +59,22 @@
 
 	var/dat = "<h1>Keycard Authentication Device</h1>"
 
+	dat += "This device is used to trigger some high security events. It requires the simultaneous swipe of two high-level ID cards."
+	dat += "<br><hr><br>"
 
-	// AUTOFIXED BY fix_string_idiocy.py
-	// C:\Users\Rob\Documents\Projects\vgstation13\code\modules\security levels\keycard authentication.dm:66: dat += "This device is used to trigger some high security events. It requires the simultaneous swipe of two high-level ID cards."
-	dat += {"This device is used to trigger some high security events. It requires the simultaneous swipe of two high-level ID cards.
-		<br><hr><br>"}
-	// END AUTOFIX
 	if(screen == 1)
+		dat += "Select an event to trigger:<ul>"
+		dat += "<li><A href='?src=\ref[src];triggerevent=Red alert'>Red alert</A></li>"
+		if(!config.ert_admin_call_only)
+			dat += "<li><A href='?src=\ref[src];triggerevent=Emergency Response Team'>Emergency Response Team</A></li>"
 
-		// AUTOFIXED BY fix_string_idiocy.py
-		// C:\Users\Rob\Documents\Projects\vgstation13\code\modules\security levels\keycard authentication.dm:70: dat += "Select an event to trigger:<ul>"
-		dat += {"Select an event to trigger:<ul>
-			<li><A href='?src=\ref[src];triggerevent=Red alert'>Red alert</A></li>"}
-		// END AUTOFIX
-		//dat += "<li><A href='?src=\ref[src];triggerevent=Emergency Response Team'>Emergency Response Team</A></li>" Not yet
-
-		// AUTOFIXED BY fix_string_idiocy.py
-		// C:\Users\Rob\Documents\Projects\vgstation13\code\modules\security levels\keycard authentication.dm:73: dat += "<li><A href='?src=\ref[src];triggerevent=Grant Emergency Maintenance Access'>Grant Emergency Maintenance Access</A></li>"
-		dat += {"<li><A href='?src=\ref[src];triggerevent=Grant Emergency Maintenance Access'>Grant Emergency Maintenance Access</A></li>
-			<li><A href='?src=\ref[src];triggerevent=Revoke Emergency Maintenance Access'>Revoke Emergency Maintenance Access</A></li>
-			</ul>"}
-		// END AUTOFIX
+		dat += "<li><A href='?src=\ref[src];triggerevent=Grant Emergency Maintenance Access'>Grant Emergency Maintenance Access</A></li>"
+		dat += "<li><A href='?src=\ref[src];triggerevent=Revoke Emergency Maintenance Access'>Revoke Emergency Maintenance Access</A></li>"
+		dat += "</ul>"
 		user << browse(dat, "window=keycard_auth;size=500x250")
 	if(screen == 2)
-
-		// AUTOFIXED BY fix_string_idiocy.py
-		// C:\Users\Rob\Documents\Projects\vgstation13\code\modules\security levels\keycard authentication.dm:78: dat += "Please swipe your card to authorize the following event: <b>[event]</b>"
-		dat += {"Please swipe your card to authorize the following event: <b>[event]</b>
-			<p><A href='?src=\ref[src];reset=1'>Back</A>"}
-		// END AUTOFIX
+		dat += "Please swipe your card to authorize the following event: <b>[event]</b>"
+		dat += "<p><A href='?src=\ref[src];reset=1'>Back</A>"
 		user << browse(dat, "window=keycard_auth;size=500x250")
 	return
 
@@ -167,8 +150,16 @@
 			revoke_maint_all_access()
 			feedback_inc("alert_keycard_auth_maintRevoke",1)
 		if("Emergency Response Team")
+			if(is_ert_blocked())
+				usr << "\red All emergency response teams are dispatched and can not be called at this time."
+				return
+
 			trigger_armed_response_team(1)
 			feedback_inc("alert_keycard_auth_ert",1)
+
+/obj/machinery/keycard_auth/proc/is_ert_blocked()
+	if(config.ert_admin_call_only) return 1
+	return ticker.mode && ticker.mode.ert_disabled
 
 var/global/maint_all_access = 0
 

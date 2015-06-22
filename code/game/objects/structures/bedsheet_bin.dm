@@ -14,37 +14,9 @@ LINEN BINS
 	throwforce = 1
 	throw_speed = 1
 	throw_range = 2
-	w_class = 1.0
-	_color = "white"
+	w_class = 2.0
+	item_color = "white"
 
-//cutting the bedsheet into rags
-/obj/item/weapon/bedsheet/attackby(var/obj/item/I, mob/user as mob)
-	var/cut_time=0
-	if(istype(I, /obj/item/weapon/scalpel))
-		cut_time=20
-	else if(istype(I, /obj/item/weapon/kitchenknife) || istype(I, /obj/item/weapon/butch))
-		cut_time=40
-	else if(istype(I, /obj/item/weapon/shard))
-		cut_time=80
-	else if(istype(I, /obj/item/weapon/kitchen/utensil/pknife))
-		cut_time=160
-	if(cut_time)
-		user << "<span  class='notice'>You begin cutting the [src].</span>"
-		if(do_after(user, cut_time))
-			if(!src) return
-			user << "<span  class='notice'>You have cut the [src] into rags.</span>"
-			var/turf/location = get_turf(src)
-			for(var/x=0; x<=8; x++)
-				var/obj/item/weapon/reagent_containers/glass/rag/S = new/obj/item/weapon/reagent_containers/glass/rag/(location)
-				S.pixel_x = rand(-5.0, 5)
-				S.pixel_y = rand(-5.0, 5)
-			del(src)
-
-//todo: hold one if possible?
-//todo: coloring and molotov coloring?
-//todo: finger prints?
-//todo: more cutting tools?
-//todo: sharp thing code/game/objects/objs.dm
 
 /obj/item/weapon/bedsheet/attack_self(mob/user as mob)
 	user.drop_item()
@@ -58,73 +30,67 @@ LINEN BINS
 
 /obj/item/weapon/bedsheet/blue
 	icon_state = "sheetblue"
-	_color = "blue"
+	item_color = "blue"
 
 /obj/item/weapon/bedsheet/green
 	icon_state = "sheetgreen"
-	_color = "green"
+	item_color = "green"
 
 /obj/item/weapon/bedsheet/orange
 	icon_state = "sheetorange"
-	_color = "orange"
+	item_color = "orange"
 
 /obj/item/weapon/bedsheet/purple
 	icon_state = "sheetpurple"
-	_color = "purple"
+	item_color = "purple"
 
 /obj/item/weapon/bedsheet/rainbow
 	icon_state = "sheetrainbow"
-	_color = "rainbow"
+	item_color = "rainbow"
 
 /obj/item/weapon/bedsheet/red
 	icon_state = "sheetred"
-	_color = "red"
-
-/obj/item/weapon/bedsheet/red/redcoat
-		_color = "redcoat" //for denied stamp
+	item_color = "red"
 
 /obj/item/weapon/bedsheet/yellow
 	icon_state = "sheetyellow"
-	_color = "yellow"
+	item_color = "yellow"
 
 /obj/item/weapon/bedsheet/mime
 	icon_state = "sheetmime"
-	_color = "mime"
+	item_color = "mime"
 
 /obj/item/weapon/bedsheet/clown
 	icon_state = "sheetclown"
-	_color = "clown"
+	item_color = "clown"
 
 /obj/item/weapon/bedsheet/captain
 	icon_state = "sheetcaptain"
-	_color = "captain"
+	item_color = "captain"
 
 /obj/item/weapon/bedsheet/rd
 	icon_state = "sheetrd"
-	_color = "director"
+	item_color = "director"
 
 /obj/item/weapon/bedsheet/medical
 	icon_state = "sheetmedical"
-	_color = "medical"
+	item_color = "medical"
 
 /obj/item/weapon/bedsheet/hos
 	icon_state = "sheethos"
-	_color = "hosred"
+	item_color = "hosred"
 
 /obj/item/weapon/bedsheet/hop
 	icon_state = "sheethop"
-	_color = "hop"
+	item_color = "hop"
 
 /obj/item/weapon/bedsheet/ce
 	icon_state = "sheetce"
-	_color = "chief"
+	item_color = "chief"
 
 /obj/item/weapon/bedsheet/brown
 	icon_state = "sheetbrown"
-	_color = "brown"
-
-/obj/item/weapon/bedsheet/brown/cargo
-	_color = "cargo"		//exists for washing machines, is not different from brown bedsheet in any way
+	item_color = "brown"
 
 
 /obj/structure/bedsheetbin
@@ -139,13 +105,15 @@ LINEN BINS
 
 
 /obj/structure/bedsheetbin/examine(mob/user)
-	..()
-	if(amount == 0)
-		user << "<span class='info'>There are no bed sheets in the bin.</span>"
-	else if(amount == 1)
-		user << "<span class='info'>There is one bed sheet in the bin.</span>"
-	else
-		user << "<span class='info'>There are [amount] bed sheets in the bin.</span>"
+	..(user)
+
+	if(amount < 1)
+		user << "There are no bed sheets in the bin."
+		return
+	if(amount == 1)
+		user << "There is one bed sheet in the bin."
+		return
+	user << "There are [amount] bed sheets in the bin."
 
 
 /obj/structure/bedsheetbin/update_icon()
@@ -167,12 +135,6 @@ LINEN BINS
 		I.loc = src
 		hidden = I
 		user << "<span class='notice'>You hide [I] among the sheets.</span>"
-
-
-
-/obj/structure/bedsheetbin/attack_paw(mob/user as mob)
-	return attack_hand(user)
-
 
 /obj/structure/bedsheetbin/attack_hand(mob/user as mob)
 	if(amount >= 1)
@@ -220,4 +182,3 @@ LINEN BINS
 
 
 	add_fingerprint(user)
-

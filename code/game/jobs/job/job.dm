@@ -9,7 +9,6 @@
 
 	//Bitflags for the job
 	var/flag = 0
-	var/info_flag = 0
 	var/department_flag = 0
 
 	//Players will be allowed to spawn in as jobs that are set to "Station"
@@ -42,9 +41,6 @@
 	//If you have use_age_restriction_for_jobs config option enabled and the database set up, this option will add a requirement for players to be at least minimal_player_age days old. (meaning they first signed in at least that many days before.)
 	var/minimal_player_age = 0
 
-	var/pdatype=/obj/item/device/pda
-	var/pdaslot=slot_belt
-
 /datum/job/proc/equip(var/mob/living/carbon/human/H)
 	return 1
 
@@ -75,3 +71,45 @@
 		return 0
 
 	return max(0, minimal_player_age - C.player_age)
+
+/datum/job/proc/apply_fingerprints(var/mob/living/carbon/human/H)
+	if(!istype(H))
+		return
+	if(H.back)
+		H.back.add_fingerprint(H,1)	//The 1 sets a flag to ignore gloves
+		for(var/obj/item/I in H.back.contents)
+			I.add_fingerprint(H,1)
+	if(H.wear_id)
+		H.wear_id.add_fingerprint(H,1)
+	if(H.w_uniform)
+		H.w_uniform.add_fingerprint(H,1)
+	if(H.wear_suit)
+		H.wear_suit.add_fingerprint(H,1)
+	if(H.wear_mask)
+		H.wear_mask.add_fingerprint(H,1)
+	if(H.head)
+		H.head.add_fingerprint(H,1)
+	if(H.shoes)
+		H.shoes.add_fingerprint(H,1)
+	if(H.gloves)
+		H.gloves.add_fingerprint(H,1)
+	if(H.l_ear)
+		H.l_ear.add_fingerprint(H,1)
+	if(H.r_ear)
+		H.r_ear.add_fingerprint(H,1)
+	if(H.glasses)
+		H.glasses.add_fingerprint(H,1)
+	if(H.belt)
+		H.belt.add_fingerprint(H,1)
+		for(var/obj/item/I in H.belt.contents)
+			I.add_fingerprint(H,1)
+	if(H.s_store)
+		H.s_store.add_fingerprint(H,1)
+	if(H.l_store)
+		H.l_store.add_fingerprint(H,1)
+	if(H.r_store)
+		H.r_store.add_fingerprint(H,1)
+	return 1
+
+/datum/job/proc/is_position_available()
+	return (current_positions < total_positions) || (total_positions == -1)

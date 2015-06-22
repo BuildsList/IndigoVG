@@ -23,8 +23,6 @@
 	// Any of a number of GENE_ flags.
 	var/flags=0
 
-	var/genetype = GENETYPE_BAD
-
 /**
 * Is the gene active in this mob's DNA?
 */
@@ -91,8 +89,7 @@
 
 
 /datum/dna/gene/basic
-	name = "BASIC GENE"
-	genetype = GENETYPE_GOOD
+	name="BASIC GENE"
 
 	// Mutation to give
 	var/mutation=0
@@ -105,7 +102,6 @@
 
 	// Possible deactivation messages
 	var/list/deactivation_messages=list()
-
 
 /datum/dna/gene/basic/can_activate(var/mob/M,var/flags)
 	if(flags & MUTCHK_FORCED)

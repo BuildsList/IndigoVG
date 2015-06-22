@@ -5,15 +5,24 @@
 /obj/item/weapon/cell/New()
 	..()
 	charge = maxcharge
-	if(maxcharge <= 2500)
-		desc = "The manufacturer's label states this cell has a power rating of [maxcharge], and that you should not swallow it."
-	else
-		desc = "This power cell has an exciting chrome finish, as it is an uber-capacity cell type! It has a power rating of [maxcharge]!"
+
 	spawn(5)
 		updateicon()
 
+/obj/item/weapon/cell/drain_power(var/drain_check, var/surge, var/power = 0)
+
+	if(drain_check)
+		return 1
+
+	if(charge <= 0)
+		return 0
+
+	var/cell_amt = power * CELLRATE
+
+	return use(cell_amt) / CELLRATE
+
 /obj/item/weapon/cell/proc/updateicon()
-	overlays.len = 0
+	overlays.Cut()
 
 	if(charge < 0.01)
 		return
@@ -25,15 +34,28 @@
 /obj/item/weapon/cell/proc/percent()		// return % charge of cell
 	return 100.0*charge/maxcharge
 
-// use power from a cell
+/obj/item/weapon/cell/proc/fully_charged()
+	return (charge == maxcharge)
+
+// checks if the power cell is able to provide the specified amount of charge
+/obj/item/weapon/cell/proc/check_charge(var/amount)
+	return (charge >= amount)
+
+// use power from a cell, returns the amount actually used
 /obj/item/weapon/cell/proc/use(var/amount)
 	if(rigged && amount > 0)
 		explode()
 		return 0
+	var/used = min(charge, amount)
+	charge -= used
+	return used
 
-	if(charge < amount)
+// Checks if the specified amount can be provided. If it can, it removes the amount
+// from the cell and returns 1. Otherwise does nothing and returns 0.
+/obj/item/weapon/cell/proc/checked_use(var/amount)
+	if(!check_charge(amount))
 		return 0
-	charge = max(0,charge - amount)
+	use(amount)
 	return 1
 
 // recharge the cell
@@ -43,30 +65,27 @@
 		return 0
 
 	if(maxcharge < amount)	return 0
-	var/power_used = min(maxcharge-charge,amount)
+	var/amount_used = min(maxcharge-charge,amount)
 	if(crit_fail)	return 0
 	if(!prob(reliability))
 		minor_fault++
 		if(prob(minor_fault))
 			crit_fail = 1
 			return 0
-	charge += power_used
-	return power_used
+	charge += amount_used
+	return amount_used
 
 
 /obj/item/weapon/cell/examine(mob/user)
-	..()
-	if(crit_fail)
-		user << "<span class='warning'>This power cell seems to be faulty.</span>"
-	else
-		user << "<span class='info'>The charge meter reads [round(src.percent() )]%.</span>"
+	if(get_dist(src, user) > 1)
+		return
 
-/obj/item/weapon/cell/attack_self(mob/user as mob)
-	src.add_fingerprint(user)
-	if(ishuman(user))
-		if(istype(user:gloves, /obj/item/clothing/gloves/space_ninja)&&user:gloves:candrain&&!user:gloves:draining)
-			call(/obj/item/clothing/gloves/space_ninja/proc/drain)("CELL",src,user:wear_suit)
-	return
+	if(maxcharge <= 2500)
+		user << "[desc]\nThe manufacturer's label states this cell has a power rating of [maxcharge], and that you should not swallow it.\nThe charge meter reads [round(src.percent() )]%."
+	else
+		user << "This power cell has an exciting chrome finish, as it is an uber-capacity cell type! It has a power rating of [maxcharge]!\nThe charge meter reads [round(src.percent() )]%."
+	if(crit_fail)
+		user << "\red This power cell seems to be faulty."
 
 /obj/item/weapon/cell/attackby(obj/item/W, mob/user)
 	..()
@@ -75,12 +94,12 @@
 
 		user << "You inject the solution into the power cell."
 
-		if(S.reagents.has_reagent("plasma", 5))
+		if(S.reagents.has_reagent("phoron", 5))
 
 			rigged = 1
 
-			log_admin("LOG: [user.name] ([user.ckey]) injected a power cell with plasma, rigging it to explode.")
-			message_admins("LOG: [user.name] ([user.ckey]) injected a power cell with plasma, rigging it to explode.")
+			log_admin("LOG: [user.name] ([user.ckey]) injected a power cell with phoron, rigging it to explode.")
+			message_admins("LOG: [user.name] ([user.ckey]) injected a power cell with phoron, rigging it to explode.")
 
 		S.reagents.clear_reagents()
 
@@ -120,7 +139,12 @@
 		rigged = 1 //broken batterys are dangerous
 
 /obj/item/weapon/cell/emp_act(severity)
-	charge -= 1000 / severity
+	//remove this once emp changes on dev are merged in
+	if(isrobot(loc))
+		var/mob/living/silicon/robot/R = loc
+		severity *= R.cell_emp_mult
+
+	charge -= maxcharge / severity
 	if (charge < 0)
 		charge = 0
 	if(reliability != 100 && prob(50/severity))
@@ -131,17 +155,17 @@
 
 	switch(severity)
 		if(1.0)
-			qdel(src)
+			del(src)
 			return
 		if(2.0)
 			if (prob(50))
-				qdel(src)
+				del(src)
 				return
 			if (prob(50))
 				corrupt()
 		if(3.0)
 			if (prob(25))
-				qdel(src)
+				del(src)
 				return
 			if (prob(25))
 				corrupt()
@@ -152,6 +176,30 @@
 		explode()
 
 /obj/item/weapon/cell/proc/get_electrocute_damage()
-	return round(charge**(1/3)*(rand(100,125)/100)) //Cube root of power times 1,5 to 2 in increments of 10^-1
-	//For instance, gives an average of 81 damage for 100k W and 175 for 1M W
-	//Best you're getting with BYOND's mathematical funcs. Not even a fucking exponential or neperian logarithm
+	switch (charge)
+/*		if (9000 to INFINITY)
+			return min(rand(90,150),rand(90,150))
+		if (2500 to 9000-1)
+			return min(rand(70,145),rand(70,145))
+		if (1750 to 2500-1)
+			return min(rand(35,110),rand(35,110))
+		if (1500 to 1750-1)
+			return min(rand(30,100),rand(30,100))
+		if (750 to 1500-1)
+			return min(rand(25,90),rand(25,90))
+		if (250 to 750-1)
+			return min(rand(20,80),rand(20,80))
+		if (100 to 250-1)
+			return min(rand(20,65),rand(20,65))*/
+		if (1000000 to INFINITY)
+			return min(rand(50,160),rand(50,160))
+		if (200000 to 1000000-1)
+			return min(rand(25,80),rand(25,80))
+		if (100000 to 200000-1)//Ave powernet
+			return min(rand(20,60),rand(20,60))
+		if (50000 to 100000-1)
+			return min(rand(15,40),rand(15,40))
+		if (1000 to 50000-1)
+			return min(rand(10,20),rand(10,20))
+		else
+			return 0

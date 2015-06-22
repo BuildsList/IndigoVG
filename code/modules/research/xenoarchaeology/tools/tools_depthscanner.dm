@@ -9,8 +9,7 @@
 	icon = 'icons/obj/pda.dmi'
 	icon_state = "crap"
 	item_state = "analyzer"
-	w_class = 1.0
-	flags = FPRINT
+	w_class = 2.0
 	slot_flags = SLOT_BELT
 	var/list/positive_locations = list()
 	var/datum/depth_scan/current
@@ -26,13 +25,13 @@
 
 /obj/item/device/depth_scanner/proc/scan_atom(var/mob/user, var/atom/A)
 	user.visible_message("\blue [user] scans [A], the air around them humming gently.")
-	if(istype(A,/turf/unsimulated/mineral))
-		var/turf/unsimulated/mineral/M = A
-		if(M.finds.len || M.artifact_find)
+	if(istype(A,/turf/simulated/mineral))
+		var/turf/simulated/mineral/M = A
+		if((M.finds && M.finds.len) || M.artifact_find)
 
 			//create a new scanlog entry
 			var/datum/depth_scan/D = new()
-			D.coords = "[M.x-WORLD_X_OFFSET].[rand(0,9)]:[M.y-WORLD_Y_OFFSET].[rand(0,9)]:[10 * M.z].[rand(0,9)]"
+			D.coords = "[M.x].[rand(0,9)]:[M.y].[rand(0,9)]:[10 * M.z].[rand(0,9)]"
 			D.time = worldtime2text()
 			D.record_index = positive_locations.len + 1
 			D.material = M.mineral ? M.mineral.display_name : "Rock"
@@ -43,13 +42,6 @@
 				D.depth = F.excavation_required * 2		//0-100% and 0-200cm
 				D.clearance = F.clearance_range * 2
 				D.material = get_responsive_reagent(F.find_type)
-			/*
-			if(M.excavation_minerals.len)
-				if(M.excavation_minerals[1] < D.depth)
-					D.depth = M.excavation_minerals[1]
-					D.clearance = rand(2,6)
-					D.dissonance_spread = rand(1,1000) / 100
-			*/
 
 			positive_locations.Add(D)
 
@@ -61,7 +53,7 @@
 		if(B.artifact_find)
 			//create a new scanlog entry
 			var/datum/depth_scan/D = new()
-			D.coords = "[10 * (B.x-WORLD_X_OFFSET)].[rand(0,9)]:[10 * (B.y-WORLD_Y_OFFSET)].[rand(0,9)]:[10 * B.z].[rand(0,9)]"
+			D.coords = "[10 * B.x].[rand(0,9)]:[10 * B.y].[rand(0,9)]:[10 * B.z].[rand(0,9)]"
 			D.time = worldtime2text()
 			D.record_index = positive_locations.len + 1
 
@@ -73,7 +65,7 @@
 			positive_locations.Add(D)
 
 			for(var/mob/L in range(src, 1))
-				L << "\blue \icon[src] [src] pings [pick("madly","wildly","excitedly","crazily")]!."
+				L << "\blue \icon[src] [src] pings [pick("madly","wildly","excitedly","crazily")]!"
 
 /obj/item/device/depth_scanner/attack_self(var/mob/user as mob)
 	return src.interact(user)

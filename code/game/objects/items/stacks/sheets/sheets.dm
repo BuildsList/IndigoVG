@@ -1,6 +1,5 @@
 /obj/item/stack/sheet
 	name = "sheet"
-	flags = FPRINT
 	w_class = 3.0
 	force = 5
 	throwforce = 5
@@ -8,10 +7,8 @@
 	throw_speed = 3
 	throw_range = 3
 	attack_verb = list("bashed", "battered", "bludgeoned", "thrashed", "smashed")
-	perunit=3750
+	var/perunit = 3750
 	var/sheettype = null //this is used for girders in the creation of walls/false walls
-
-	mech_flags = MECH_SCAN_FAIL
 
 
 // Since the sheetsnatcher was consolidated into weapon/storage/bag we now use

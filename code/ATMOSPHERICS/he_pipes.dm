@@ -1,194 +1,145 @@
 
-/obj/machinery/atmospherics/pipe/simple/heat_exchanging
-	icon = 'icons/obj/pipes/heat.dmi'
+obj/machinery/atmospherics/pipe/simple/heat_exchanging
+	icon = 'icons/atmos/heat.dmi'
 	icon_state = "intact"
+	pipe_icon = "hepipe"
+	color = "#404040"
 	level = 2
 	var/initialize_directions_he
+	var/surface = 2	//surface area in m^2
+	var/icon_temperature = T20C //stop small changes in temperature causing an icon refresh
 
 	minimum_temperature_difference = 20
 	thermal_conductivity = OPEN_HEAT_TRANSFER_COEFFICIENT
 
-	var/const/RADIATION_CAPACITY = 32000 // Radiation isn't particularly effective (TODO BALANCE)
-	                                     //  Plate value is 30000, increased it a bit because of additional surface area. - N3X
-	var/const/ENERGY_MULT        = 6.4   // Not sure what this is, keeping it the same as plates.
-
-	burst_type = /obj/machinery/atmospherics/unary/vent/burstpipe/heat_exchanging
-
-/obj/machinery/atmospherics/pipe/simple/heat_exchanging/getNodeType(var/node_id)
-	return PIPE_TYPE_HE
+	buckle_lying = 1
 
 	// BubbleWrap
-/obj/machinery/atmospherics/pipe/simple/heat_exchanging/New()
-	..()
-	initialize_directions_he = initialize_directions	// The auto-detection from /pipe is good enough for a simple HE pipe
+	New()
+		..()
+		initialize_directions_he = initialize_directions	// The auto-detection from /pipe is good enough for a simple HE pipe
 	// BubbleWrap END
+		color = "#404040" //we don't make use of the fancy overlay system for colours, use this to set the default.
 
-/obj/machinery/atmospherics/pipe/simple/heat_exchanging/buildFrom(var/mob/usr,var/obj/item/pipe/pipe)
-	dir = pipe.dir
-	initialize_directions = 0
-	initialize_directions_he = pipe.get_pipe_dir()
-	//var/turf/T = loc
-	//level = T.intact ? 2 : 1
-	if(!initialize(1))
-		usr << "Unable to build pipe here;  It must be connected to a machine, or another pipe that has a connection."
-		return 0
-	build_network()
-	if (node1)
-		node1.initialize()
-		node1.build_network()
-	if (node2)
-		node2.initialize()
-		node2.build_network()
-	return 1
+	initialize()
+		normalize_dir()
+		var/node1_dir
+		var/node2_dir
 
-/obj/machinery/atmospherics/pipe/simple/heat_exchanging/initialize(var/suppress_icon_check=0)
-	normalize_dir()
+		for(var/direction in cardinal)
+			if(direction&initialize_directions_he)
+				if (!node1_dir)
+					node1_dir = direction
+				else if (!node2_dir)
+					node2_dir = direction
 
-	findAllConnections(initialize_directions_he)
+		for(var/obj/machinery/atmospherics/pipe/simple/heat_exchanging/target in get_step(src,node1_dir))
+			if(target.initialize_directions_he & get_dir(target,src))
+				node1 = target
+				break
+		for(var/obj/machinery/atmospherics/pipe/simple/heat_exchanging/target in get_step(src,node2_dir))
+			if(target.initialize_directions_he & get_dir(target,src))
+				node2 = target
+				break
+		if(!node1 && !node2)
+			del(src)
+			return
 
-	if(!suppress_icon_check)
 		update_icon()
-	return node1 || node2
-
-/obj/machinery/atmospherics/pipe/simple/heat_exchanging/process()
-	if(!parent)
-		return ..()
-
-	// Get gas from pipenet
-	var/datum/gas_mixture/internal = return_air()
-	var/internal_transfer_moles = 0.25 * internal.total_moles()
-	var/datum/gas_mixture/internal_removed = internal.remove(internal_transfer_moles)
-
-	//Get processable air sample and thermal info from environment
-	var/datum/gas_mixture/environment = loc.return_air()
-	var/transfer_moles = 0.25 * environment.total_moles()
-	var/datum/gas_mixture/external_removed = environment.remove(transfer_moles)
-
-	// No environmental gas?  We radiate it, then.
-	if (!external_removed)
-		if(internal_removed)
-			internal.merge(internal_removed)
-		return radiate()
-
-	// Not enough gas in the air around us to care about.  Radiate.
-	if (external_removed.total_moles() < 10)
-		if(internal_removed)
-			internal.merge(internal_removed)
-		environment.merge(external_removed)
-		return radiate()
-
-	// No internal gas.  Screw this, we're out.
-	if (!internal_removed)
-		environment.merge(external_removed)
-		return 1
-
-	//Get same info from connected gas
-	var/combined_heat_capacity = internal_removed.heat_capacity() + external_removed.heat_capacity()
-	var/combined_energy = internal_removed.temperature * internal_removed.heat_capacity() + external_removed.heat_capacity() * external_removed.temperature
-
-	if(!combined_heat_capacity)
-		combined_heat_capacity = 1
-	var/final_temperature = combined_energy / combined_heat_capacity
-
-	external_removed.temperature = final_temperature
-	environment.merge(external_removed)
-
-	internal_removed.temperature = final_temperature
-	internal.merge(internal_removed)
+		return
 
 
-	if(parent && parent.network)
-		parent.network.update = 1
+	process()
+		if(!parent)
+			..()
+		else
+			var/datum/gas_mixture/pipe_air = return_air()
+			if(istype(loc, /turf/simulated/))
+				var/environment_temperature = 0
+				if(loc:blocks_air)
+					environment_temperature = loc:temperature
+				else
+					var/datum/gas_mixture/environment = loc.return_air()
+					environment_temperature = environment.temperature
+				if(abs(environment_temperature-pipe_air.temperature) > minimum_temperature_difference)
+					parent.temperature_interact(loc, volume, thermal_conductivity)
+			else if(istype(loc, /turf/space/))
+				parent.radiate_heat_to_space(surface, 1)
 
-/obj/machinery/atmospherics/pipe/simple/heat_exchanging/proc/radiate()
-	var/datum/gas_mixture/internal = return_air()
-	var/internal_transfer_moles = 0.25 * internal.total_moles()
-	var/datum/gas_mixture/internal_removed = internal.remove(internal_transfer_moles)
+			if(buckled_mob)
+				var/hc = pipe_air.heat_capacity()
+				var/avg_temp = (pipe_air.temperature * hc + buckled_mob.bodytemperature * 3500) / (hc + 3500)
+				pipe_air.temperature = avg_temp
+				buckled_mob.bodytemperature = avg_temp
 
-	if (!internal_removed)
-		return 1
+				var/heat_limit = 1000
 
-	var/combined_heat_capacity = internal_removed.heat_capacity() + RADIATION_CAPACITY
-	var/combined_energy = internal_removed.temperature * internal_removed.heat_capacity() + (RADIATION_CAPACITY * ENERGY_MULT)
+				var/mob/living/carbon/human/H = buckled_mob
+				if(istype(H) && H.species)
+					heat_limit = H.species.heat_level_3
 
-	var/final_temperature = combined_energy / combined_heat_capacity
+				if(pipe_air.temperature > heat_limit + 1)
+					buckled_mob.apply_damage(4 * log(pipe_air.temperature - heat_limit), BURN, "chest", used_weapon = "Excessive Heat")
 
-	internal_removed.temperature = final_temperature
-	internal.merge(internal_removed)
+			//fancy radiation glowing
+			if(pipe_air.temperature && (icon_temperature > 500 || pipe_air.temperature > 500)) //start glowing at 500K
+				if(abs(pipe_air.temperature - icon_temperature) > 10)
+					icon_temperature = pipe_air.temperature
 
-	if(parent && parent.network)
-		parent.network.update = 1
+					var/h_r = heat2color_r(icon_temperature)
+					var/h_g = heat2color_g(icon_temperature)
+					var/h_b = heat2color_b(icon_temperature)
 
-	return 1
+					if(icon_temperature < 2000) //scale up overlay until 2000K
+						var/scale = (icon_temperature - 500) / 1500
+						h_r = 64 + (h_r - 64)*scale
+						h_g = 64 + (h_g - 64)*scale
+						h_b = 64 + (h_b - 64)*scale
 
-/obj/machinery/atmospherics/pipe/simple/heat_exchanging/hidden
-	level=1
-	icon_state="intact-f"
+					animate(src, color = rgb(h_r, h_g, h_b), time = 20, easing = SINE_EASING)
 
-/////////////////////////////////
-// JUNCTION
-/////////////////////////////////
-/obj/machinery/atmospherics/pipe/simple/heat_exchanging/junction
-	icon = 'icons/obj/pipes/junction.dmi'
+
+
+
+obj/machinery/atmospherics/pipe/simple/heat_exchanging/junction
+	icon = 'icons/atmos/junction.dmi'
 	icon_state = "intact"
+	pipe_icon = "hejunction"
 	level = 2
 	minimum_temperature_difference = 300
 	thermal_conductivity = WALL_HEAT_TRANSFER_COEFFICIENT
 
 	// BubbleWrap
-/obj/machinery/atmospherics/pipe/simple/heat_exchanging/junction/New()
-	.. ()
-	switch ( dir )
-		if ( SOUTH )
-			initialize_directions = NORTH
-			initialize_directions_he = SOUTH
-		if ( NORTH )
-			initialize_directions = SOUTH
-			initialize_directions_he = NORTH
-		if ( EAST )
-			initialize_directions = WEST
-			initialize_directions_he = EAST
-		if ( WEST )
-			initialize_directions = EAST
-			initialize_directions_he = WEST
+	New()
+		.. ()
+		switch ( dir )
+			if ( SOUTH )
+				initialize_directions = NORTH
+				initialize_directions_he = SOUTH
+			if ( NORTH )
+				initialize_directions = SOUTH
+				initialize_directions_he = NORTH
+			if ( EAST )
+				initialize_directions = WEST
+				initialize_directions_he = EAST
+			if ( WEST )
+				initialize_directions = EAST
+				initialize_directions_he = WEST
 	// BubbleWrap END
 
-/obj/machinery/atmospherics/pipe/simple/heat_exchanging/junction/buildFrom(var/mob/usr,var/obj/item/pipe/pipe)
-	dir = pipe.dir
-	initialize_directions = pipe.get_pdir()
-	initialize_directions_he = pipe.get_hdir()
-	if (!initialize(1))
-		usr << "There's nothing to connect this junction to! (with how the pipe code works, at least one end needs to be connected to something, otherwise the game deletes the segment)"
-		return 0
-	build_network()
-	if (node1)
-		node1.initialize()
-		node1.build_network()
-	if (node2)
-		node2.initialize()
-		node2.build_network()
-	return 1
+	initialize()
+		for(var/obj/machinery/atmospherics/target in get_step(src,initialize_directions))
+			if(target.initialize_directions & get_dir(target,src))
+				node1 = target
+				break
+		for(var/obj/machinery/atmospherics/pipe/simple/heat_exchanging/target in get_step(src,initialize_directions_he))
+			if(target.initialize_directions_he & get_dir(target,src))
+				node2 = target
+				break
 
-/obj/machinery/atmospherics/pipe/simple/heat_exchanging/junction/update_icon()
-	if(node1&&node2)
-		icon_state = "intact[invisibility ? "-f" : "" ]"
-	else
-		var/have_node1 = node1?1:0
-		var/have_node2 = node2?1:0
-		icon_state = "exposed[have_node1][have_node2]"
+		if(!node1&&!node2)
+			del(src)
+			return
 
-	if(!node1&&!node2)
-		qdel(src)
-
-/obj/machinery/atmospherics/pipe/simple/heat_exchanging/junction/initialize(var/suppress_icon_check=0)
-	node1 = findConnecting(initialize_directions)
-	node2 = findConnectingHE(initialize_directions_he)
-
-	if(!suppress_icon_check)
 		update_icon()
-
-	return node1 || node2
-
-/obj/machinery/atmospherics/pipe/simple/heat_exchanging/junction/hidden
-	level=1
-	icon_state="intact-f"
+		return

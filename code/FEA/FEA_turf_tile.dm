@@ -107,7 +107,7 @@ turf/simulated
 	var/tmp/being_superconductive = 0
 
 	proc/update_visuals(datum/gas_mixture/model)
-		overlays.len = 0
+		overlays.Cut()
 
 		var/siding_icon_state = return_siding_icon_state()
 		if(siding_icon_state)

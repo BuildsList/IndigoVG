@@ -10,25 +10,10 @@
 	HandleError(runtimeError/e)
 		Compiler.Holder.add_entry(e.ToString(), "Execution Error")
 
-	GC()
-		..()
-		Compiler = null
-
-
 /datum/TCS_Compiler
-
 	var/n_Interpreter/TCS_Interpreter/interpreter
 	var/obj/machinery/telecomms/server/Holder	// the server that is running the code
 	var/ready = 1 // 1 if ready to run code
-
-	/* -- Set ourselves to Garbage Collect -- */
-
-	proc/GC()
-
-		Holder = null
-		if(interpreter)
-			interpreter.GC()
-
 
 	/* -- Compile a raw block of text -- */
 
@@ -69,9 +54,7 @@
 		interpreter.SetVar("E" 		, 	2.718281828)	// value of e
 		interpreter.SetVar("SQURT2" , 	1.414213562)	// value of the square root of 2
 		interpreter.SetVar("FALSE"  , 	0)				// boolean shortcut to 0
-		interpreter.SetVar("false"  , 	0)				// boolean shortcut to 0
 		interpreter.SetVar("TRUE"	,	1)				// boolean shortcut to 1
-		interpreter.SetVar("true"	,	1)				// boolean shortcut to 1
 
 		interpreter.SetVar("NORTH" 	, 	NORTH)			// NORTH (1)
 		interpreter.SetVar("SOUTH" 	, 	SOUTH)			// SOUTH (2)
@@ -79,13 +62,13 @@
 		interpreter.SetVar("WEST" 	, 	WEST)			// WEST  (8)
 
 		// Channel macros
-		interpreter.SetVar("$common",	1459)
-		interpreter.SetVar("$science",	1351)
-		interpreter.SetVar("$command",	1353)
-		interpreter.SetVar("$medical",	1355)
-		interpreter.SetVar("$engineering",1357)
-		interpreter.SetVar("$security",	1359)
-		interpreter.SetVar("$supply",	1347)
+		interpreter.SetVar("$common",	PUB_FREQ)
+		interpreter.SetVar("$science",	SCI_FREQ)
+		interpreter.SetVar("$command",	COMM_FREQ)
+		interpreter.SetVar("$medical",	MED_FREQ)
+		interpreter.SetVar("$engineering",ENG_FREQ)
+		interpreter.SetVar("$security",	SEC_FREQ)
+		interpreter.SetVar("$supply",	SUP_FREQ)
 
 		// Signal data
 
@@ -108,15 +91,6 @@
 					@param job:			The name of the job.
 		*/
 		interpreter.SetProc("broadcast", "tcombroadcast", signal, list("message", "freq", "source", "job"))
-
-		/*
-			-> Send a code signal.
-					@format: signal(frequency, code)
-
-					@param frequency:		Frequency to send the signal to
-					@param code:			Encryption code to send the signal with
-		*/
-		interpreter.SetProc("signal", "signaler", signal, list("freq", "code"))
 
 		/*
 			-> Store a value permanently to the server machine (not the actual game hosting machine, the ingame machine)
@@ -201,12 +175,8 @@
 		interpreter.SetProc("round", /proc/n_round)
 		interpreter.SetProc("clamp", /proc/n_clamp)
 		interpreter.SetProc("inrange", /proc/n_inrange)
-		interpreter.SetProc("rand", /proc/rand_chance)
 		// End of Donkie~
 
-		// Time
-		interpreter.SetProc("time", /proc/time)
-		interpreter.SetProc("timestamp", /proc/timestamp)
 
 		// Run the compiled code
 		interpreter.Run()
@@ -214,24 +184,27 @@
 		// Backwards-apply variables onto signal data
 		/* sanitize EVERYTHING. fucking players can't be trusted with SHIT */
 
-		signal.data["message"] 	= interpreter.GetCleanVar("$content", signal.data["message"])
-		signal.frequency 		= interpreter.GetCleanVar("$freq", signal.frequency)
+		signal.data["message"] 	= interpreter.GetVar("$content")
+		signal.frequency 		= interpreter.GetVar("$freq")
 
-		var/setname = interpreter.GetCleanVar("$source", signal.data["name"])
+		var/setname = ""
+		var/obj/machinery/telecomms/server/S = signal.data["server"]
+		if(interpreter.GetVar("$source") in S.stored_names)
+			setname = interpreter.GetVar("$source")
+		else
+			setname = "<i>[interpreter.GetVar("$source")]</i>"
 
 		if(signal.data["name"] != setname)
 			signal.data["realname"] = setname
 		signal.data["name"]		= setname
-		signal.data["job"]		= interpreter.GetCleanVar("$job", signal.data["job"])
-		signal.data["reject"]	= !(interpreter.GetCleanVar("$pass")) // set reject to the opposite of $pass
+		signal.data["job"]		= interpreter.GetVar("$job")
+		signal.data["reject"]	= !(interpreter.GetVar("$pass")) // set reject to the opposite of $pass
 
 		// If the message is invalid, just don't broadcast it!
 		if(signal.data["message"] == "" || !signal.data["message"])
 			signal.data["reject"] = 1
 
 /*  -- Actual language proc code --  */
-
-var/const/SIGNAL_COOLDOWN = 20 // 2 seconds
 
 datum/signal
 
@@ -247,37 +220,6 @@ datum/signal
 				S.memory[address] = value
 
 
-	proc/signaler(var/freq = 1459, var/code = 30)
-
-		if(isnum(freq) && isnum(code))
-
-			var/obj/machinery/telecomms/server/S = data["server"]
-
-			if(S.last_signal + SIGNAL_COOLDOWN > world.timeofday && S.last_signal < MIDNIGHT_ROLLOVER)
-				return
-			S.last_signal = world.timeofday
-
-			var/datum/radio_frequency/connection = radio_controller.return_frequency(freq)
-
-			if(findtext(num2text(freq), ".")) // if the frequency has been set as a decimal
-				freq *= 10 // shift the decimal one place
-
-			freq = sanitize_frequency(freq)
-
-			code = round(code)
-			code = Clamp(code, 0, 100)
-
-			var/datum/signal/signal = new
-			signal.source = S
-			signal.encryption = code
-			signal.data["message"] = "ACTIVATE"
-
-			connection.post_signal(S, signal)
-
-			var/time = time2text(world.realtime,"hh:mm:ss")
-			lastsignalers.Add("[time] <B>:</B> [S.id] sent a signal command, which was triggered by NTSL.<B>:</B> [format_frequency(freq)]/[code]")
-
-
 	proc/tcombroadcast(var/message, var/freq, var/source, var/job)
 
 		var/datum/signal/newsign = new
@@ -291,31 +233,24 @@ datum/signal
 		if((!message || message == "") && message != 0)
 			message = "*beep*"
 		if(!source)
-			source = "[rhtml_encode(uppertext(S.id))]"
+			source = "[html_encode(uppertext(S.id))]"
 			hradio = new // sets the hradio as a radio intercom
-		if(!freq || (!isnum(freq) && text2num(freq) == null))
-			freq = 1459
+		if(!freq)
+			freq = PUB_FREQ
 		if(findtext(num2text(freq), ".")) // if the frequency has been set as a decimal
 			freq *= 10 // shift the decimal one place
 
 		if(!job)
-			job = "Unknown"
+			job = "?"
 
-		//SAY REWRITE RELATED CODE.
-		//This code is a little hacky, but it *should* work. Even though it'll result in a virtual speaker referencing another virtual speaker. vOv
-		var/atom/movable/virtualspeaker/virt = getFromPool(/atom/movable/virtualspeaker, null)
-		virt.name = source
-		virt.job = job
-		virt.faketrack = 1
-		virt.languages = HUMAN
-		//END SAY REWRITE RELATED CODE.
-
-
-		newsign.data["mob"] = virt
+		newsign.data["mob"] = null
 		newsign.data["mobtype"] = /mob/living/carbon/human
-		newsign.data["name"] = source
+		if(source in S.stored_names)
+			newsign.data["name"] = source
+		else
+			newsign.data["name"] = "<i>[html_encode(uppertext(source))]<i>"
 		newsign.data["realname"] = newsign.data["name"]
-		newsign.data["job"] = "[job]"
+		newsign.data["job"] = job
 		newsign.data["compression"] = 0
 		newsign.data["message"] = message
 		newsign.data["type"] = 2 // artificial broadcast
@@ -331,9 +266,7 @@ datum/signal
 		newsign.data["vmessage"] = message
 		newsign.data["vname"] = source
 		newsign.data["vmask"] = 0
-		newsign.data["level"] = data["level"]
-
-		newsign.sanitize_data()
+		newsign.data["level"] = list()
 
 		var/pass = S.relay_information(newsign, "/obj/machinery/telecomms/hub")
 		if(!pass)

@@ -21,7 +21,7 @@
 	harm_intent_damage = 5
 	melee_damage_lower = 8
 	melee_damage_upper = 12
-	attacktext = "bites"
+	attacktext = "bitten"
 	attack_sound = 'sound/weapons/bite.ogg'
 
 	//Space carp aren't affected by atmos.
@@ -35,12 +35,12 @@
 	max_n2 = 0
 	minbodytemp = 0
 
-	faction = "forest"
+	faction = "carp"
 
 /mob/living/simple_animal/hostile/tree/FindTarget()
 	. = ..()
 	if(.)
-		emote("growls at [.]")
+		audible_emote("growls at [.]")
 
 /mob/living/simple_animal/hostile/tree/AttackingTarget()
 	. =..()
@@ -50,21 +50,7 @@
 			L.Weaken(3)
 			L.visible_message("<span class='danger'>\the [src] knocks down \the [L]!</span>")
 
-/mob/living/simple_animal/hostile/tree/Die()
-	..()
-	visible_message("\red <b>[src]</b> is hacked into pieces!")
+/mob/living/simple_animal/hostile/tree/death()
+	..(null,"is hacked into pieces!")
 	new /obj/item/stack/sheet/wood(loc)
-	del(src)
-
-/mob/living/simple_animal/hostile/tree/festivus
-	name = "festivus pole"
-	desc = "serenity now... SERENITY NOW!"
-	icon_state = "festivus_pole"
-	icon_living = "festivus_pole"
-	icon_dead = "festivus_pole"
-	icon_gib = "festivus_pole"
-
-/mob/living/simple_animal/hostile/tree/festivus/Die()
-	visible_message("\red <b>[src]</b> is hacked into pieces!")
-	new /obj/item/weapon/nullrod(loc)
 	del(src)

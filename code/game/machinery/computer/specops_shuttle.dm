@@ -12,7 +12,7 @@ var/specops_shuttle_time = 0
 var/specops_shuttle_timeleft = 0
 
 /obj/machinery/computer/specops_shuttle
-	name = "Spec. Ops. Shuttle Console"
+	name = "special operations shuttle control console"
 	icon = 'icons/obj/computer.dmi'
 	icon_state = "shuttle"
 	req_access = list(access_cent_specops)
@@ -22,15 +22,14 @@ var/specops_shuttle_timeleft = 0
 	var/allowedtocall = 0
 	var/specops_shuttle_timereset = 0
 
-	l_color = "#7BF9FF"
-
 /proc/specops_return()
-	var/obj/item/device/radio/intercom/announcer = announcement_intercom
+	var/obj/item/device/radio/intercom/announcer = new /obj/item/device/radio/intercom(null)//We need a fake AI to announce some stuff below. Otherwise it will be wonky.
+	announcer.config(list("Response Team" = 0))
 
 	var/message_tracker[] = list(0,1,2,3,5,10,30,45)//Create a a list with potential time values.
 	var/message = "\"THE SPECIAL OPERATIONS SHUTTLE IS PREPARING TO RETURN\""//Initial message shown.
 	if(announcer)
-		Broadcast_Message(announcer, null, announcer, message, "A.L.I.C.E.", "Response Team", "A.L.I.C.E.", 0, 0, list(0,1), radiochannels["Response Team"])
+		announcer.autosay(message, "A.L.I.C.E.", "Response Team")
 
 	while(specops_shuttle_time - world.timeofday > 0)
 		var/ticksleft = specops_shuttle_time - world.timeofday
@@ -46,7 +45,7 @@ var/specops_shuttle_timeleft = 0
 				message = "\"ALERT: [rounded_time_left] SECOND[(rounded_time_left!=1)?"S":""] REMAIN\""
 				if(rounded_time_left==0)
 					message = "\"ALERT: TAKEOFF\""
-				Broadcast_Message(announcer, null, announcer, message, "A.L.I.C.E.", "Response Team", "A.L.I.C.E.", 0, 0, list(0,1), radiochannels["Response Team"])
+				announcer.autosay(message, "A.L.I.C.E.", "Response Team")
 				message_tracker -= rounded_time_left//Remove the number from the list so it won't be called again next cycle.
 				//Should call all the numbers but lag could mean some issues. Oh well. Not much I can do about that.
 
@@ -78,6 +77,12 @@ var/specops_shuttle_timeleft = 0
 		if(istype(T, /turf/simulated))
 			del(T)
 
+	for(var/mob/living/carbon/bug in end_location) // If someone somehow is still in the shuttle's docking area...
+		bug.gib()
+
+	for(var/mob/living/simple_animal/pest in end_location) // And for the other kind of bug...
+		pest.gib()
+
 	start_location.move_contents_to(end_location)
 
 	for(var/turf/T in get_area_turfs(end_location) )
@@ -93,14 +98,15 @@ var/specops_shuttle_timeleft = 0
 
 /proc/specops_process()
 	var/area/centcom/specops/special_ops = locate()//Where is the specops area located?
-	var/obj/item/device/radio/intercom/announcer = announcement_intercom
+	var/obj/item/device/radio/intercom/announcer = new /obj/item/device/radio/intercom(null)//We need a fake AI to announce some stuff below. Otherwise it will be wonky.
+	announcer.config(list("Response Team" = 0))
 
 	var/message_tracker[] = list(0,1,2,3,5,10,30,45)//Create a a list with potential time values.
 	var/message = "\"THE SPECIAL OPERATIONS SHUTTLE IS PREPARING FOR LAUNCH\""//Initial message shown.
 	if(announcer)
-		Broadcast_Message(announcer, null, announcer, message, "A.L.I.C.E.", "Response Team", "A.L.I.C.E.", 0, 0, list(0,1), radiochannels["Response Team"])
+		announcer.autosay(message, "A.L.I.C.E.", "Response Team")
 //		message = "ARMORED SQUAD TAKE YOUR POSITION ON GRAVITY LAUNCH PAD"
-//		announcer.autosay(message, "A.L.I.C.E.", "A.L.I.C.E.")
+//		announcer.autosay(message, "A.L.I.C.E.", "Response Team")
 
 	while(specops_shuttle_time - world.timeofday > 0)
 		var/ticksleft = specops_shuttle_time - world.timeofday
@@ -116,7 +122,7 @@ var/specops_shuttle_timeleft = 0
 				message = "\"ALERT: [rounded_time_left] SECOND[(rounded_time_left!=1)?"S":""] REMAIN\""
 				if(rounded_time_left==0)
 					message = "\"ALERT: TAKEOFF\""
-				Broadcast_Message(announcer, null, announcer, message, "A.L.I.C.E.", "Response Team", "A.L.I.C.E.", 0, 0, list(0,1), radiochannels["Response Team"])
+				announcer.autosay(message, "A.L.I.C.E.", "Response Team")
 				message_tracker -= rounded_time_left//Remove the number from the list so it won't be called again next cycle.
 				//Should call all the numbers but lag could mean some issues. Oh well. Not much I can do about that.
 
@@ -134,8 +140,8 @@ var/specops_shuttle_timeleft = 0
 
 	//Begin Marauder launchpad.
 	spawn(0)//So it parallel processes it.
-		for(var/obj/machinery/door/poddoor/M in special_ops)
-			switch(M.id_tag)
+		for(var/obj/machinery/door/blast/M in special_ops)
+			switch(M.id)
 				if("ASSAULT0")
 					spawn(10)//1 second delay between each.
 						M.open()
@@ -166,7 +172,7 @@ var/specops_shuttle_timeleft = 0
 		sleep(10)
 
 		for(var/obj/machinery/mass_driver/M in special_ops)
-			switch(M.id_tag)
+			switch(M.id)
 				if("ASSAULT0")
 					spawn(10)
 						M.drive()
@@ -182,8 +188,8 @@ var/specops_shuttle_timeleft = 0
 
 		sleep(50)//Doors remain open for 5 seconds.
 
-		for(var/obj/machinery/door/poddoor/M in special_ops)
-			switch(M.id_tag)//Doors close at the same time.
+		for(var/obj/machinery/door/blast/M in special_ops)
+			switch(M.id)//Doors close at the same time.
 				if("ASSAULT0")
 					spawn(0)
 						M.close()
@@ -240,24 +246,23 @@ var/specops_shuttle_timeleft = 0
 	return 1
 
 /obj/machinery/computer/specops_shuttle/attack_ai(var/mob/user as mob)
-	src.add_hiddenprint(user)
 	return attack_hand(user)
 
-/obj/machinery/computer/specops_shuttle/attack_paw(var/mob/user as mob)
-	return attack_hand(user)
-
-/obj/machinery/computer/specops_shuttle/emag(mob/user as mob)
-	user << "\blue The electronic systems in this console are far too advanced for your primitive hacking peripherals."
-	return
+/obj/machinery/computer/specops_shuttle/attackby(I as obj, user as mob)
+	if(istype(I,/obj/item/weapon/card/emag))
+		user << "\blue The electronic systems in this console are far too advanced for your primitive hacking peripherals."
+	else
+		return attack_hand(user)
 
 /obj/machinery/computer/specops_shuttle/attack_hand(var/mob/user as mob)
 	if(!allowed(user))
 		user << "\red Access Denied."
 		return
 
-	if (sent_strike_team == 0 && send_emergency_team == 0)
-		usr << "\red The strike team has not yet deployed."
-		return
+//Commented out so admins can do shenanigans at their leisure. Also makes the force-spawned admin ERTs able to use the shuttle.
+//	if (sent_strike_team == 0 && send_emergency_team == 0)
+//		usr << "\red The strike team has not yet deployed."
+//		return
 
 	if(..())
 		return
@@ -278,7 +283,7 @@ var/specops_shuttle_timeleft = 0
 
 /obj/machinery/computer/specops_shuttle/Topic(href, href_list)
 	if(..())
-		return
+		return 1
 
 	if ((usr.contents.Find(src) || (in_range(src, usr) && istype(loc, /turf))) || (istype(usr, /mob/living/silicon)))
 		usr.machine = src
@@ -318,8 +323,6 @@ var/specops_shuttle_timeleft = 0
 
 		var/area/centcom/specops/special_ops = locate()
 		if(special_ops)
-			if(special_ops.master)
-				special_ops=special_ops.master
 			special_ops.readyalert()//Trigger alarm for the spec ops area.
 		specops_shuttle_moving_to_station = 1
 
@@ -358,14 +361,14 @@ var/specops_shuttle_timeleft = 0
 /proc/specops_process()
 	var/area/centcom/control/cent_com = locate()//To find announcer. This area should exist for this proc to work.
 	var/area/centcom/specops/special_ops = locate()//Where is the specops area located?
-	var/obj/item/device/radio/intercom/announcer = announcement_intercom
+	var/mob/living/silicon/decoy/announcer = locate() in cent_com//We need a fake AI to announce some stuff below. Otherwise it will be wonky.
 
 	var/message_tracker[] = list(0,1,2,3,5,10,30,45)//Create a a list with potential time values.
 	var/message = "THE SPECIAL OPERATIONS SHUTTLE IS PREPARING FOR LAUNCH"//Initial message shown.
 	if(announcer)
-		Broadcast_Message(announcer, null, announcer, message, "A.L.I.C.E.", "A.L.I.C.E.", "A.L.I.C.E.", 0, 0, list(0,1), radiochannels["Response Team"])
+		announcer.say(message)
 		message = "ARMORED SQUAD TAKE YOUR POSITION ON GRAVITY LAUNCH PAD"
-		Broadcast_Message(announcer, null, announcer, message, "A.L.I.C.E.", "A.L.I.C.E.", "A.L.I.C.E."", 0, 0, list(0,1), radiochannels["Response Team"])
+		announcer.say(message)
 
 	while(specops_shuttle_time - world.timeofday > 0)
 		var/ticksleft = specops_shuttle_time - world.timeofday
@@ -381,7 +384,7 @@ var/specops_shuttle_timeleft = 0
 				message = "ALERT: [rounded_time_left] SECOND[(rounded_time_left!=1)?"S":""] REMAIN"
 				if(rounded_time_left==0)
 					message = "ALERT: TAKEOFF"
-				Broadcast_Message(announcer, null, announcer, message, "A.L.I.C.E.", "Response Team", "A.L.I.C.E.", 0, 0, list(0,1), radiochannels["Response Team"])
+				announcer.say(message)
 				message_tracker -= rounded_time_left//Remove the number from the list so it won't be called again next cycle.
 				//Should call all the numbers but lag could mean some issues. Oh well. Not much I can do about that.
 
@@ -538,7 +541,7 @@ var/specops_shuttle_timeleft = 0
 
 /obj/machinery/computer/specops_shuttle/Topic(href, href_list)
 	if(..())
-		return
+		return 1
 
 	if ((usr.contents.Find(src) || (in_range(src, usr) && istype(loc, /turf))) || (istype(usr, /mob/living/silicon)))
 		usr.set_machine(src)
@@ -563,8 +566,6 @@ var/specops_shuttle_timeleft = 0
 
 		var/area/centcom/specops/special_ops = locate()
 		if(special_ops)
-			if(special_ops.master)
-				special_ops=special_ops.master
 			special_ops.readyalert()//Trigger alarm for the spec ops area.
 		specops_shuttle_moving_to_station = 1
 

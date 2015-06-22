@@ -1,13 +1,12 @@
 /obj/item/device/taperecorder
-	desc = "A device that can record up to an hour of dialogue and play it back. It automatically translates the content in playback."
 	name = "universal recorder"
+	desc = "A device that can record up to an hour of dialogue and play it back. It automatically translates the content in playback."
 	icon_state = "taperecorderidle"
 	item_state = "analyzer"
-	w_class = 1.0
-	m_amt = 60
-	g_amt = 30
-	w_type = RECYK_ELECTRONIC
-	melt_temperature = MELTPOINT_PLASTIC
+	w_class = 2.0
+
+	matter = list("metal" = 60,"glass" = 30)
+
 	var/emagged = 0.0
 	var/recording = 0.0
 	var/playing = 0.0
@@ -16,16 +15,19 @@
 	var/list/storedinfo = new/list()
 	var/list/timestamp = new/list()
 	var/canprint = 1
-	flags = FPRINT | HEAR
-	siemens_coefficient = 1
+	flags = CONDUCT
 	throwforce = 2
 	throw_speed = 4
 	throw_range = 20
 
-/obj/item/device/taperecorder/Hear(message, atom/movable/speaker, message_langs, raw_message, radio_freq)
+/obj/item/device/taperecorder/hear_talk(mob/living/M as mob, msg, var/verb="says", datum/language/speaking=null)
 	if(recording)
 		timestamp += timerecorded
-		storedinfo += "\[[time2text(timerecorded*10,"mm:ss")]\] [strip_html_properly(rhtml_decode(raw_message))]"
+
+		if(speaking)
+			storedinfo += "\[[time2text(timerecorded*10,"mm:ss")]\] [M.name] [speaking.format_message_plain(msg, verb)]"
+		else
+			storedinfo += "\[[time2text(timerecorded*10,"mm:ss")]\] [M.name] [verb], \"[msg]\""
 
 /obj/item/device/taperecorder/attackby(obj/item/weapon/W as obj, mob/user as mob)
 	..()
@@ -44,7 +46,7 @@
 		var/mob/M = loc
 		M << "<span class='danger'>\The [src] explodes!</span>"
 	if(T)
-		T.hotspot_expose(700,125,surfaces=istype(loc,/turf))
+		T.hotspot_expose(700,125)
 		explosion(T, -1, -1, 0, 4)
 	del(src)
 	return
@@ -200,7 +202,7 @@
 	for(var/i=1,storedinfo.len >= i,i++)
 		t1 += "[storedinfo[i]]<BR>"
 	P.info = t1
-	P.name = "paper- 'Transcript'"
+	P.name = "Transcript"
 	canprint = 0
 	sleep(300)
 	canprint = 1

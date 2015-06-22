@@ -1,5 +1,5 @@
 /obj/structure/closet/syndicate
-	name = "armoury closet"
+	name = "armory closet"
 	desc = "Why is this here?"
 	icon_state = "syndicate"
 	icon_closed = "syndicate"
@@ -11,12 +11,11 @@
 
 /obj/structure/closet/syndicate/personal/New()
 	..()
-	sleep(2)
 	new /obj/item/weapon/tank/jetpack/oxygen(src)
 	new /obj/item/clothing/mask/gas/syndicate(src)
 	new /obj/item/clothing/under/syndicate(src)
-	new /obj/item/clothing/head/helmet/space/rig/syndi(src)
-	new /obj/item/clothing/suit/space/rig/syndi(src)
+	new /obj/item/clothing/head/helmet/space/void/merc(src)
+	new /obj/item/clothing/suit/space/void/merc(src)
 	new /obj/item/weapon/crowbar/red(src)
 	new /obj/item/weapon/cell/high(src)
 	new /obj/item/weapon/card/id/syndicate(src)
@@ -25,20 +24,31 @@
 	new /obj/item/clothing/shoes/magboots(src)
 
 
+/obj/structure/closet/syndicate/suit
+	desc = "It's a storage unit for voidsuits."
+
+/obj/structure/closet/syndicate/suit/New()
+	..()
+	new /obj/item/weapon/tank/jetpack/oxygen(src)
+	new /obj/item/clothing/shoes/magboots(src)
+	new /obj/item/clothing/suit/space/void/merc(src)
+	new /obj/item/clothing/mask/gas/syndicate(src)
+	new /obj/item/clothing/head/helmet/space/void/merc(src)
+
+
 /obj/structure/closet/syndicate/nuclear
 	desc = "It's a storage unit for nuclear-operative gear."
 
 /obj/structure/closet/syndicate/nuclear/New()
 	..()
-	sleep(2)
-	new /obj/item/ammo_storage/magazine/a12mm(src)
-	new /obj/item/ammo_storage/magazine/a12mm(src)
-	new /obj/item/ammo_storage/magazine/a12mm(src)
-	new /obj/item/ammo_storage/magazine/a12mm(src)
-	new /obj/item/ammo_storage/magazine/a12mm(src)
+	
+	new /obj/item/ammo_magazine/a12mm(src)
+	new /obj/item/ammo_magazine/a12mm(src)
+	new /obj/item/ammo_magazine/a12mm(src)
+	new /obj/item/ammo_magazine/a12mm(src)
+	new /obj/item/ammo_magazine/a12mm(src)
 	new /obj/item/weapon/storage/box/handcuffs(src)
 	new /obj/item/weapon/storage/box/flashbangs(src)
-	new /obj/item/weapon/storage/box/emps(src)
 	new /obj/item/weapon/gun/energy/gun(src)
 	new /obj/item/weapon/gun/energy/gun(src)
 	new /obj/item/weapon/gun/energy/gun(src)
@@ -65,7 +75,6 @@
 		var/rare_max = 20 //Maximum HONK HONK HONK in the HONK for HONK rare HONK
 
 
-		sleep(2)
 
 		var/pickednum = rand(1, 50)
 
@@ -81,15 +90,15 @@
 
 		//Glass (common ore)
 		if(pickednum >= 5)
-			new /obj/item/stack/sheet/glass/glass(src, rand(common_min, common_max))
+			new /obj/item/stack/sheet/glass(src, rand(common_min, common_max))
 
-		//Plasteel (common ore) Because it has a million more uses then plasma
+		//Plasteel (common ore) Because it has a million more uses then phoron
 		if(pickednum >= 10)
 			new /obj/item/stack/sheet/plasteel(src, rand(common_min, common_max))
 
-		//Plasma (rare ore)
+		//Phoron (rare ore)
 		if(pickednum >= 15)
-			new /obj/item/stack/sheet/mineral/plasma(src, rand(rare_min, rare_max))
+			new /obj/item/stack/sheet/mineral/phoron(src, rand(rare_min, rare_max))
 
 		//Silver (rare ore)
 		if(pickednum >= 20)
@@ -119,18 +128,16 @@
 	New()
 		var/list/resources = list(
 		/obj/item/stack/sheet/metal,
-		/obj/item/stack/sheet/glass/glass,
+		/obj/item/stack/sheet/glass,
 		/obj/item/stack/sheet/mineral/gold,
 		/obj/item/stack/sheet/mineral/silver,
-		/obj/item/stack/sheet/mineral/plasma,
+		/obj/item/stack/sheet/mineral/phoron,
 		/obj/item/stack/sheet/mineral/uranium,
 		/obj/item/stack/sheet/mineral/diamond,
-		/obj/item/stack/sheet/mineral/clown,
 		/obj/item/stack/sheet/plasteel,
 		/obj/item/stack/rods
 		)
 
-		sleep(2)
 
 		for(var/i = 0, i<2, i++)
 			for(var/res in resources)
@@ -138,19 +145,3 @@
 				R.amount = R.max_amount
 
 		return
-
-/obj/structure/closet/vox_raiders
-	name = "vox armoury closet"
-	desc = "Polly wants a gun."
-	icon_state = "syndicate"
-	icon_closed = "syndicate"
-	icon_opened = "syndicateopen"
-
-	New()
-		sleep(2)
-		new /obj/item/clothing/head/helmet/space/vox/pressure(src)
-		new /obj/item/clothing/mask/breath/vox(src)
-		new /obj/item/clothing/shoes/magboots/vox(src)
-		new /obj/item/clothing/suit/space/vox/pressure(src)
-		new /obj/item/clothing/under/vox/vox_casual(src)
-		new /obj/item/weapon/tank/jetpack/nitrogen(src)

@@ -1,31 +1,35 @@
 /datum/event/pda_spam
-	endWhen = 900 //No need to overdo it
-	var/time_failed = 0
+	endWhen = 36000
+	var/last_spam_time = 0
 	var/obj/machinery/message_server/useMS
 
 /datum/event/pda_spam/setup()
-	time_failed = world.time
-	for (var/obj/machinery/message_server/MS in message_servers)
-		if(MS.active)
-			useMS = MS
-			break
+	last_spam_time = world.time
+	pick_message_server()
+
+/datum/event/pda_spam/proc/pick_message_server()
+	if(message_servers)
+		for (var/obj/machinery/message_server/MS in message_servers)
+			if(MS.active)
+				useMS = MS
+				break
 
 /datum/event/pda_spam/tick()
+	if(world.time > last_spam_time + 3000)
+		//if there's no spam managed to get to receiver for five minutes, give up
+		kill()
+		return
+
 	if(!useMS || !useMS.active)
 		useMS = null
-		if(message_servers)
-			for (var/obj/machinery/message_server/MS in message_servers)
-				if(MS.active)
-					useMS = MS
-					break
+		pick_message_server()
 
 	if(useMS)
-		time_failed = world.time
-		if(prob(2))
+		if(prob(5))
 			// /obj/machinery/message_server/proc/send_pda_message(var/recipient = "",var/sender = "",var/message = "")
 			var/obj/item/device/pda/P
 			var/list/viables = list()
-			for(var/obj/item/device/pda/check_pda in sortNames(PDAs))
+			for(var/obj/item/device/pda/check_pda in sortAtom(PDAs))
 				if (!check_pda.owner||check_pda.toff||check_pda == src||check_pda.hidden)
 					continue
 				viables.Add(check_pda)
@@ -33,10 +37,6 @@
 			if(!viables.len)
 				return
 			P = pick(viables)
-
-			var/datum/pda_app/spam_filter/filter_app = locate(/datum/pda_app/spam_filter) in P.applications
-			if(filter_app && (filter_app.function == 2))
-				return//spam blocked!
 
 			var/sender
 			var/message
@@ -55,7 +55,7 @@
 					"You have (1) new message!",\
 					"You have (2) new profile views!")
 				if(3)
-					sender = pick("Galactic Payments Association","Better Business Bureau","Tau Ceti E-Payments","NAnoTransen Finance Deparmtent","Luxury Replicas")
+					sender = pick("Galactic Payments Association","Better Business Bureau","Nyx E-Payments","NAnoTransen Finance Deparmtent","Luxury Replicas")
 					message = pick("Luxury watches for Blowout sale prices!",\
 					"Watches, Jewelry & Accessories, Bags & Wallets !",\
 					"Deposit 100$ and get 300$ totally free!",\
@@ -70,11 +70,8 @@
 					"Men of all species report AMAZING increases in length, width and stamina.")
 				if(5)
 					sender = pick("Dr","Crown prince","King Regent","Professor","Captain")
-
-					// AUTOFIXED BY fix_string_idiocy.py
-					// C:\Users\Rob\Documents\Projects\vgstation13\code\modules\events\money_spam.dm:69: sender += " " + pick("Robert","Alfred","Josephat","Kingsley","Sehi","Zbahi")
-					sender += " [pick("Robert","Alfred","Josephat","Kingsley","Sehi","Zbahi")] [pick("Mugawe","Nkem","Gbatokwia","Nchekwube","Ndim","Ndubisi")]"
-					// END AUTOFIX
+					sender += " " + pick("Robert","Alfred","Josephat","Kingsley","Sehi","Zbahi")
+					sender += " " + pick("Mugawe","Nkem","Gbatokwia","Nchekwube","Ndim","Ndubisi")
 					message = pick("YOUR FUND HAS BEEN MOVED TO [pick("Salusa","Segunda","Cepheus","Andromeda","Gruis","Corona","Aquila","ARES","Asellus")] DEVELOPMENTARY BANK FOR ONWARD REMITTANCE.",\
 					"We are happy to inform you that due to the delay, we have been instructed to IMMEDIATELY deposit all funds into your account",\
 					"Dear fund beneficiary, We have please to inform you that overdue funds payment has finally been approved and released for payment",\
@@ -93,7 +90,10 @@
 					"You have won tickets to the newest romantic comedy 16 RULES OF LOVE!",\
 					"You have won tickets to the newest thriller THE CULT OF THE SLEEPING ONE!")
 
-			useMS.send_pda_message("[P.owner]", sender, message)
+			if (useMS.send_pda_message("[P.owner]", sender, message))	//Message been filtered by spam filter.
+				return
+
+			last_spam_time = world.time
 
 			if (prob(50)) //Give the AI an increased chance to intercept the message
 				for(var/mob/living/silicon/ai/ai in mob_list)
@@ -101,13 +101,13 @@
 					if(ai.aiPDA != P && ai.aiPDA != src)
 						ai.show_message("<i>Intercepted message from <b>[sender]</b></i> (Unknown / spam?) <i>to <b>[P:owner]</b>: [message]</i>")
 
-			P.tnote += "<i><b>&larr; From [sender] (Unknown / spam?):</b></i><br>[message]<br>"
+			//Commented out because we don't send messages like this anymore.  Instead it will just popup in their chat window.
+			//P.tnote += "<i><b>&larr; From [sender] (Unknown / spam?):</b></i><br>[message]<br>"
 
-			if(!filter_app || (filter_app.function == 0))//checking if the PDA has the spam filtering app installed
-				if (!P.silent)
-					playsound(P.loc, 'sound/machines/twobeep.ogg', 50, 1)
-				for (var/mob/O in hearers(3, P.loc))
-					if(!P.silent) O.show_message(text("\icon[P] *[P.ttone]*"))
+			if (!P.message_silent)
+				playsound(P.loc, 'sound/machines/twobeep.ogg', 50, 1)
+			for (var/mob/O in hearers(3, P.loc))
+				if(!P.message_silent) O.show_message(text("\icon[P] *[P.ttone]*"))
 			//Search for holder of the PDA.
 			var/mob/living/L = null
 			if(P.loc && isliving(P.loc))
@@ -116,8 +116,5 @@
 			else
 				L = get(P, /mob/living/silicon)
 
-			if(L && (!filter_app || (filter_app.function == 0)))//the owner will still be able to manually read the spam in his Message log.
+			if(L)
 				L << "\icon[P] <b>Message from [sender] (Unknown / spam?), </b>\"[message]\" (Unable to Reply)"
-	else if(world.time > time_failed + 1200)
-		//if there's no server active for two minutes, give up
-		kill()

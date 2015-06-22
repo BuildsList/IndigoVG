@@ -16,7 +16,7 @@ var/list/advance_cures = 	list(
 									"nutriment", "sugar", "orangejuice",
 									"spaceacillin", "kelotane", "ethanol",
 									"leporazine", "synaptizine", "lipozine",
-									"silver", "gold", "plasma"
+									"silver", "gold", "phoron"
 								)
 
 /*
@@ -125,7 +125,8 @@ var/list/advance_cures = 	list(
 // Mix the symptoms of two diseases (the src and the argument)
 /datum/disease/advance/proc/Mix(var/datum/disease/advance/D)
 	if(!(src.IsSame(D)))
-		for(var/datum/symptom/S in shuffle(D.symptoms))
+		var/list/possible_symptoms = shuffle(D.symptoms)
+		for(var/datum/symptom/S in possible_symptoms)
 			AddSymptom(new S.type)
 
 /datum/disease/advance/proc/HasSymptom(var/datum/symptom/S)
@@ -393,7 +394,7 @@ var/list/advance_cures = 	list(
 
 	if(D.symptoms.len > 0)
 
-		var/new_name = copytext(sanitize(input(user, "Name your new disease.", "New Name")),1,MAX_NAME_LEN)
+		var/new_name = input(user, "Name your new disease.", "New Name")
 		D.AssignName(new_name)
 		D.Refresh()
 

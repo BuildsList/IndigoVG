@@ -22,14 +22,12 @@ effective or pretty fucking useless.
 	w_class = 1.0
 	throw_speed = 4
 	throw_range = 10
-	flags = FPRINT
-	siemens_coefficient = 1
+	flags = CONDUCT
 	item_state = "electronic"
 	origin_tech = "magnets=3;combat=3;syndicate=3"
 
 	var/times_used = 0 //Number of times it's been used.
 	var/max_uses = 2
-
 
 /obj/item/device/batterer/attack_self(mob/living/carbon/user as mob, flag = 0, emp = 0)
 	if(!user) 	return
@@ -47,20 +45,12 @@ effective or pretty fucking useless.
 				if(prob(25))
 					M.Stun(rand(5,10))
 				M << "\red <b>You feel a tremendous, paralyzing wave flood your mind.</b>"
-				if(!iscarbon(user))
-					M.LAssailant = null
-				else
-					M.LAssailant = user
 
 			else
 				M << "\red <b>You feel a sudden, electric jolt travel through your head.</b>"
 
-	playsound(get_turf(src), 'sound/misc/interference.ogg', 50, 1)
+	playsound(src.loc, 'sound/misc/interference.ogg', 50, 1)
 	user << "\blue You trigger [src]."
 	times_used += 1
 	if(times_used >= max_uses)
 		icon_state = "battererburnt"
-
-
-
-

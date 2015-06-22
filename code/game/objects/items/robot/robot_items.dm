@@ -14,12 +14,6 @@
 		user.attack_log += text("\[[time_stamp()]\] <font color='red'>Used the [src.name] to attack [M.name] ([M.ckey])</font>")
 		msg_admin_attack("[user.name] ([user.ckey]) used the [src.name] to attack [M.name] ([M.ckey]) (<A HREF='?_src_=holder;adminplayerobservecoodjump=1;X=[user.x];Y=[user.y];Z=[user.z]'>JMP</a>)")
 
-
-		if(!iscarbon(user))
-			M.LAssailant = null
-		else
-			M.LAssailant = user
-
 		user.cell.charge -= 30
 
 		M.Weaken(5)
@@ -46,19 +40,22 @@
 
 
 /obj/item/borg/sight/xray
-	name = "\proper x-ray Vision"
+	name = "\proper x-ray vision"
 	sight_mode = BORGXRAY
 
 
 /obj/item/borg/sight/thermal
 	name = "\proper thermal vision"
 	sight_mode = BORGTHERM
+	icon_state = "thermal"
+	icon = 'icons/obj/clothing/glasses.dmi'
 
 
 /obj/item/borg/sight/meson
 	name = "\proper meson vision"
 	sight_mode = BORGMESON
-
+	icon_state = "meson"
+	icon = 'icons/obj/clothing/glasses.dmi'
 
 /obj/item/borg/sight/hud
 	name = "hud"
@@ -67,7 +64,8 @@
 
 /obj/item/borg/sight/hud/med
 	name = "medical hud"
-
+	icon_state = "healthhud"
+	icon = 'icons/obj/clothing/glasses.dmi'
 
 	New()
 		..()
@@ -77,7 +75,8 @@
 
 /obj/item/borg/sight/hud/sec
 	name = "security hud"
-
+	icon_state = "securityhud"
+	icon = 'icons/obj/clothing/glasses.dmi'
 
 	New()
 		..()

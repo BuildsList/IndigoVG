@@ -24,80 +24,43 @@
 #define DNA_UI_BEARD_G     5
 #define DNA_UI_BEARD_B     6
 #define DNA_UI_SKIN_TONE   7
-#define DNA_UI_EYES_R      8
-#define DNA_UI_EYES_G      9
-#define DNA_UI_EYES_B      10
-#define DNA_UI_GENDER      11
-#define DNA_UI_BEARD_STYLE 12
-#define DNA_UI_HAIR_STYLE  13
-#define DNA_UI_LENGTH      13 // Update this when you add something, or you WILL break shit.
+#define DNA_UI_SKIN_R      8
+#define DNA_UI_SKIN_G      9
+#define DNA_UI_SKIN_B      10
+#define DNA_UI_EYES_R      11
+#define DNA_UI_EYES_G      12
+#define DNA_UI_EYES_B      13
+#define DNA_UI_GENDER      14
+#define DNA_UI_BEARD_STYLE 15
+#define DNA_UI_HAIR_STYLE  16
+#define DNA_UI_LENGTH      16 // Update this when you add something, or you WILL break shit.
 
-#define DNA_SE_LENGTH 54 // Was STRUCDNASIZE, size 27. 15 new blocks added = 42, plus room to grow.
+#define DNA_SE_LENGTH 27
+// For later:
+//#define DNA_SE_LENGTH 50 // Was STRUCDNASIZE, size 27. 15 new blocks added = 42, plus room to grow.
+
 
 // Defines which values mean "on" or "off".
 //  This is to make some of the more OP superpowers a larger PITA to activate,
 //  and to tell our new DNA datum which values to set in order to turn something
 //  on or off.
 var/global/list/dna_activity_bounds[DNA_SE_LENGTH]
-var/global/list/assigned_gene_blocks[DNA_SE_LENGTH]
 
 // Used to determine what each block means (admin hax and species stuff on /vg/, mostly)
 var/global/list/assigned_blocks[DNA_SE_LENGTH]
 
 var/global/list/datum/dna/gene/dna_genes[0]
 
-var/global/list/good_blocks[0]
-var/global/list/bad_blocks[0]
-
-var/global/list/skin_styles_female_list = list() //Unused
-
-// Hair Lists //////////////////////////////////////////////////
-
-var/global/list/hair_styles_list				= list()
-var/global/list/hair_styles_male_list			= list()
-var/global/list/hair_styles_female_list			= list()
-var/global/list/facial_hair_styles_list			= list()
-var/global/list/facial_hair_styles_male_list	= list()
-var/global/list/facial_hair_styles_female_list	= list()
-
-/proc/buildHairLists()
-	var/list/paths
-	var/datum/sprite_accessory/hair/H
-	paths = typesof(/datum/sprite_accessory/hair) - /datum/sprite_accessory/hair
-	for(. in paths)
-		H = new .
-		hair_styles_list[H.name] = H
-		switch(H.gender)
-			if(MALE)	hair_styles_male_list += H.name
-			if(FEMALE)	hair_styles_female_list += H.name
-			else
-				hair_styles_male_list += H.name
-				hair_styles_female_list += H.name
-	paths = typesof(/datum/sprite_accessory/facial_hair) - /datum/sprite_accessory/facial_hair
-	for(. in paths)
-		H = new .
-		facial_hair_styles_list[H.name] = H
-		switch(H.gender)
-			if(MALE)	facial_hair_styles_male_list += H.name
-			if(FEMALE)	facial_hair_styles_female_list += H.name
-			else
-				facial_hair_styles_male_list += H.name
-				facial_hair_styles_female_list += H.name
-	return
-
 /////////////////
 // GENE DEFINES
 /////////////////
+// Skip checking if it's already active.
+// Used for genes that check for value rather than a binary on/off.
+#define GENE_ALWAYS_ACTIVATE 1
 
 // Skip checking if it's already active.
 // Used for genes that check for value rather than a binary on/off.
-#define GENE_ALWAYS_ACTIVATE   1
-
-// One of the genes that can't be handed out at roundstart
-#define GENE_UNNATURAL         2
-
-#define GENETYPE_BAD  0
-#define GENETYPE_GOOD 1
+#define GENE_ALWAYS_ACTIVATE 1
 
 /datum/dna
 	// READ-ONLY, GETS OVERWRITTEN
@@ -117,7 +80,6 @@ var/global/list/facial_hair_styles_female_list	= list()
 
 	// From old dna.
 	var/b_type = "A+"  // Should probably change to an integer => string map but I'm lazy.
-	var/mutantrace = null  // The type of mutant race the player is, if applicable (i.e. potato-man)
 	var/real_name          // Stores the real name of the person who originally got this dna datum. Used primarily for changelings,
 
 	// New stuff
@@ -129,7 +91,6 @@ var/global/list/facial_hair_styles_female_list	= list()
 	var/datum/dna/new_dna = new()
 	new_dna.unique_enzymes=unique_enzymes
 	new_dna.b_type=b_type
-	new_dna.mutantrace=mutantrace
 	new_dna.real_name=real_name
 	new_dna.species=species
 	for(var/b=1;b<=DNA_SE_LENGTH;b++)
@@ -139,10 +100,6 @@ var/global/list/facial_hair_styles_female_list	= list()
 	new_dna.UpdateUI()
 	new_dna.UpdateSE()
 	return new_dna
-
-/datum/dna/proc/GiveRandomSE(var/notflags = 0, var/flags = 0, var/genetype = -1)
-	SetSEState(pick(query_genes(notflags,flags,genetype)), 1)
-
 ///////////////////////////////////////
 // UNIQUE IDENTITY
 ///////////////////////////////////////
@@ -184,6 +141,10 @@ var/global/list/facial_hair_styles_female_list	= list()
 	SetUIValueRange(DNA_UI_EYES_G,    character.g_eyes,    255,    1)
 	SetUIValueRange(DNA_UI_EYES_B,    character.b_eyes,    255,    1)
 
+	SetUIValueRange(DNA_UI_SKIN_R,    character.r_skin,    255,    1)
+	SetUIValueRange(DNA_UI_SKIN_G,    character.g_skin,    255,    1)
+	SetUIValueRange(DNA_UI_SKIN_B,    character.b_skin,    255,    1)
+
 	SetUIValueRange(DNA_UI_SKIN_TONE, 35-character.s_tone, 220,    1) // Value can be negative.
 
 	SetUIState(DNA_UI_GENDER,         character.gender!=MALE,        1)
@@ -196,7 +157,7 @@ var/global/list/facial_hair_styles_female_list	= list()
 // Set a DNA UI block's raw value.
 /datum/dna/proc/SetUIValue(var/block,var/value,var/defer=0)
 	if (block<=0) return
-	ASSERT(value>=0)
+	ASSERT(value>0)
 	ASSERT(value<=4095)
 	UI[block]=value
 	dirtyUI=1
@@ -212,6 +173,7 @@ var/global/list/facial_hair_styles_female_list	= list()
 // Used in hair and facial styles (value being the index and maxvalue being the len of the hairstyle list)
 /datum/dna/proc/SetUIValueRange(var/block,var/value,var/maxvalue,var/defer=0)
 	if (block<=0) return
+	if (value==0) value = 1   // FIXME: hair/beard/eye RGB values if they are 0 are not set, this is a work around we'll encode it in the DNA to be 1 instead.
 	ASSERT(maxvalue<=4095)
 	var/range = (4095 / maxvalue)
 	if(value)
@@ -281,7 +243,6 @@ var/global/list/facial_hair_styles_female_list	= list()
 
 // Set a DNA SE block's raw value.
 /datum/dna/proc/SetSEValue(var/block,var/value,var/defer=0)
-
 	if (block<=0) return
 	ASSERT(value>=0)
 	ASSERT(value<=4095)
@@ -289,7 +250,6 @@ var/global/list/facial_hair_styles_female_list	= list()
 	dirtySE=1
 	if(!defer)
 		UpdateSE()
-	//testing("SetSEBlock([block],[value],[defer]): [value] -> [GetSEValue(block)]")
 
 // Get a DNA SE block's raw value.
 /datum/dna/proc/GetSEValue(var/block)
@@ -316,7 +276,7 @@ var/global/list/facial_hair_styles_female_list	= list()
 	if (block<=0) return 0
 	var/list/BOUNDS=GetDNABounds(block)
 	var/value=GetSEValue(block)
-	return (value >= BOUNDS[DNA_ON_LOWERBOUND])
+	return (value > BOUNDS[DNA_ON_LOWERBOUND])
 
 // Set a block "on" or "off".
 /datum/dna/proc/SetSEState(var/block,var/on,var/defer=0)
@@ -362,8 +322,6 @@ var/global/list/facial_hair_styles_female_list	= list()
 
 
 /proc/EncodeDNABlock(var/value)
-	if(!isnum(value))
-		WARNING("Expected a number, got [value]")
 	return add_zero2(num2hex(value,1), 3)
 
 /datum/dna/proc/UpdateUI()

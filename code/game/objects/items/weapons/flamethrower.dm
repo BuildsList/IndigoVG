@@ -4,17 +4,14 @@
 	icon = 'icons/obj/flamethrower.dmi'
 	icon_state = "flamethrowerbase"
 	item_state = "flamethrower_0"
-	flags = FPRINT
-	siemens_coefficient = 1
+	flags = CONDUCT
 	force = 3.0
 	throwforce = 10.0
 	throw_speed = 1
 	throw_range = 5
 	w_class = 3.0
-	m_amt = 500
-	w_type = RECYK_MISC
-	melt_temperature = MELTPOINT_STEEL
-	origin_tech = "combat=1;plasmatech=1"
+	matter = list("metal" = 500)
+	origin_tech = "combat=1;phorontech=1"
 	var/status = 0
 	var/throw_amount = 100
 	var/lit = 0	//on or off
@@ -22,10 +19,10 @@
 	var/turf/previousturf = null
 	var/obj/item/weapon/weldingtool/weldtool = null
 	var/obj/item/device/assembly/igniter/igniter = null
-	var/obj/item/weapon/tank/plasma/ptank = null
+	var/obj/item/weapon/tank/phoron/ptank = null
 
 
-/obj/item/weapon/flamethrower/Destroy()
+/obj/item/weapon/flamethrower/Del()
 	if(weldtool)
 		del(weldtool)
 	if(igniter)
@@ -46,12 +43,12 @@
 		if(M.l_hand == src || M.r_hand == src)
 			location = M.loc
 	if(isturf(location)) //start a fire if possible
-		location.hotspot_expose(700, 2,surfaces=istype(loc,/turf))
+		location.hotspot_expose(700, 2)
 	return
 
 
 /obj/item/weapon/flamethrower/update_icon()
-	overlays.len = 0
+	overlays.Cut()
 	if(igniter)
 		overlays += "+igniter[status]"
 	if(ptank)
@@ -63,9 +60,9 @@
 		item_state = "flamethrower_0"
 	return
 
-/obj/item/weapon/flamethrower/afterattack(atom/target, mob/user, flag)
+/obj/item/weapon/flamethrower/afterattack(atom/target, mob/user, proximity)
+	if(!proximity) return
 	// Make sure our user is still holding us
-	user.delayNextAttack(8)
 	if(user && user.get_active_hand() == src)
 		var/turf/target_turf = get_turf(target)
 		if(target_turf)
@@ -105,9 +102,9 @@
 		update_icon()
 		return
 
-	if(istype(W,/obj/item/weapon/tank/plasma))
+	if(istype(W,/obj/item/weapon/tank/phoron))
 		if(ptank)
-			user << "<span class='notice'>There appears to already be a plasma tank loaded in [src]!</span>"
+			user << "<span class='notice'>There appears to already be a phoron tank loaded in [src]!</span>"
 			return
 		user.drop_item()
 		ptank = W
@@ -116,9 +113,19 @@
 		return
 
 	if(istype(W, /obj/item/device/analyzer) && ptank)
-		var/obj/item/device/analyzer/analyzer = W
+		var/obj/item/weapon/icon = src
 		user.visible_message("<span class='notice'>[user] has used the analyzer on \icon[icon]</span>")
-		user.show_message(analyzer.output_gas_scan(ptank.air_contents, src, 0), 1)
+		var/pressure = ptank.air_contents.return_pressure()
+		var/total_moles = ptank.air_contents.total_moles
+
+		user << "\blue Results of analysis of \icon[icon]"
+		if(total_moles>0)
+			user << "\blue Pressure: [round(pressure,0.1)] kPa"
+			for(var/g in ptank.air_contents.gas)
+				user << "\blue [gas_data.name[g]]: [round((ptank.air_contents.gas[g] / total_moles) * 100)]%"
+			user << "\blue Temperature: [round(ptank.air_contents.temperature-T0C)]&deg;C"
+		else
+			user << "\blue Tank is empty!"
 		return
 	..()
 	return
@@ -128,9 +135,9 @@
 	if(user.stat || user.restrained() || user.lying)	return
 	user.set_machine(src)
 	if(!ptank)
-		user << "<span class='notice'>Attach a plasma tank first!</span>"
+		user << "<span class='notice'>Attach a phoron tank first!</span>"
 		return
-	var/dat = text("<TT><B>Flamethrower (<A HREF='?src=\ref[src];light=1'>[lit ? "<font color='red'>Lit</font>" : "Unlit"]</a>)</B><BR>\n Tank Pressure: [ptank.air_contents.return_pressure()]<BR>\nAmount to throw: <A HREF='?src=\ref[src];amount=-100'>-</A> <A HREF='?src=\ref[src];amount=-10'>-</A> <A HREF='?src=\ref[src];amount=-1'>-</A> [throw_amount] <A HREF='?src=\ref[src];amount=1'>+</A> <A HREF='?src=\ref[src];amount=10'>+</A> <A HREF='?src=\ref[src];amount=100'>+</A><BR>\n<A HREF='?src=\ref[src];remove=1'>Remove plasmatank</A> - <A HREF='?src=\ref[src];close=1'>Close</A></TT>")
+	var/dat = text("<TT><B>Flamethrower (<A HREF='?src=\ref[src];light=1'>[lit ? "<font color='red'>Lit</font>" : "Unlit"]</a>)</B><BR>\n Tank Pressure: [ptank.air_contents.return_pressure()]<BR>\nAmount to throw: <A HREF='?src=\ref[src];amount=-100'>-</A> <A HREF='?src=\ref[src];amount=-10'>-</A> <A HREF='?src=\ref[src];amount=-1'>-</A> [throw_amount] <A HREF='?src=\ref[src];amount=1'>+</A> <A HREF='?src=\ref[src];amount=10'>+</A> <A HREF='?src=\ref[src];amount=100'>+</A><BR>\n<A HREF='?src=\ref[src];remove=1'>Remove phorontank</A> - <A HREF='?src=\ref[src];close=1'>Close</A></TT>")
 	user << browse(dat, "window=flamethrower;size=600x300")
 	onclose(user, "flamethrower")
 	return
@@ -145,7 +152,7 @@
 	usr.set_machine(src)
 	if(href_list["light"])
 		if(!ptank)	return
-		if(ptank.air_contents.toxins < 1)	return
+		if(ptank.air_contents.gas["phoron"] < 1)	return
 		if(!status)	return
 		lit = !lit
 		if(lit)
@@ -194,8 +201,8 @@
 	//Transfer 5% of current tank air contents to turf
 	var/datum/gas_mixture/air_transfer = ptank.air_contents.remove_ratio(0.02*(throw_amount/100))
 	//air_transfer.toxins = air_transfer.toxins * 5 // This is me not comprehending the air system. I realize this is retarded and I could probably make it work without fucking it up like this, but there you have it. -- TLE
-	new/obj/effect/decal/cleanable/liquid_fuel/flamethrower_fuel(target,air_transfer.toxins*10,get_dir(loc,target))
-	air_transfer.toxins = 0
+	new/obj/effect/decal/cleanable/liquid_fuel/flamethrower_fuel(target,air_transfer.gas["phoron"],get_dir(loc,target))
+	air_transfer.gas["phoron"] = 0
 	target.assume_air(air_transfer)
 	//Burn it based on transfered gas
 	//target.hotspot_expose(part4.air_contents.temperature*2,300)

@@ -3,29 +3,19 @@
 	holder_type = /mob/living/silicon/robot
 	wire_count = 5
 
-/* /tg/ ordering doesn't work for us, we need lawsync at the end for MoMMIs.
-var/const/BORG_WIRE_LAWCHECK    = 1
-var/const/BORG_WIRE_MAIN_POWER  = 2 // The power wires do nothing whyyyyyyyyyyyyy
+var/const/BORG_WIRE_LAWCHECK = 1
+var/const/BORG_WIRE_MAIN_POWER = 2 // The power wires do nothing whyyyyyyyyyyyyy
 var/const/BORG_WIRE_LOCKED_DOWN = 4
-var/const/BORG_WIRE_AI_CONTROL  = 8
-var/const/BORG_WIRE_CAMERA      = 16
-*/
-
-// /vg/ ordering
-
-var/const/BORG_WIRE_MAIN_POWER  = 1 // The power wires do nothing whyyyyyyyyyyyyy
-var/const/BORG_WIRE_LOCKED_DOWN = 2
-var/const/BORG_WIRE_CAMERA      = 4
-var/const/BORG_WIRE_AI_CONTROL  = 8  // Not used on MoMMIs
-var/const/BORG_WIRE_LAWCHECK    = 16 // Not used on MoMMIs
+var/const/BORG_WIRE_AI_CONTROL = 8
+var/const/BORG_WIRE_CAMERA = 16
 
 /datum/wires/robot/GetInteractWindow()
 
 	. = ..()
 	var/mob/living/silicon/robot/R = holder
-	if(!istype(src, /datum/wires/robot/mommi))
-		. += text("<br>\n[(R.lawupdate ? "The LawSync light is on." : "The LawSync light is off.")]<br>\n[(R.connected_ai ? "The AI link light is on." : "The AI link light is off.")]")
-	. += text("<br>\n[((!isnull(R.camera) && R.camera.status == 1) ? "The Camera light is on." : "The Camera light is off.")]<br>\n")
+	. += text("<br>\n[(R.lawupdate ? "The LawSync light is on." : "The LawSync light is off.")]")
+	. += text("<br>\n[(R.connected_ai ? "The AI link light is on." : "The AI link light is off.")]")
+	. += text("<br>\n[((!isnull(R.camera) && R.camera.status == 1) ? "The Camera light is on." : "The Camera light is off.")]")
 	. += text("<br>\n[(R.lockcharge ? "The lockdown light is on." : "The lockdown light is off.")]")
 	return .
 
@@ -44,13 +34,12 @@ var/const/BORG_WIRE_LAWCHECK    = 16 // Not used on MoMMIs
 
 		if (BORG_WIRE_AI_CONTROL) //Cut the AI wire to reset AI control
 			if(!mended)
-				if (R.connected_ai)
-					R.connected_ai = null
+				R.disconnect_from_ai()
 
 		if (BORG_WIRE_CAMERA)
 			if(!isnull(R.camera) && !R.scrambledcodes)
 				R.camera.status = mended
-				R.camera.deactivate(usr, 0) // Will kick anyone who is watching the Cyborg's camera.
+				R.camera.kick_viewers() // Will kick anyone who is watching the Cyborg's camera.
 
 		if(BORG_WIRE_LAWCHECK)	//Forces a law update if the borg is set to receive them. Since an update would happen when the borg checks its laws anyway, not much use, but eh
 			if (R.lawupdate)
@@ -61,16 +50,16 @@ var/const/BORG_WIRE_LAWCHECK    = 16 // Not used on MoMMIs
 
 
 /datum/wires/robot/UpdatePulsed(var/index)
-
 	var/mob/living/silicon/robot/R = holder
 	switch(index)
 		if (BORG_WIRE_AI_CONTROL) //pulse the AI wire to make the borg reselect an AI
-			if(!R.emagged && !isMoMMI(R))
-				R.connected_ai = select_active_ai()
+			if(!R.emagged)
+				var/mob/living/silicon/ai/new_ai = select_active_ai(R)
+				R.connect_to_ai(new_ai)
 
 		if (BORG_WIRE_CAMERA)
 			if(!isnull(R.camera) && R.camera.can_use() && !R.scrambledcodes)
-				R.camera.deactivate(usr, 0) // Kick anyone watching the Cyborg's camera, doesn't display you disconnecting the camera.
+				R.camera.kick_viewers() // Kick anyone watching the Cyborg's camera
 				R.visible_message("[R]'s camera lense focuses loudly.")
 				R << "Your camera lense focuses loudly."
 
@@ -88,9 +77,3 @@ var/const/BORG_WIRE_LAWCHECK    = 16 // Not used on MoMMIs
 
 /datum/wires/robot/proc/LockedCut()
 	return wires_status & BORG_WIRE_LOCKED_DOWN
-
-/datum/wires/robot/proc/CanLawCheck()
-	return wires_status & BORG_WIRE_LAWCHECK
-
-/datum/wires/robot/proc/AIHasControl()
-	return wires_status & BORG_WIRE_AI_CONTROL

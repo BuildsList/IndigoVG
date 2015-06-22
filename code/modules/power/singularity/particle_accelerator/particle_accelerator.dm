@@ -6,7 +6,8 @@ proc
 emit_particle()
 
 1 power box
-the only part of this thing that uses power, can hack to mess with the pa/make it better
+the only part of this thing that uses power, can hack to mess with the pa/make it better.
+Lies, only the control computer draws power.
 
 1 fuel chamber
 contains procs for mixing gas and whatever other fuel it uses
@@ -71,12 +72,6 @@ So, hopefully this is helpful if any more icons are to be added/changed/wonderin
 	var/strength = null
 	var/desc_holder = null
 
-/obj/structure/particle_accelerator/Destroy()
-	construction_state = 0
-	if(master)
-		master.part_scan()
-	..()
-
 /obj/structure/particle_accelerator/end_cap
 	name = "Alpha Particle Generation Array"
 	desc_holder = "This is where Alpha particles are generated from \[REDACTED\]"
@@ -96,7 +91,7 @@ So, hopefully this is helpful if any more icons are to be added/changed/wonderin
 	if (src.anchored || usr:stat)
 		usr << "It is fastened to the floor!"
 		return 0
-	src.dir = turn(src.dir, 270)
+	src.set_dir(turn(src.dir, 270))
 	return 1
 
 /obj/structure/particle_accelerator/verb/rotateccw()
@@ -107,7 +102,7 @@ So, hopefully this is helpful if any more icons are to be added/changed/wonderin
 	if (src.anchored || usr:stat)
 		usr << "It is fastened to the floor!"
 		return 0
-	src.dir = turn(src.dir, 90)
+	src.set_dir(turn(src.dir, 90))
 	return 1
 
 /obj/structure/particle_accelerator/examine(mob/user)
@@ -123,6 +118,7 @@ So, hopefully this is helpful if any more icons are to be added/changed/wonderin
 			if(powered)
 				src.desc = src.desc_holder
 	..()
+	return
 
 
 /obj/structure/particle_accelerator/attackby(obj/item/W, mob/user)
@@ -137,20 +133,20 @@ So, hopefully this is helpful if any more icons are to be added/changed/wonderin
 	..()
 	if(master && master.active)
 		master.toggle_power()
-		investigation_log(I_SINGULO,"was moved whilst active; it <font color='red'>powered down</font>.")
+		investigate_log("was moved whilst active; it <font color='red'>powered down</font>.","singulo")
 
 /obj/structure/particle_accelerator/ex_act(severity)
 	switch(severity)
 		if(1.0)
-			qdel(src)
+			del(src)
 			return
 		if(2.0)
 			if (prob(50))
-				qdel(src)
+				del(src)
 				return
 		if(3.0)
 			if (prob(25))
-				qdel(src)
+				del(src)
 				return
 		else
 	return
@@ -217,14 +213,14 @@ So, hopefully this is helpful if any more icons are to be added/changed/wonderin
 	switch(src.construction_state)//TODO:Might be more interesting to have it need several parts rather than a single list of steps
 		if(0)
 			if(iswrench(O))
-				playsound(get_turf(src), 'sound/items/Ratchet.ogg', 75, 1)
+				playsound(src.loc, 'sound/items/Ratchet.ogg', 75, 1)
 				src.anchored = 1
 				user.visible_message("[user.name] secures the [src.name] to the floor.", \
 					"You secure the external bolts.")
 				temp_state++
 		if(1)
 			if(iswrench(O))
-				playsound(get_turf(src), 'sound/items/Ratchet.ogg', 75, 1)
+				playsound(src.loc, 'sound/items/Ratchet.ogg', 75, 1)
 				src.anchored = 0
 				user.visible_message("[user.name] detaches the [src.name] from the floor.", \
 					"You remove the external bolts.")
@@ -286,7 +282,7 @@ So, hopefully this is helpful if any more icons are to be added/changed/wonderin
 	if (src.anchored || usr:stat)
 		usr << "It is fastened to the floor!"
 		return 0
-	src.dir = turn(src.dir, 270)
+	src.set_dir(turn(src.dir, 270))
 	return 1
 
 /obj/machinery/particle_accelerator/verb/rotateccw()
@@ -297,7 +293,7 @@ So, hopefully this is helpful if any more icons are to be added/changed/wonderin
 	if (src.anchored || usr:stat)
 		usr << "It is fastened to the floor!"
 		return 0
-	src.dir = turn(src.dir, 90)
+	src.set_dir(turn(src.dir, 90))
 	return 1
 
 /obj/machinery/particle_accelerator/update_icon()
@@ -316,6 +312,7 @@ So, hopefully this is helpful if any more icons are to be added/changed/wonderin
 			if(powered)
 				src.desc = src.desc_holder
 	..()
+	return
 
 
 /obj/machinery/particle_accelerator/attackby(obj/item/W, mob/user)
@@ -328,15 +325,15 @@ So, hopefully this is helpful if any more icons are to be added/changed/wonderin
 /obj/machinery/particle_accelerator/ex_act(severity)
 	switch(severity)
 		if(1.0)
-			qdel(src)
+			del(src)
 			return
 		if(2.0)
 			if (prob(50))
-				qdel(src)
+				del(src)
 				return
 		if(3.0)
 			if (prob(25))
-				qdel(src)
+				del(src)
 				return
 		else
 	return
@@ -367,14 +364,14 @@ So, hopefully this is helpful if any more icons are to be added/changed/wonderin
 	switch(src.construction_state)//TODO:Might be more interesting to have it need several parts rather than a single list of steps
 		if(0)
 			if(iswrench(O))
-				playsound(get_turf(src), 'sound/items/Ratchet.ogg', 75, 1)
+				playsound(src.loc, 'sound/items/Ratchet.ogg', 75, 1)
 				src.anchored = 1
 				user.visible_message("[user.name] secures the [src.name] to the floor.", \
 					"You secure the external bolts.")
 				temp_state++
 		if(1)
 			if(iswrench(O))
-				playsound(get_turf(src), 'sound/items/Ratchet.ogg', 75, 1)
+				playsound(src.loc, 'sound/items/Ratchet.ogg', 75, 1)
 				src.anchored = 0
 				user.visible_message("[user.name] detaches the [src.name] from the floor.", \
 					"You remove the external bolts.")

@@ -1,141 +1,3 @@
-/datum/biogen_recipe
-	var/id=""
-	var/cost=0
-	var/category=""
-	var/name=""
-	var/amount_per_unit=1
-	var/list/other_amounts=list()
-	var/reagent=null
-	var/result=null
-
-/datum/biogen_recipe/proc/Render(var/context)
-	var/html = "<li><a href='?src=\ref[context];action=create;item=[id];num=1'>[amount_per_unit==1?"":"[amount_per_unit] "][name]</a> <FONT COLOR=blue>([cost])</FONT>"
-	if(other_amounts.len)
-		var/first=1
-		html += " ("
-		for(var/amount in other_amounts)
-			if(!first)
-				html +=" "
-			html +="<A href='?src=\ref[context];action=create;item=[id];num=[amount]'>x[amount*amount_per_unit]</A>"
-			first=0
-		html += ")"
-	html += "</li>"
-	return html
-
-/datum/biogen_recipe/food
-	category="Food"
-
-/datum/biogen_recipe/food/milk
-	id="milk"
-	name="milk"
-	reagent="milk"
-	cost=20
-	amount_per_unit=10
-	other_amounts=list(5)
-
-/datum/biogen_recipe/food/meat
-	id="meat"
-	name="Slab of meat"
-	cost=50
-	other_amounts=list(5)
-	result=/obj/item/weapon/reagent_containers/food/snacks/meat/syntiflesh
-
-/datum/biogen_recipe/nutrient
-	category="Nutrients"
-
-/datum/biogen_recipe/nutrient/ez
-	id="ez"
-	cost=10
-	name="E-Z-Nutrient"
-	other_amounts=list(5)
-	result=/obj/item/weapon/reagent_containers/glass/fertilizer/ez
-
-/datum/biogen_recipe/nutrient/l4z
-	id="l4z"
-	cost=20
-	name="Left 4 Zed"
-	other_amounts=list(5)
-	result=/obj/item/weapon/reagent_containers/glass/fertilizer/l4z
-
-/datum/biogen_recipe/nutrient/rh
-	id="rh"
-	cost=25
-	name="Robust Harvest"
-	other_amounts=list(5)
-	result=/obj/item/weapon/reagent_containers/glass/fertilizer/rh
-
-/datum/biogen_recipe/leather
-	category="Leather"
-
-/datum/biogen_recipe/leather/wallet
-	cost=100
-	id="wallet"
-	name="Wallet"
-	result=/obj/item/weapon/storage/wallet
-
-/datum/biogen_recipe/leather/gloves
-	cost=250
-	id="gloves"
-	name="Botanical Gloves"
-	result=/obj/item/clothing/gloves/botanic_leather
-
-/datum/biogen_recipe/leather/belt
-	cost=300
-	id="belt"
-	name="Utility Belt"
-	result=/obj/item/weapon/storage/belt/utility
-
-/datum/biogen_recipe/leather/plants
-	cost=350
-	id="plants"
-	name="Plant Bag"
-	result=/obj/item/weapon/storage/bag/plants
-
-/datum/biogen_recipe/leather/satchel
-	cost=400
-	id="satchel"
-	name="Leather Satchel"
-	result=/obj/item/weapon/storage/backpack/satchel
-
-/datum/biogen_recipe/misc
-	category="Misc."
-
-/datum/biogen_recipe/misc/pest
-	cost=40
-	id="pest"
-	name="Pest Spray"
-	other_amounts=list(5)
-	result=/obj/item/weapon/plantspray/pests
-
-/datum/biogen_recipe/misc/beez
-	cost=40
-	id="beez"
-	name="BeezEez"
-	other_amounts=list(5)
-	result=/obj/item/beezeez
-
-/datum/biogen_recipe/misc/cardboard
-	cost=200
-	id="cardboard"
-	name="Cardboard Sheet"
-	other_amounts=list(5,10)
-	result=/obj/item/stack/sheet/cardboard
-
-/datum/biogen_recipe/misc/charcoal
-	cost=100
-	id="charcoal"
-	name="Charcoal Sheet"
-	other_amounts=list(5,10)
-	result=/obj/item/stack/sheet/charcoal
-
-/datum/biogen_recipe/misc/paper
-	cost=75
-	id="paper"
-	name="Sheet of Paper"
-	other_amounts=list(5,10)
-	result=/obj/item/weapon/paper
-
-
 /obj/machinery/biogenerator
 	name = "Biogenerator"
 	desc = ""
@@ -149,125 +11,82 @@
 	var/obj/item/weapon/reagent_containers/glass/beaker = null
 	var/points = 0
 	var/menustat = "menu"
-	var/list/recipes[0]
-	var/list/recipe_categories[0]
+	var/build_eff = 1
+	var/eat_eff = 1
 
-	machine_flags = SCREWTOGGLE | CROWDESTROY | WRENCHMOVE | FIXED2WORK
 
-	l_color = "#7BF9FF"
-
-/obj/machinery/biogenerator/power_change()
+/obj/machinery/biogenerator/New()
 	..()
-	if(!(stat & (BROKEN|NOPOWER)))
-		SetLuminosity(2)
-	else
-		SetLuminosity(0)
+	var/datum/reagents/R = new/datum/reagents(1000)
+	reagents = R
+	R.my_atom = src
+	beaker = new /obj/item/weapon/reagent_containers/glass/bottle(src)
+
+	component_parts = list()
+	component_parts += new /obj/item/weapon/circuitboard/biogenerator(src)
+	component_parts += new /obj/item/weapon/stock_parts/matter_bin(src)
+	component_parts += new /obj/item/weapon/stock_parts/manipulator(src)
+
+	RefreshParts()
 
 /obj/machinery/biogenerator/on_reagent_change()			//When the reagents change, change the icon as well.
 	update_icon()
 
 /obj/machinery/biogenerator/update_icon()
-	if(!src.beaker)
+	if(!beaker)
 		icon_state = "biogen-empty"
-	else if(!src.processing)
+	else if(!processing)
 		icon_state = "biogen-stand"
 	else
 		icon_state = "biogen-work"
 	return
 
-/obj/machinery/biogenerator/New()
-	. = ..()
-	create_reagents(1000)
-	beaker = new /obj/item/weapon/reagent_containers/glass/beaker/large(src)
-
-	component_parts = newlist(\
-		/obj/item/weapon/circuitboard/biogenerator,\
-		/obj/item/weapon/stock_parts/manipulator,\
-		/obj/item/weapon/stock_parts/manipulator,\
-		/obj/item/weapon/stock_parts/matter_bin,\
-		/obj/item/weapon/stock_parts/matter_bin,\
-		/obj/item/weapon/stock_parts/micro_laser,\
-		/obj/item/weapon/stock_parts/micro_laser,\
-		/obj/item/weapon/stock_parts/micro_laser,\
-		/obj/item/weapon/stock_parts/scanning_module,\
-		/obj/item/weapon/stock_parts/scanning_module,\
-		/obj/item/weapon/stock_parts/console_screen,\
-		/obj/item/weapon/stock_parts/console_screen\
-	)
-
-	RefreshParts()
-
-	for(var/biotype in typesof(/datum/biogen_recipe))
-		var/datum/biogen_recipe/recipe = new biotype
-		if(recipe.id=="") continue
-		if(!(recipe.category in recipe_categories))
-			recipe_categories[recipe.category]=list()
-		recipe_categories[recipe.category] += recipe.id
-		recipes[recipe.id]=recipe
-
 /obj/machinery/biogenerator/attackby(var/obj/item/O as obj, var/mob/user as mob)
-	if(..())
-		return 1
-	else if(istype(O, /obj/item/weapon/reagent_containers/glass))
+	if(default_deconstruction_screwdriver(user, O))
+		return
+	if(default_deconstruction_crowbar(user, O))
+		return
+	if(default_part_replacement(user, O))
+		return
+	if(istype(O, /obj/item/weapon/reagent_containers/glass))
 		if(beaker)
-			user << "\red The biogenerator already occuped."
-		else if(panel_open)
-			user << "<span class='rose'>The biogenerator's maintenance panel must be closed first.</span>"
+			user << "<span class='notice'>]The [src] is already loaded.</span>"
 		else
 			user.before_take_item(O)
 			O.loc = src
 			beaker = O
 			updateUsrDialog()
 	else if(processing)
-		user << "\red The biogenerator is currently processing."
+		user << "<span class='notice'>\The [src] is currently processing.</span>"
 	else if(istype(O, /obj/item/weapon/storage/bag/plants))
 		var/i = 0
 		for(var/obj/item/weapon/reagent_containers/food/snacks/grown/G in contents)
 			i++
 		if(i >= 10)
-			user << "\red The biogenerator is already full! Activate it."
+			user << "<span class='notice'>\The [src] is already full! Activate it.</span>"
 		else
 			for(var/obj/item/weapon/reagent_containers/food/snacks/grown/G in O.contents)
 				G.loc = src
 				i++
 				if(i >= 10)
-					user << "\blue You fill the biogenerator to its capacity."
+					user << "<span class='notice'>You fill \the [src] to its capacity.</span>"
 					break
-			if(i<10)
-				user << "\blue You empty the plant bag into the biogenerator."
+			if(i < 10)
+				user << "<span class='notice'>You empty \the [O] into \the [src].</span>"
 
 	else if(!istype(O, /obj/item/weapon/reagent_containers/food/snacks/grown))
-		user << "\red You cannot put this in [src.name]"
+		user << "<span class='notice'>You cannot put this in \the [src].</span>"
 	else
 		var/i = 0
 		for(var/obj/item/weapon/reagent_containers/food/snacks/grown/G in contents)
 			i++
 		if(i >= 10)
-			user << "\red The biogenerator is full! Activate it."
+			user << "<span class='notice'>\The [src] is full! Activate it.</span>"
 		else
 			user.before_take_item(O)
 			O.loc = src
-			user << "\blue You put [O.name] in [src.name]"
+			user << "<span class='notice'>You put \the [O] in \the [src]</span>"
 	update_icon()
-	return
-
-/obj/machinery/biogenerator/crowbarDestroy(mob/user)
-	if(beaker)
-		user << "\red A beaker is loaded, you cannot deconstruct \the [src]."
-		return
-	return ..()
-
-/obj/machinery/biogenerator/togglePanelOpen(var/obj/toggleitem, mob/user)
-	if(beaker)
-		user << "<span class='rose'>You can't open \the [src]'s maintenance panel while a beaker is loaded.</span>"
-		return
-	if(..())
-		if(panel_open)
-			overlays += "biogen-open"
-		else
-			overlays -= "biogen-open"
-		update_icon()
-		return 1
 	return
 
 /obj/machinery/biogenerator/interact(mob/user as mob)
@@ -282,42 +101,34 @@
 		switch(menustat)
 			if("menu")
 				if (beaker)
-
-					// AUTOFIXED BY fix_string_idiocy.py
-					// C:\Users\Rob\Documents\Projects\vgstation13\code\game\machinery\biogenerator.dm:89: dat += "<A href='?src=\ref[src];action=activate'>Activate Biogenerator!</A><BR>"
-					dat += {"<A href='?src=\ref[src];action=activate'>Activate Biogenerator!</A><BR>
-						<A href='?src=\ref[src];action=detach'>Detach Container</A><BR><BR>"}
-
-					for(var/cat in recipe_categories)
-						dat += "<h2>[cat]</h2><ul>"
-						for(var/rid in recipe_categories[cat])
-							var/datum/biogen_recipe/recipe = recipes[rid]
-							dat += recipe.Render(src)
-						dat += "</ul>"
-
+					dat += "<A href='?src=\ref[src];action=activate'>Activate Biogenerator!</A><BR>"
+					dat += "<A href='?src=\ref[src];action=detach'>Detach Container</A><BR><BR>"
+					dat += "Food<BR>"
+					dat += "<A href='?src=\ref[src];action=create;item=milk;cost=20'>10 milk</A> <FONT COLOR=blue>([round(20/build_eff)])</FONT><BR>"
+					dat += "<A href='?src=\ref[src];action=create;item=meat;cost=50'>Slab of meat</A> <FONT COLOR=blue>([round(50/build_eff)])</FONT><BR>"
+					dat += "Nutrient<BR>"
+					dat += "<A href='?src=\ref[src];action=create;item=ez;cost=10'>E-Z-Nutrient</A> <FONT COLOR=blue>([round(10/build_eff)])</FONT> | <A href='?src=\ref[src];action=create;item=ez5;cost=50'>x5</A><BR>"
+					dat += "<A href='?src=\ref[src];action=create;item=l4z;cost=20'>Left 4 Zed</A> <FONT COLOR=blue>([round(20/build_eff)])</FONT> | <A href='?src=\ref[src];action=create;item=l4z5;cost=100'>x5</A><BR>"
+					dat += "<A href='?src=\ref[src];action=create;item=rh;cost=25'>Robust Harvest</A> <FONT COLOR=blue>([round(25/build_eff)])</FONT> | <A href='?src=\ref[src];action=create;item=rh5;cost=125'>x5</A><BR>"
+					dat += "Leather<BR>"
+					dat += "<A href='?src=\ref[src];action=create;item=wallet;cost=100'>Wallet</A> <FONT COLOR=blue>([round(100/build_eff)])</FONT><BR>"
+					dat += "<A href='?src=\ref[src];action=create;item=gloves;cost=250'>Botanical gloves</A> <FONT COLOR=blue>([round(250/build_eff)])</FONT><BR>"
+					dat += "<A href='?src=\ref[src];action=create;item=tbelt;cost=300'>Utility belt</A> <FONT COLOR=blue>([round(300/build_eff)])</FONT><BR>"
+					dat += "<A href='?src=\ref[src];action=create;item=satchel;cost=400'>Leather Satchel</A> <FONT COLOR=blue>([round(400/build_eff)])</FONT><BR>"
+					dat += "<A href='?src=\ref[src];action=create;item=cashbag;cost=400'>Cash Bag</A> <FONT COLOR=blue>([round(400/build_eff)])</FONT><BR>"
+					//dat += "Other<BR>"
+					//dat += "<A href='?src=\ref[src];action=create;item=monkey;cost=500'>Monkey</A> <FONT COLOR=blue>(500)</FONT><BR>"
 				else
 					dat += "<BR><FONT COLOR=red>No beaker inside. Please insert a beaker.</FONT><BR>"
 			if("nopoints")
-
-				// AUTOFIXED BY fix_string_idiocy.py
-				// C:\Users\Rob\Documents\Projects\vgstation13\code\game\machinery\biogenerator.dm:108: dat += "You do not have biomass to create products.<BR>Please, put growns into reactor and activate it.<BR>"
-				dat += {"You do not have biomass to create products.<BR>Please, put growns into reactor and activate it.<BR>
-					<A href='?src=\ref[src];action=menu'>Return to menu</A>"}
-				// END AUTOFIX
+				dat += "You do not have biomass to create products.<BR>Please, put growns into reactor and activate it.<BR>"
+				dat += "<A href='?src=\ref[src];action=menu'>Return to menu</A>"
 			if("complete")
-
-				// AUTOFIXED BY fix_string_idiocy.py
-				// C:\Users\Rob\Documents\Projects\vgstation13\code\game\machinery\biogenerator.dm:111: dat += "Operation complete.<BR>"
-				dat += {"Operation complete.<BR>
-					<A href='?src=\ref[src];action=menu'>Return to menu</A>"}
-				// END AUTOFIX
+				dat += "Operation complete.<BR>"
+				dat += "<A href='?src=\ref[src];action=menu'>Return to menu</A>"
 			if("void")
-
-				// AUTOFIXED BY fix_string_idiocy.py
-				// C:\Users\Rob\Documents\Projects\vgstation13\code\game\machinery\biogenerator.dm:114: dat += "<FONT COLOR=red>Error: No growns inside.</FONT><BR>Please, put growns into reactor.<BR>"
-				dat += {"<FONT COLOR=red>Error: No growns inside.</FONT><BR>Please, put growns into reactor.<BR>
-					<A href='?src=\ref[src];action=menu'>Return to menu</A>"}
-				// END AUTOFIX
+				dat += "<FONT COLOR=red>Error: No growns inside.</FONT><BR>Please, put growns into reactor.<BR>"
+				dat += "<A href='?src=\ref[src];action=menu'>Return to menu</A>"
 	user << browse(dat, "window=biogenerator")
 	onclose(user, "biogenerator")
 	return
@@ -326,59 +137,84 @@
 	interact(user)
 
 /obj/machinery/biogenerator/proc/activate()
-	if (usr.stat != 0)
+	if (usr.stat)
 		return
-	if (src.stat != 0) //NOPOWER etc
+	if (stat) //NOPOWER etc
 		return
-	if(src.processing)
-		usr << "\red The biogenerator is in the process of working."
+	if(processing)
+		usr << "<span class='notice'>The biogenerator is in the process of working.</span>"
 		return
 	var/S = 0
 	for(var/obj/item/weapon/reagent_containers/food/snacks/grown/I in contents)
 		S += 5
 		if(I.reagents.get_reagent_amount("nutriment") < 0.1)
 			points += 1
-		else points += I.reagents.get_reagent_amount("nutriment")*10
-		qdel(I)
+		else points += I.reagents.get_reagent_amount("nutriment") * 10 * eat_eff
+		del(I)
 	if(S)
 		processing = 1
 		update_icon()
 		updateUsrDialog()
-		playsound(get_turf(src), 'sound/machines/blender.ogg', 50, 1)
-		use_power(S*30)
-		sleep(S+15)
+		playsound(src.loc, 'sound/machines/blender.ogg', 50, 1)
+		use_power(S * 30)
+		sleep((S + 15) / eat_eff)
 		processing = 0
 		update_icon()
 	else
 		menustat = "void"
 	return
 
-/obj/machinery/biogenerator/proc/check_cost(var/cost)
-	if (cost > points)
+/obj/machinery/biogenerator/proc/create_product(var/item, var/cost)
+	cost = round(cost/build_eff)
+	if(cost > points)
 		menustat = "nopoints"
-		return 1
-	else
-		points -= cost
-		processing = 1
-		update_icon()
-		updateUsrDialog()
-		sleep(30)
 		return 0
-
-/obj/machinery/biogenerator/proc/create_product(var/item, var/num)
-	var/datum/biogen_recipe/recipe=recipes[item]
-	num=Clamp(num,1,10)
-	if(check_cost(recipe.cost*num))
-		return 0
-	if(recipe.reagent)
-		beaker.reagents.add_reagent(recipe.reagent,recipe.amount_per_unit*num)
-	else
-		if(istype(recipe.result,/obj/item/stack))
-			var/obj/item/stack/stack=new recipe.result(src.loc)
-			stack.amount=num*recipe.amount_per_unit
-		else
-			for(var/i=0;i<num;i++)
-				new recipe.result(src.loc)
+	processing = 1
+	update_icon()
+	updateUsrDialog()
+	points -= cost
+	sleep(30)
+	switch(item)
+		if("milk")
+			beaker.reagents.add_reagent("milk", 10)
+		if("meat")
+			new/obj/item/weapon/reagent_containers/food/snacks/meat(loc)
+		if("ez")
+			new/obj/item/weapon/reagent_containers/glass/fertilizer/ez(loc)
+		if("l4z")
+			new/obj/item/weapon/reagent_containers/glass/fertilizer/l4z(loc)
+		if("rh")
+			new/obj/item/weapon/reagent_containers/glass/fertilizer/rh(loc)
+		if("ez5") //It's not an elegant method, but it's safe and easy. -Cheridan
+			new/obj/item/weapon/reagent_containers/glass/fertilizer/ez(loc)
+			new/obj/item/weapon/reagent_containers/glass/fertilizer/ez(loc)
+			new/obj/item/weapon/reagent_containers/glass/fertilizer/ez(loc)
+			new/obj/item/weapon/reagent_containers/glass/fertilizer/ez(loc)
+			new/obj/item/weapon/reagent_containers/glass/fertilizer/ez(loc)
+		if("l4z5")
+			new/obj/item/weapon/reagent_containers/glass/fertilizer/l4z(loc)
+			new/obj/item/weapon/reagent_containers/glass/fertilizer/l4z(loc)
+			new/obj/item/weapon/reagent_containers/glass/fertilizer/l4z(loc)
+			new/obj/item/weapon/reagent_containers/glass/fertilizer/l4z(loc)
+			new/obj/item/weapon/reagent_containers/glass/fertilizer/l4z(loc)
+		if("rh5")
+			new/obj/item/weapon/reagent_containers/glass/fertilizer/rh(loc)
+			new/obj/item/weapon/reagent_containers/glass/fertilizer/rh(loc)
+			new/obj/item/weapon/reagent_containers/glass/fertilizer/rh(loc)
+			new/obj/item/weapon/reagent_containers/glass/fertilizer/rh(loc)
+			new/obj/item/weapon/reagent_containers/glass/fertilizer/rh(loc)
+		if("wallet")
+			new/obj/item/weapon/storage/wallet(loc)
+		if("gloves")
+			new/obj/item/clothing/gloves/botanic_leather(loc)
+		if("tbelt")
+			new/obj/item/weapon/storage/belt/utility(loc)
+		if("satchel")
+			new/obj/item/weapon/storage/backpack/satchel(loc)
+		if("cashbag")
+			new/obj/item/weapon/storage/bag/cash(loc)
+		if("monkey")
+			new/mob/living/carbon/monkey(loc)
 	processing = 0
 	menustat = "complete"
 	update_icon()
@@ -391,8 +227,6 @@
 
 	usr.set_machine(src)
 
-	//testing(href)
-
 	switch(href_list["action"])
 		if("activate")
 			activate()
@@ -402,7 +236,21 @@
 				beaker = null
 				update_icon()
 		if("create")
-			create_product(href_list["item"],text2num(href_list["num"]))
+			create_product(href_list["item"], text2num(href_list["cost"]))
 		if("menu")
 			menustat = "menu"
 	updateUsrDialog()
+
+/obj/machinery/biogenerator/RefreshParts()
+	..()
+	var/man_rating = 0
+	var/bin_rating = 0
+
+	for(var/obj/item/weapon/stock_parts/P in component_parts)
+		if(istype(P, /obj/item/weapon/stock_parts/matter_bin))
+			bin_rating += P.rating
+		if(istype(P, /obj/item/weapon/stock_parts/manipulator))
+			man_rating += P.rating
+
+	build_eff = man_rating
+	eat_eff = bin_rating

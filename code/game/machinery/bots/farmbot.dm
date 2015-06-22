@@ -12,8 +12,6 @@
 // The behavior panel can be unlocked with hydroponics access and be modified to disable certain behaviors
 // By default, it will ignore weeds and mushrooms, but can be set to tend to these types of plants as well.
 
-//Seems a little stupid handling multiple Go direction X,Y,Z to do Job F,G,H if it's in multiple directions so I'd reccomend only enabling 1 water/fertilize/weed task at a time. - SarahJohnson
-
 
 #define FARMBOT_MODE_WATER			1
 #define FARMBOT_MODE_FERTILIZE	 	2
@@ -93,7 +91,7 @@
 
 /obj/machinery/bot/farmbot/proc/get_total_ferts()
 	var total_fert = 0
-	for (var/obj/item/weapon/reagent_containers/glass/fertilizer/fert in contents)
+	for (var/obj/item/nutrient/fert in contents)
 		total_fert++
 	return total_fert
 
@@ -102,7 +100,7 @@
 	if (.)
 		return
 	var/dat
-	dat += "<TT><B>Automatic Hydroponic Assisting Unit v1.0</B></TT><BR><BR>"
+	dat += "<TT><B>Automatic Hyrdoponic Assisting Unit v1.0</B></TT><BR><BR>"
 	dat += "Status: <A href='?src=\ref[src];power=1'>[src.on ? "On" : "Off"]</A><BR>"
 
 	dat += "Water Tank: "
@@ -155,7 +153,7 @@
 		setting_ignoreMushrooms = !setting_ignoreMushrooms
 	else if (href_list["eject"] )
 		flick("farmbot_hatch",src)
-		for (var/obj/item/weapon/reagent_containers/glass/fertilizer/fert in contents)
+		for (var/obj/item/nutrient/fert in contents)
 			fert.loc = get_turf(src)
 
 	src.updateUsrDialog()
@@ -170,7 +168,7 @@
 		else
 			user << "\red Access denied."
 
-	else if (istype(W, /obj/item/weapon/reagent_containers/glass/fertilizer))
+	else if (istype(W, /obj/item/nutrient))
 		if ( get_total_ferts() >= Max_Fertilizers )
 			user << "The fertilizer storage is full!"
 			return
@@ -212,7 +210,7 @@
 	if ( tank )
 		tank.loc = Tsec
 
-	for ( var/obj/item/weapon/reagent_containers/glass/fertilizer/fert in contents )
+	for ( var/obj/item/nutrient/fert in contents )
 		if ( prob(50) )
 			fert.loc = Tsec
 
@@ -226,7 +224,7 @@
 	return
 
 /obj/machinery/bot/farmbot/process()
-	//set background = 1
+	set background = 1
 
 	if(!src.on)
 		return
@@ -267,15 +265,15 @@
 		target = null
 		return 0
 
-	if ( !emagged && !istype(target,/obj/machinery/portable_atmospherics/hydroponics) && !istype(target,/obj/structure/sink) ) // Humans are not plants!
+	if ( !emagged && !istype(target,/obj/machinery/hydroponics) && !istype(target,/obj/structure/sink) ) // Humans are not plants!
 		mode = 0
 		target = null
 		return 0
 
 	if ( mode == FARMBOT_MODE_FERTILIZE )
 		//Find which fertilizer to use
-		var/obj/item/weapon/reagent_containers/glass/fertilizer/fert
-		for ( var/obj/item/weapon/reagent_containers/glass/fertilizer/nut in contents )
+		var/obj/item/nutrient/fert
+		for ( var/obj/item/nutrient/nut in contents )
 			fert = nut
 			break
 		if ( !fert )
@@ -317,7 +315,7 @@
 				target = source
 				mode = FARMBOT_MODE_REFILL
 				return 1
-		for ( var/obj/machinery/portable_atmospherics/hydroponics/tray in view(7,src) )
+		for ( var/obj/machinery/hydroponics/tray in view(7,src) )
 			var newMode = GetNeededMode(tray)
 			if ( newMode )
 				mode = newMode
@@ -325,8 +323,12 @@
 				return 1
 		return 0
 
-/obj/machinery/bot/farmbot/proc/GetNeededMode(obj/machinery/portable_atmospherics/hydroponics/tray)
-	if ( !tray.seed || tray.dead )
+/obj/machinery/bot/farmbot/proc/GetNeededMode(obj/machinery/hydroponics/tray)
+	if ( !tray.planted || tray.dead )
+		return 0
+	if ( tray.myseed.plant_type == 1 && setting_ignoreWeeds )
+		return 0
+	if ( tray.myseed.plant_type == 2 && setting_ignoreMushrooms )
 		return 0
 
 	if ( setting_water && tray.waterlevel <= 10 && tank && tank.reagents.total_volume >= 1 )
@@ -348,8 +350,6 @@
 		mode = 0
 		frustration = 0
 		src.path = new()
-	if(!src.path)
-		src.path = new()
 	if(src.target && (src.path.len) && (get_dist(src.target,src.path[src.path.len]) > 2))
 		src.path = new()
 	if(src.target && src.path.len == 0 && (get_dist(src,src.target) > 1))
@@ -357,14 +357,14 @@
 			var/turf/dest = get_step_towards(target,src)  //Can't pathfind to a tray, as it is dense, so pathfind to the spot next to the tray
 
 			src.path = AStar(src.loc, dest, /turf/proc/CardinalTurfsWithAccess, /turf/proc/Distance, 0, 30,id=botcard)
-			if(path && src.path.len == 0)
+			if(src.path.len == 0)
 				for ( var/turf/spot in orange(1,target) ) //The closest one is unpathable, try  the other spots
 					if ( spot == dest ) //We already tried this spot
 						continue
 					if ( spot.density )
 						continue
 					src.path = AStar(src.loc, spot, /turf/proc/CardinalTurfsWithAccess, /turf/proc/Distance, 0, 30,id=botcard)
-					src.path = reverseRange(src.path)
+					src.path = reverselist(src.path)
 					if ( src.path.len > 0 )
 						break
 
@@ -385,7 +385,7 @@
 		src.frustration++
 
 
-/obj/machinery/bot/farmbot/proc/fertilize(var/obj/item/weapon/reagent_containers/glass/fertilizer/fert)
+/obj/machinery/bot/farmbot/proc/fertilize(obj/item/nutrient/fert)
 	if ( !fert )
 		target = null
 		mode = 0
@@ -394,7 +394,7 @@
 	if ( emagged ) // Warning, hungry humans detected: throw fertilizer at them
 		spawn(0)
 			fert.loc = src.loc
-			fert.throw_at(target, 16, 3)
+			fert.throw_at(target, 16, 3, src)
 		src.visible_message("\red <b>[src] launches [fert.name] at [target.name]!</b>")
 		flick("farmbot_broke", src)
 		spawn (FARMBOT_EMAG_DELAY)
@@ -403,11 +403,12 @@
 		return 1
 
 	else // feed them plants~
-		var/obj/machinery/portable_atmospherics/hydroponics/tray = target
+		var /obj/machinery/hydroponics/tray = target
 		tray.nutrilevel = 10
-		fert.reagents.trans_to(tray.reagents, fert.reagents.total_volume)
+		tray.yieldmod = fert.yieldmod
+		tray.mutmod = fert.mutmod
 		del fert
-		//tray.updateicon()
+		tray.updateicon()
 		icon_state = "farmbot_fertile"
 		mode = FARMBOT_MODE_WAITING
 
@@ -428,7 +429,7 @@
 		spawn(FARMBOT_EMAG_DELAY)
 			mode = 0
 
-		if ( prob(30) ) // better luck next time little guy
+		if ( prob(50) ) // better luck next time little guy
 			src.visible_message("\red <b>[src] swings wildly at [target] with a minihoe, missing completely!</b>")
 
 		else // yayyy take that weeds~
@@ -436,20 +437,20 @@
 			var /mob/living/carbon/human/human = target
 
 			src.visible_message("\red <B>[src] [attackVerb] [human]!</B>")
-			var/damage = 15
+			var/damage = 5
 			var/dam_zone = pick("chest", "l_hand", "r_hand", "l_leg", "r_leg")
 			var/datum/organ/external/affecting = human.get_organ(ran_zone(dam_zone))
 			var/armor = human.run_armor_check(affecting, "melee")
-			human.apply_damage(damage,BRUTE,affecting,armor)
+			human.apply_damage(damage,BRUTE,affecting,armor,sharp=1,edge=1)
 
 	else // warning, plants infested with weeds!
 		mode = FARMBOT_MODE_WAITING
 		spawn(FARMBOT_ACTION_DELAY)
 			mode = 0
 
-		var /obj/machinery/portable_atmospherics/hydroponics/tray = target
+		var /obj/machinery/hydroponics/tray = target
 		tray.weedlevel = 0
-		//tray.updateicon()
+		tray.updateicon()
 
 /obj/machinery/bot/farmbot/proc/water()
 	if ( !tank || tank.reagents.total_volume < 1 )
@@ -464,7 +465,7 @@
 	if ( emagged ) // warning, humans are thirsty!
 		var splashAmount = min(70,tank.reagents.total_volume)
 		src.visible_message("\red [src] splashes [target] with a bucket of water!")
-		playsound(get_turf(src), 'sound/effects/slosh.ogg', 25, 1)
+		playsound(src.loc, 'sound/effects/slosh.ogg', 25, 1)
 		if ( prob(50) )
 			tank.reagents.reaction(target, TOUCH) //splash the human!
 		else
@@ -476,21 +477,21 @@
 		spawn(FARMBOT_EMAG_DELAY)
 			mode = 0
 	else
-		var /obj/machinery/portable_atmospherics/hydroponics/tray = target
+		var /obj/machinery/hydroponics/tray = target
 		var/b_amount = tank.reagents.get_reagent_amount("water")
 		if(b_amount > 0 && tray.waterlevel < 100)
 			if(b_amount + tray.waterlevel > 100)
 				b_amount = 100 - tray.waterlevel
 			tank.reagents.remove_reagent("water", b_amount)
 			tray.waterlevel += b_amount
-			playsound(get_turf(src), 'sound/effects/slosh.ogg', 25, 1)
+			playsound(src.loc, 'sound/effects/slosh.ogg', 25, 1)
 
 	//		Toxicity dilutation code. The more water you put in, the lesser the toxin concentration.
-			tray.toxins -= round(b_amount/4)
-			if (tray.toxins < 0 ) // Make sure it won't go overboard
-				tray.toxins = 0
+			tray.toxic -= round(b_amount/4)
+			if (tray.toxic < 0 ) // Make sure it won't go overboard
+				tray.toxic = 0
 
-		//tray.updateicon()
+		tray.updateicon()
 		mode = FARMBOT_MODE_WAITING
 		spawn(FARMBOT_ACTION_DELAY)
 			mode = 0
@@ -502,13 +503,13 @@
 		return
 
 	mode = FARMBOT_MODE_WAITING
-	playsound(get_turf(src), 'sound/effects/slosh.ogg', 25, 1)
+	playsound(src.loc, 'sound/effects/slosh.ogg', 25, 1)
 	src.visible_message("\blue [src] starts filling it's tank from [target].")
 	spawn(300)
 		src.visible_message("\blue [src] finishes filling it's tank.")
 		src.mode = 0
 		tank.reagents.add_reagent("water", tank.reagents.maximum_volume - tank.reagents.total_volume )
-		playsound(get_turf(src), 'sound/effects/slosh.ogg', 25, 1)
+		playsound(src.loc, 'sound/effects/slosh.ogg', 25, 1)
 
 
 /obj/item/weapon/farmbot_arm_assembly
@@ -539,10 +540,9 @@
 	var/obj/item/weapon/farmbot_arm_assembly/A = new /obj/item/weapon/farmbot_arm_assembly
 
 	A.loc = src.loc
-	A.layer = 20
 	user << "You add the robot arm to the [src]"
 	src.loc = A //Place the water tank into the assembly, it will be needed for the finished bot
-
+	user.u_equip(S)
 	del(S)
 
 /obj/item/weapon/farmbot_arm_assembly/attackby(obj/item/weapon/W as obj, mob/user as mob)
@@ -551,18 +551,21 @@
 		src.build_step++
 		user << "You add the plant analyzer to [src]!"
 		src.name = "farmbot assembly"
+		user.u_equip(W)
 		del(W)
 
 	else if(( istype(W, /obj/item/weapon/reagent_containers/glass/bucket)) && (src.build_step == 1))
 		src.build_step++
 		user << "You add a bucket to [src]!"
 		src.name = "farmbot assembly with bucket"
+		user.u_equip(W)
 		del(W)
 
 	else if(( istype(W, /obj/item/weapon/minihoe)) && (src.build_step == 2))
 		src.build_step++
 		user << "You add a minihoe to [src]!"
 		src.name = "farmbot assembly with bucket and minihoe"
+		user.u_equip(W)
 		del(W)
 
 	else if((isprox(W)) && (src.build_step == 3))
@@ -574,15 +577,19 @@
 			S.tank = wTank
 		S.loc = get_turf(src)
 		S.name = src.created_name
+		user.u_equip(W)
 		del(W)
 		del(src)
 
 	else if(istype(W, /obj/item/weapon/pen))
 		var/t = input(user, "Enter new robot name", src.name, src.created_name) as text
-		t = copytext(sanitize(t), 1, MAX_NAME_LEN)
+		t = sanitize(copytext(t, 1, MAX_NAME_LEN))
 		if (!t)
 			return
 		if (!in_range(src, usr) && src.loc != usr)
 			return
 
 		src.created_name = t
+
+/obj/item/weapon/farmbot_arm_assembly/attack_hand(mob/user as mob)
+	return //it's a converted watertank, no you cannot pick it up and put it in your backpack

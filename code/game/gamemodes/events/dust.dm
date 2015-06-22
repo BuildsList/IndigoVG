@@ -83,7 +83,7 @@ The "dust" will damage the hull of the station causin minor hull breaches.
 		var/goal = locate(endx, endy, 1)
 		src.x = startx
 		src.y = starty
-		src.z = 1
+		src.z = pick(config.station_levels)
 		spawn(0)
 			walk_towards(src, goal, 1)
 		return
@@ -96,7 +96,7 @@ The "dust" will damage the hull of the station causin minor hull breaches.
 					if(!M.stat && !istype(M, /mob/living/silicon/ai))
 						shake_camera(M, 3, 1)
 			if (A)
-				playsound(get_turf(src), 'sound/effects/meteorimpact.ogg', 40, 1)
+				playsound(src.loc, 'sound/effects/meteorimpact.ogg', 40, 1)
 
 				if(ismob(A))
 					A.meteorhit(src)//This should work for now I guess
@@ -107,7 +107,7 @@ The "dust" will damage the hull of the station causin minor hull breaches.
 				if(life <= 0)
 					walk(src,0)
 					spawn(1)
-						qdel(src)
+						del(src)
 					return 0
 		return
 
@@ -118,5 +118,5 @@ The "dust" will damage the hull of the station causin minor hull breaches.
 
 
 	ex_act(severity)
-		qdel(src)
+		del(src)
 		return

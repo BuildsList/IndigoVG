@@ -4,34 +4,27 @@
 //Added by Jack Rost
 /obj/item/trash
 	icon = 'icons/obj/trash.dmi'
-	w_class = 1.0
+	w_class = 2.0
 	desc = "This is rubbish."
-	w_type=NOT_RECYCLABLE
-	autoignition_temperature = AUTOIGNITION_PAPER
-	fire_fuel = 1
-
-/obj/item/trash/bustanuts
-	name = "Busta-Nuts"
-	icon_state = "busta_nut"
 
 /obj/item/trash/raisins
-	name = "4no raisins"
+	name = "\improper 4no raisins"
 	icon_state= "4no_raisins"
 
 /obj/item/trash/candy
-	name = "Candy"
+	name = "candy"
 	icon_state= "candy"
 
 /obj/item/trash/cheesie
-	name = "Cheesie honkers"
+	name = "\improper Cheesie Honkers"
 	icon_state = "cheesie_honkers"
 
 /obj/item/trash/chips
-	name = "Chips"
+	name = "chips"
 	icon_state = "chips"
 
 /obj/item/trash/popcorn
-	name = "Popcorn"
+	name = "popcorn"
 	icon_state = "popcorn"
 
 /obj/item/trash/sosjerky
@@ -39,39 +32,31 @@
 	icon_state = "sosjerky"
 
 /obj/item/trash/syndi_cakes
-	name = "Syndi cakes"
+	name = "syndi cakes"
 	icon_state = "syndi_cakes"
 
-/obj/item/trash/discountchocolate
-	name = "Discount Dan's Chocolate Bar"
-	icon_state = "danbar"
-
-/obj/item/trash/danitos
-	name = "Danitos"
-	icon_state = "danitos"
-
 /obj/item/trash/waffles
-	name = "Waffles"
+	name = "waffles"
 	icon_state = "waffles"
 
 /obj/item/trash/plate
-	name = "Plate"
+	name = "plate"
 	icon_state = "plate"
 
 /obj/item/trash/snack_bowl
-	name = "Snack bowl"
+	name = "snack bowl"
 	icon_state	= "snack_bowl"
 
 /obj/item/trash/pistachios
-	name = "Pistachios pack"
+	name = "pistachios pack"
 	icon_state = "pistachios_pack"
 
 /obj/item/trash/semki
-	name = "Semki pack"
+	name = "semki pack"
 	icon_state = "semki_pack"
 
 /obj/item/trash/tray
-	name = "Tray"
+	name = "tray"
 	icon_state = "tray"
 
 /obj/item/trash/candle
@@ -83,9 +68,9 @@
 	name = "\improper \"LiquidFood\" ration"
 	icon_state = "liquidfood"
 
-/obj/item/trash/chicken_bucket
-	name = "Chicken bucket"
-	icon_state = "kfc_bucket"
+/obj/item/trash/tastybread
+	name = "bread tube"
+	icon_state = "tastybread"
 
 /obj/item/trash/attack(mob/M as mob, mob/living/user as mob)
 	return

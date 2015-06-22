@@ -4,22 +4,21 @@
 
 /datum/game_mode/traitor/autotraitor
 	name = "AutoTraitor"
-	config_tag = "autotraitor"
+	config_tag = "extend-a-traitormongous"
 
 	var/list/possible_traitors
 	var/num_players = 0
 
 /datum/game_mode/traitor/autotraitor/announce()
 	..()
-	world << "<B>Game mode is AutoTraitor. Traitors will be added to the round automagically as needed.<br>Expect bugs.</B>"
+	world << "<B>Game mode is AutoTraitor. Traitors will be added to the round automagically as needed.</B>"
 
 /datum/game_mode/traitor/autotraitor/pre_setup()
-	if(istype(ticker.mode, /datum/game_mode/mixed))
-		mixed = 1
+
 	if(config.protect_roles_from_antagonist)
 		restricted_jobs += protected_jobs
 
-	possible_traitors = get_players_for_role(ROLE_TRAITOR)
+	possible_traitors = get_players_for_role(BE_TRAITOR)
 
 	for(var/datum/mind/player in possible_traitors)
 		for(var/job in restricted_jobs)
@@ -27,7 +26,9 @@
 				possible_traitors -= player
 
 
-	num_players = num_players()
+	for(var/mob/new_player/P in world)
+		if(P.client && P.ready)
+			num_players++
 
 	//var/r = rand(5)
 	var/num_traitors = 1
@@ -42,9 +43,6 @@
 
 	if(config.traitor_scaling)
 		num_traitors = max_traitors - 1 + prob(traitor_prob)
-		// mixed mode scaling
-		if(mixed)
-			num_traitors = min(3, num_traitors)
 		log_game("Number of traitors: [num_traitors]")
 		message_admins("Players counted: [num_players]  Number of traitors chosen: [num_traitors]")
 	else
@@ -53,9 +51,6 @@
 
 	for(var/i = 0, i < num_traitors, i++)
 		var/datum/mind/traitor = pick(possible_traitors)
-		if(traitor.special_role)
-			possible_traitors.Remove(traitor)
-			continue
 		traitors += traitor
 		possible_traitors.Remove(traitor)
 
@@ -75,7 +70,6 @@
 
 /datum/game_mode/traitor/autotraitor/post_setup()
 	..()
-	abandon_allowed = 1
 	traitorcheckloop()
 
 /datum/game_mode/traitor/autotraitor/proc/traitorcheckloop()
@@ -92,7 +86,7 @@
 				playercount += 1
 			if (player.client && player.mind && player.mind.special_role && player.stat != 2)
 				traitorcount += 1
-			if (player.client && player.mind && !player.mind.special_role && player.stat != 2 && (player.client && player.client.desires_role(ROLE_TRAITOR)) && !jobban_isbanned(player, "Syndicate") && !isMoMMI(player))
+			if (player.client && player.mind && !player.mind.special_role && player.stat != 2 && (player.client && player.client.prefs.be_special & BE_TRAITOR) && !jobban_isbanned(player, "Syndicate"))
 				possible_traitors += player
 		for(var/datum/mind/player in possible_traitors)
 			for(var/job in restricted_jobs)
@@ -128,7 +122,8 @@
 				var/mob/living/newtraitor = pick(possible_traitors)
 				//message_admins("[newtraitor.real_name] is the new Traitor.")
 
-				forge_traitor_objectives(newtraitor.mind)
+				if (!config.objectives_disabled)
+					forge_traitor_objectives(newtraitor.mind)
 
 				if(istype(newtraitor, /mob/living/silicon))
 					add_law_zero(newtraitor)
@@ -136,14 +131,13 @@
 					equip_traitor(newtraitor)
 
 				traitors += newtraitor.mind
-				newtraitor << "\red <B>ATTENTION:</B> \black It is time to pay your debt to the Syndicate..."
+				newtraitor << "\red <B>No time like the present.</B> \black It's time to take matters into your own hands..."
 				newtraitor << "<B>You are now a traitor.</B>"
 				newtraitor.mind.special_role = "traitor"
-				var/obj_count = 1
-				newtraitor << "\blue Your current objectives:"
-				for(var/datum/objective/objective in newtraitor.mind.objectives)
-					newtraitor << "<B>Objective #[obj_count]</B>: [objective.explanation_text]"
-					obj_count++
+				BITSET(newtraitor.hud_updateflag, SPECIALROLE_HUD)
+				newtraitor << "<i>You have been selected this round as an antagonist!</i>"
+				show_objectives(newtraitor.mind)
+
 			//else
 				//message_admins("No new traitor being added.")
 		//else
@@ -158,7 +152,7 @@
 	if(emergency_shuttle.departed)
 		return
 	//message_admins("Late Join Check")
-	if((character.client && character.client.desires_role(ROLE_TRAITOR)) && !jobban_isbanned(character, "Syndicate"))
+	if((character.client && character.client.prefs.be_special & BE_TRAITOR) && !jobban_isbanned(character, "Syndicate"))
 		//message_admins("Late Joiner has Be Syndicate")
 		//message_admins("Checking number of players")
 		var/playercount = 0
@@ -188,16 +182,15 @@
 			//message_admins("The probability of a new traitor is [traitor_prob]%")
 			if(prob(traitor_prob))
 				message_admins("New traitor roll passed.  Making a new Traitor.")
-				forge_traitor_objectives(character.mind)
+				if (!config.objectives_disabled)
+					forge_traitor_objectives(character.mind)
 				equip_traitor(character)
 				traitors += character.mind
 				character << "\red <B>You are the traitor.</B>"
 				character.mind.special_role = "traitor"
-				var/obj_count = 1
-				character << "\blue Your current objectives:"
-				for(var/datum/objective/objective in character.mind.objectives)
-					character << "<B>Objective #[obj_count]</B>: [objective.explanation_text]"
-					obj_count++
+				character << "<i>You have been selected this round as an antagonist</i>!"
+				show_objectives(character.mind)
+
 			//else
 				//message_admins("New traitor roll failed.  No new traitor.")
 	//else

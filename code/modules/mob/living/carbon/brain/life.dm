@@ -1,6 +1,6 @@
 /mob/living/carbon/brain/Life()
 	set invisibility = 0
-	//set background = 1
+	set background = 1
 	..()
 
 	if(stat != DEAD)
@@ -34,8 +34,6 @@
 
 /mob/living/carbon/brain/
 	proc/handle_mutations_and_radiation()
-		if(flags & INVULNERABLE)
-			return
 
 		if (radiation)
 			if (radiation > 100)
@@ -70,7 +68,7 @@
 
 
 	proc/handle_environment(datum/gas_mixture/environment)
-		if(!environment || (flags & INVULNERABLE))
+		if(!environment)
 			return
 		var/environment_heat_capacity = environment.heat_capacity()
 		if(istype(get_turf(src), /turf/space))
@@ -188,26 +186,13 @@
 						emp_damage -= 1
 
 			//Other
-			if(stunned)
-				AdjustStunned(-1)
-
-			if(weakened)
-				weakened = max(weakened-1,0)	//before you get mad Rockdtben: I done this so update_canmove isn't called multiple times
-
-			if(stuttering)
-				stuttering = max(stuttering-1, 0)
-
-			if(silent)
-				silent = max(silent-1, 0)
-
-			if(druggy)
-				druggy = max(druggy-1, 0)
+			handle_statuses()
 		return 1
 
 
 	proc/handle_regular_hud_updates()
 
-		if (stat == 2 || (M_XRAY in src.mutations))
+		if (stat == 2 || (XRAY in src.mutations))
 			sight |= SEE_TURFS
 			sight |= SEE_MOBS
 			sight |= SEE_OBJS
@@ -240,7 +225,6 @@
 			else
 				healths.icon_state = "health7"
 
-		if(pullin)	pullin.icon_state = "pull[pulling ? 1 : 0]"
 		if (client)
 			client.screen.Remove(global_hud.blurry,global_hud.druggy,global_hud.vimpaired)
 
@@ -271,9 +255,6 @@
 
 
 /*/mob/living/carbon/brain/emp_act(severity)
-	if(flags & INVULNERABLE)
-		return
-
 	if(!(container && istype(container, /obj/item/device/mmi)))
 		return
 	else

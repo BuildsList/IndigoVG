@@ -1,6 +1,5 @@
 /mob/living/simple_animal/hostile/retaliate
 	var/list/enemies = list()
-	var/hostile = 0 //Reverts back into a hostile mob when toggle to 1
 
 /mob/living/simple_animal/hostile/retaliate/Found(var/atom/A)
 	if(isliving(A))
@@ -17,8 +16,6 @@
 			return A
 
 /mob/living/simple_animal/hostile/retaliate/ListTargets()
-	if(hostile)
-		return ..()
 	if(!enemies.len)
 		return list()
 	var/list/see = ..()
@@ -27,7 +24,7 @@
 
 /mob/living/simple_animal/hostile/retaliate/proc/Retaliate()
 	..()
-	var/list/around = view(src, vision_range)
+	var/list/around = view(src, 7)
 
 	for(var/atom/movable/A in around)
 		if(A == src)

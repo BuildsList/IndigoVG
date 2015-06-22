@@ -5,31 +5,18 @@
 	opacity = 1
 	density = 1
 
+	damage_cap = 800
+	max_temperature = 6000
+
 	walltype = "rwall"
 
 	var/d_state = 0
 
-/turf/simulated/wall/r_wall/attack_hand(mob/user as mob)
-	if (M_HULK in user.mutations)
-		if (prob(10) || rotting)
-			usr << text("\blue You smash through the wall.")
-			usr.say(pick(";RAAAAAAAARGH!", ";HNNNNNNNNNGGGGGGH!", ";GWAAAAAAAARRRHHH!", "NNNNNNNNGGGGGGGGHH!", ";AAAAAAARRRGH!" ))
-			dismantle_wall(1)
-			return
-		else
-			usr << text("\blue You punch the wall.")
-			return
-
-	if(rotting)
-		user << "<span class='notice'>This wall feels rather unstable.</span>"
-		return
-
-	user << "<span class='notice'>You push the wall but nothing happens!</span>"
-	playsound(src, 'sound/weapons/Genhit.ogg', 25, 1)
-	src.add_fingerprint(user)
-	..()
-	return
-
+/turf/simulated/wall/r_wall
+	hulk_destroy_prob = 10
+	hulk_take_damage = 0
+	rotting_destroy_touch = 0
+	rotting_touch_message = "\blue This wall feels rather unstable."
 
 /turf/simulated/wall/r_wall/attackby(obj/item/W as obj, mob/user as mob)
 
@@ -81,6 +68,19 @@
 	else if(istype(W, /obj/item/weapon/melee/energy/blade))
 		user << "<span class='notice'>This wall is too thick to slice through. You will need to find a different path.</span>"
 		return
+
+	if(damage && istype(W, /obj/item/weapon/weldingtool))
+		var/obj/item/weapon/weldingtool/WT = W
+		if(WT.remove_fuel(0,user))
+			user << "<span class='notice'>You start repairing the damage to [src].</span>"
+			playsound(src, 'sound/items/Welder.ogg', 100, 1)
+			if(do_after(user, max(5, damage / 5)) && WT && WT.isOn())
+				user << "<span class='notice'>You finish repairing the damage to [src].</span>"
+				take_damage(-damage)
+			return
+		else
+			user << "<span class='warning'>You need more welding fuel to complete this task.</span>"
+			return
 
 	var/turf/T = user.loc	//get user's location for delay checks
 
@@ -237,20 +237,15 @@
 //vv OK, we weren't performing a valid deconstruction step or igniting thermite,let's check the other possibilities vv
 
 	//DRILLING
-	if (istype(W, /obj/item/weapon/pickaxe))
+	if (istype(W, /obj/item/weapon/pickaxe/diamonddrill))
 
-		var/obj/item/weapon/pickaxe/PK = W
-		if(!(PK.diggables & DIG_RWALLS))
-			return
+		user << "<span class='notice'>You begin to drill though the wall.</span>"
 
-		user << "<span class='notice'>You begin [PK.drill_verb] through the outer plating.</span>"
-		playsound(src, PK.drill_sound, 100, 1)
-		sleep(PK.digspeed * 50)
+		sleep(200)
+		if( !istype(src, /turf/simulated/wall/r_wall) || !user || !W || !T )	return
 
-		if( !istype(src, /turf/simulated/wall/r_wall) || !user || !PK || !T )	return
-
-		if( user.loc == T && user.get_active_hand() == PK )
-			user << "<span class='notice'>Your [src] tears though the last of the reinforced plating.</span>"
+		if( user.loc == T && user.get_active_hand() == W )
+			user << "<span class='notice'>Your drill tears though the last of the reinforced plating.</span>"
 			dismantle_wall()
 
 	//REPAIRING
@@ -272,15 +267,34 @@
 			else
 				del(MS)
 
-	else if(istype(W, /obj/item/mounted))
+	//APC
+	else if( istype(W,/obj/item/apc_frame) )
+		var/obj/item/apc_frame/AH = W
+		AH.try_build(src)
+
+	else if( istype(W,/obj/item/alarm_frame) )
+		var/obj/item/alarm_frame/AH = W
+		AH.try_build(src)
+
+	else if(istype(W,/obj/item/firealarm_frame))
+		var/obj/item/firealarm_frame/AH = W
+		AH.try_build(src)
 		return
+
+	else if(istype(W,/obj/item/light_fixture_frame))
+		var/obj/item/light_fixture_frame/AH = W
+		AH.try_build(src)
+		return
+
+	else if(istype(W,/obj/item/light_fixture_frame/small))
+		var/obj/item/light_fixture_frame/small/AH = W
+		AH.try_build(src)
+		return
+
+	else if(istype(W, /obj/item/weapon/reagent_containers))
+		return // They tend to have meaningful afterattack - let them apply it without destroying a rotting wall
 
 	//Finally, CHECKING FOR FALSE WALLS if it isn't damaged
 	else if(!d_state)
 		return attack_hand(user)
 	return
-
-/turf/simulated/wall/r_wall/singularity_pull(S, current_size)
-	if(current_size >= STAGE_FIVE)
-		if(prob(30))
-			dismantle_wall()

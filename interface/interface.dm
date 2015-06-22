@@ -1,24 +1,4 @@
 //Please use mob or src (not usr) in these procs. This way they can be called in the same fashion as procs.
-/client/verb/MapRender()
-	set name = "MapRender"
-	set desc = "Shows a high scale rendering of the current map in your browser."
-	set hidden = 1
-
-	if(alert("This will open the map render(s) in your browser. Are you sure?",,"Yes","No")=="No")
-		return
-	if(map)
-		src << link("http://wiki.ss13.ru/index.php?title=Maps")
-/*		switch(map.nameShort)
-			if("meta")
-				src << link("http://ss13.nexisonline.net/img/map-renders/metaclub/")
-			if("deff")
-				src << link("http://ss13.nexisonline.net/img/map-renders/defficiency/")
-			if("box")
-				src << link("http://ss13.nexisonline.net/img/map-renders/tgstation/")
-			else
-				src << "<span class='indigo'>No map render for [map.nameLong], call detective!</span>" */
-	return
-
 /client/verb/wiki()
 	set name = "wiki"
 	set desc = "Visit the wiki."
@@ -66,6 +46,7 @@ Hotkey-Mode: (hotkey-mode must be on)
 \te = equip
 \tr = throw
 \tt = say
+\t5 = emote
 \tx = swap-hand
 \tz = activate held object (or y)
 \tf = cycle-intents-left
@@ -93,6 +74,10 @@ Any-Mode: (hotkey doesn't need to be on)
 \tCtrl+2 = disarm-intent
 \tCtrl+3 = grab-intent
 \tCtrl+4 = harm-intent
+\tF1 = adminhelp
+\tF2 = ooc
+\tF3 = say
+\tF4 = emote
 \tDEL = pull
 \tINS = cycle-intents-right
 \tHOME = drop
@@ -113,10 +98,3 @@ Admin:
 	src << other
 	if(holder)
 		src << admin
-
-// Needed to circumvent a bug where .winset does not work when used on the window.on-size event in skins.
-// Used by /datum/html_interface/nanotrasen (code/modules/html_interface/nanotrasen/nanotrasen.dm)
-/client/verb/_swinset(var/x as text)
-	set name = ".swinset"
-	set hidden = 1
-	winset(src, null, x)

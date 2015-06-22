@@ -1,6 +1,5 @@
 /datum/dna/gene/monkey
 	name="Monkey"
-	flags = GENE_UNNATURAL
 
 /datum/dna/gene/monkey/New()
 	block=MONKEYBLOCK
@@ -34,8 +33,7 @@
 		animation.master = src
 		flick("h2monkey", animation)
 		sleep(48)
-		animation.master = null
-		qdel(animation)
+		del(animation)
 
 
 	var/mob/living/carbon/monkey/O = null
@@ -62,7 +60,7 @@
 
 
 	for(var/obj/T in (M.contents-implants))
-		qdel(T)
+		del(T)
 
 	O.loc = M.loc
 
@@ -89,7 +87,7 @@
 
 /datum/dna/gene/monkey/deactivate(var/mob/living/M, var/connected, var/flags)
 	if(!istype(M,/mob/living/carbon/monkey))
-		testing("Cannot humanize [M], type is [M.type].")
+		//testing("Cannot humanize [M], type is [M.type].")
 		return
 	var/mob/living/carbon/monkey/Mo = M
 	Mo.monkeyizing = 1
@@ -110,12 +108,13 @@
 		animation.master = src
 		flick("monkey2h", animation)
 		sleep(48)
-		animation.master = null
-		qdel(animation)
+		del(animation)
 
-	var/mob/living/carbon/human/O = new( src )
+	var/mob/living/carbon/human/O
 	if(Mo.greaterform)
-		O.set_species(Mo.greaterform)
+		O = new(src, Mo.greaterform)
+	else
+		O = new(src)
 
 	if (M.dna.GetUIState(DNA_UI_GENDER))
 		O.gender = FEMALE
@@ -152,11 +151,16 @@
 
 	var/i
 	while (!i)
-		var/randomname = O.species.makeName(O.gender,O)
+		var/randomname
+		if (O.gender == MALE)
+			randomname = capitalize(pick(first_names_male) + " " + capitalize(pick(last_names)))
+		else
+			randomname = capitalize(pick(first_names_female) + " " + capitalize(pick(last_names)))
 		if (findname(randomname))
 			continue
 		else
 			O.real_name = randomname
+			O.dna.real_name = randomname
 			i++
 	O.UpdateAppearance()
 	O.take_overall_damage(M.getBruteLoss(), M.getFireLoss())

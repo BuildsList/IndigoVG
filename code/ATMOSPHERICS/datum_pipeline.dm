@@ -1,3 +1,4 @@
+
 datum/pipeline
 	var/datum/gas_mixture/air
 
@@ -7,9 +8,6 @@ datum/pipeline
 	var/datum/pipe_network/network
 
 	var/alert_pressure = 0
-	var/last_pressure_check=0
-
-	var/const/PRESSURE_CHECK_DELAY=5 // 5s delay between pchecks to give pipenets time to recover.
 
 	Del()
 		if(network)
@@ -22,16 +20,13 @@ datum/pipeline
 		..()
 
 	proc/process()//This use to be called called from the pipe networks
-		if((world.timeofday - last_pressure_check) / 10 >= PRESSURE_CHECK_DELAY)
-			//Check to see if pressure is within acceptable limits
-			var/pressure = air.return_pressure()
-			if(pressure > alert_pressure)
-				for(var/obj/machinery/atmospherics/pipe/member in members)
-					if(!member.check_pressure(pressure))
-						// Delay next update so we have a chance to recalculate.
-						last_pressure_check=world.timeofday
-						break //Only delete 1 pipe per process
 
+		//Check to see if pressure is within acceptable limits
+		var/pressure = air.return_pressure()
+		if(pressure > alert_pressure)
+			for(var/obj/machinery/atmospherics/pipe/member in members)
+				if(!member.check_pressure(pressure))
+					break //Only delete 1 pipe per process
 
 		//Allow for reactions
 		//air.react() //Should be handled by pipe_network now
@@ -41,22 +36,9 @@ datum/pipeline
 
 		for(var/obj/machinery/atmospherics/pipe/member in members)
 			member.air_temporary = new
+			member.air_temporary.copy_from(air)
 			member.air_temporary.volume = member.volume
-
-			member.air_temporary.oxygen = air.oxygen*member.volume/air.volume
-			member.air_temporary.nitrogen = air.nitrogen*member.volume/air.volume
-			member.air_temporary.toxins = air.toxins*member.volume/air.volume
-			member.air_temporary.carbon_dioxide = air.carbon_dioxide*member.volume/air.volume
-
-			member.air_temporary.temperature = air.temperature
-
-			if(air.trace_gases.len)
-				for(var/datum/gas/trace_gas in air.trace_gases)
-					var/datum/gas/corresponding = new trace_gas.type()
-					member.air_temporary.trace_gases += corresponding
-
-					corresponding.moles = trace_gas.moles*member.volume/air.volume
-			member.air_temporary.update_values()
+			member.air_temporary.multiply(member.volume / air.volume)
 
 	proc/build_pipeline(obj/machinery/atmospherics/pipe/base)
 		air = new
@@ -134,7 +116,7 @@ datum/pipeline
 		var/datum/gas_mixture/air_sample = air.remove_ratio(mingle_volume/air.volume)
 		air_sample.volume = mingle_volume
 
-		if(istype(target) && target.zone && !iscatwalk(target))
+		if(istype(target) && target.zone)
 			//Have to consider preservation of group statuses
 			var/datum/gas_mixture/turf_copy = new
 
@@ -155,12 +137,6 @@ datum/pipeline
 			air.merge(air_sample)
 			//turf_air already modified by equalize_gases()
 
-		/*
-		if(istype(target) && !target.processing && !iscatwalk(target))
-			if(target.air)
-				if(target.air.check_tile_graphic())
-					target.update_visuals(target.air)
-		*/
 		if(network)
 			network.update = 1
 
@@ -221,5 +197,23 @@ datum/pipeline
 					(partial_heat_capacity*target.heat_capacity/(partial_heat_capacity+target.heat_capacity))
 
 				air.temperature -= heat/total_heat_capacity
+		if(network)
+			network.update = 1
+
+	//surface must be the surface area in m^2
+	proc/radiate_heat_to_space(surface, thermal_conductivity)
+		var/gas_density = air.total_moles/air.volume
+		thermal_conductivity *= min(gas_density / ( RADIATOR_OPTIMUM_PRESSURE/(R_IDEAL_GAS_EQUATION*GAS_CRITICAL_TEMPERATURE) ), 1) //mult by density ratio
+		
+		// We only get heat from the star on the exposed surface area.
+		// If the HE pipes gain more energy from AVERAGE_SOLAR_RADIATION than they can radiate, then they have a net heat increase.
+		var/heat_gain = AVERAGE_SOLAR_RADIATION * (RADIATOR_EXPOSED_SURFACE_AREA_RATIO * surface) * thermal_conductivity
+		
+		// Previously, the temperature would enter equilibrium at 26C or 294K.
+		// Only would happen if both sides (all 2 square meters of surface area) were exposed to sunlight.  We now assume it aligned edge on.
+		// It currently should stabilise at 129.6K or -143.6C
+		heat_gain -= surface * STEFAN_BOLTZMANN_CONSTANT * thermal_conductivity * (air.temperature - COSMIC_RADIATION_TEMPERATURE) ** 4
+		
+		air.add_thermal_energy(heat_gain)
 		if(network)
 			network.update = 1

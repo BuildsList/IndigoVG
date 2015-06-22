@@ -14,7 +14,7 @@
 	var/obj/machinery/field_generator/FG2 = null
 	var/hasShocked = 0 //Used to add a delay between shocks. In some cases this used to crash servers by spawning hundreds of sparks every second.
 
-/obj/machinery/containment_field/Destroy()
+/obj/machinery/containment_field/Del()
 	if(FG1 && !FG1.clean_up)
 		FG1.cleanup()
 	if(FG2 && !FG2.clean_up)
@@ -50,25 +50,24 @@
 
 
 
-/obj/machinery/containment_field/shock(const/mob/living/user)
+/obj/machinery/containment_field/shock(mob/living/user as mob)
 	if(hasShocked)
 		return 0
-
-	if(isnull(FG1) || isnull(FG2))
-		qdel(src)
+	if(!FG1 || !FG2)
+		del(src)
 		return 0
-
 	if(isliving(user))
 		hasShocked = 1
-		var/shock_damage = min(rand(30, 40), rand(30, 40))
+		var/shock_damage = min(rand(30,40),rand(30,40))
 		user.electrocute_act(shock_damage, src)
 
-		if(iscarbon(user))
-			var/atom/target = get_edge_target_turf(user, get_dir(src, get_step_away(user, src)))
-			user.throw_at(target, 200, 4)
+		var/atom/target = get_edge_target_turf(user, get_dir(src, get_step_away(user, src)))
+		user.throw_at(target, 200, 4)
 
 		sleep(20)
+		
 		hasShocked = 0
+	return
 
 /obj/machinery/containment_field/proc/set_master(var/master1,var/master2)
 	if(!master1 || !master2)

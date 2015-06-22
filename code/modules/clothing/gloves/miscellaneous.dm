@@ -1,27 +1,13 @@
-/obj/item/clothing/gloves/space_ninja
-	desc = "These nano-enhanced gloves insulate from electricity and provide fire resistance."
-	name = "ninja gloves"
-	icon_state = "s-ninja"
-	item_state = "s-ninja"
-	siemens_coefficient = 0.2
-	var/draining = 0
-	var/candrain = 0
-	var/mindrain = 200
-	var/maxdrain = 400
-	species_fit = list("Vox")
-
 /obj/item/clothing/gloves/captain
 	desc = "Regal blue gloves, with a nice gold trim. Swanky."
 	name = "captain's gloves"
 	icon_state = "captain"
 	item_state = "egloves"
-	siemens_coefficient = 0
-	_color = "captain"
+	item_color = "captain"
 	cold_protection = HANDS
 	min_cold_protection_temperature = GLOVES_MIN_COLD_PROTECTION_TEMPERATURE
 	heat_protection = HANDS
 	max_heat_protection_temperature = GLOVES_MAX_HEAT_PROTECTION_TEMPERATURE
-	species_fit = list("Vox")
 
 /obj/item/clothing/gloves/cyborg
 	desc = "beep boop borp"
@@ -29,7 +15,6 @@
 	icon_state = "black"
 	item_state = "r_hands"
 	siemens_coefficient = 1.0
-	species_fit = list("Vox")
 
 /obj/item/clothing/gloves/swat
 	desc = "These tactical gloves are somewhat fire and impact-resistant."
@@ -43,7 +28,6 @@
 	min_cold_protection_temperature = GLOVES_MIN_COLD_PROTECTION_TEMPERATURE
 	heat_protection = HANDS
 	max_heat_protection_temperature = GLOVES_MAX_HEAT_PROTECTION_TEMPERATURE
-	species_fit = list("Vox")
 
 /obj/item/clothing/gloves/combat //Combined effect of SWAT gloves and insulated gloves
 	desc = "These tactical gloves are somewhat fire and impact resistant."
@@ -56,7 +40,6 @@
 	min_cold_protection_temperature = GLOVES_MIN_COLD_PROTECTION_TEMPERATURE
 	heat_protection = HANDS
 	max_heat_protection_temperature = GLOVES_MAX_HEAT_PROTECTION_TEMPERATURE
-	species_fit = list("Vox")
 
 /obj/item/clothing/gloves/latex
 	name = "latex gloves"
@@ -65,8 +48,10 @@
 	item_state = "lgloves"
 	siemens_coefficient = 0.30
 	permeability_coefficient = 0.01
-	_color="medical"				//matches cmo stamp
-	species_fit = list("Vox")
+	item_color="white"
+	germ_level = 0
+	cmo
+		item_color = "medical"		//Exists for washing machines. Is not different from latex gloves in any way.
 
 /obj/item/clothing/gloves/botanic_leather
 	desc = "These leather gloves protect against thorns, barbs, prickles, spikes and other harmful objects of floral origin."
@@ -75,12 +60,3 @@
 	item_state = "ggloves"
 	permeability_coefficient = 0.9
 	siemens_coefficient = 0.9
-	species_fit = list("Vox")
-
-/obj/item/clothing/gloves/batmangloves
-	desc = "Used for handling all things bat related."
-	name = "batgloves"
-	icon_state = "bmgloves"
-	item_state = "bmgloves"
-	_color="bmgloves"
-	species_fit = list("Vox")

@@ -7,12 +7,10 @@
 	desc = "A jar. You're not sure what it's supposed to hold."
 	icon_state = "jar"
 	item_state = "beaker"
-	g_amt=500
-	melt_temperature = MELTPOINT_GLASS
-	w_type=RECYK_GLASS
+	center_of_mass = list("x"=15, "y"=8)
 	New()
 		..()
-		reagents.add_reagent("slimejelly", 50)
+		reagents.add_reagent("slime", 50)
 
 	on_reagent_change()
 		if (reagents.reagent_list.len > 0)

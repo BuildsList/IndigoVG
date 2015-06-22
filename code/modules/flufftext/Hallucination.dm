@@ -1,7 +1,7 @@
 /*
 Ideas for the subtle effects of hallucination:
 
-Light up oxygen/plasma indicators (done)
+Light up oxygen/phoron indicators (done)
 Cause health to look critical/dead, even when standing (done)
 Characters silently watching you
 Brief flashes of fire/space/bombs/c4/dangerous shit (done)
@@ -22,7 +22,7 @@ mob/living/carbon/var
 mob/living/carbon/proc/handle_hallucinations()
 	if(handling_hal) return
 	handling_hal = 1
-	while(hallucination > 20)
+	while(client && hallucination > 20)
 		sleep(rand(200,500)/(hallucination/25))
 		var/halpick = rand(1,100)
 		switch(halpick)
@@ -83,7 +83,7 @@ mob/living/carbon/proc/handle_hallucinations()
 			if(26 to 40)
 				//Flashes of danger
 				//src << "Danger Flash"
-				if(!halimage && client)
+				if(!halimage)
 					var/list/possible_points = list()
 					for(var/turf/simulated/floor/F in view(src,world.view))
 						possible_points += F
@@ -111,42 +111,41 @@ mob/living/carbon/proc/handle_hallucinations()
 			if(41 to 65)
 				//Strange audio
 				//src << "Strange Audio"
-				if(client)
-					switch(rand(1,12))
-						if(1) src << 'sound/machines/airlock.ogg'
-						if(2)
-							if(prob(50))src << 'sound/effects/Explosion1.ogg'
-							else src << 'sound/effects/Explosion2.ogg'
-						if(3) src << 'sound/effects/explosionfar.ogg'
-						if(4) src << 'sound/effects/Glassbr1.ogg'
-						if(5) src << 'sound/effects/Glassbr2.ogg'
-						if(6) src << 'sound/effects/Glassbr3.ogg'
-						if(7) src << 'sound/machines/twobeep.ogg'
-						if(8) src << 'sound/machines/windowdoor.ogg'
-						if(9)
-							//To make it more realistic, I added two gunshots (enough to kill)
+				switch(rand(1,12))
+					if(1) src << 'sound/machines/airlock.ogg'
+					if(2)
+						if(prob(50))src << 'sound/effects/Explosion1.ogg'
+						else src << 'sound/effects/Explosion2.ogg'
+					if(3) src << 'sound/effects/explosionfar.ogg'
+					if(4) src << 'sound/effects/Glassbr1.ogg'
+					if(5) src << 'sound/effects/Glassbr2.ogg'
+					if(6) src << 'sound/effects/Glassbr3.ogg'
+					if(7) src << 'sound/machines/twobeep.ogg'
+					if(8) src << 'sound/machines/windowdoor.ogg'
+					if(9)
+						//To make it more realistic, I added two gunshots (enough to kill)
+						src << 'sound/weapons/Gunshot.ogg'
+						spawn(rand(10,30))
 							src << 'sound/weapons/Gunshot.ogg'
-							spawn(rand(10,30))
-								src << 'sound/weapons/Gunshot.ogg'
-						if(10) src << 'sound/weapons/smash.ogg'
-						if(11)
-							//Same as above, but with tasers.
+					if(10) src << 'sound/weapons/smash.ogg'
+					if(11)
+						//Same as above, but with tasers.
+						src << 'sound/weapons/Taser.ogg'
+						spawn(rand(10,30))
 							src << 'sound/weapons/Taser.ogg'
-							spawn(rand(10,30))
-								src << 'sound/weapons/Taser.ogg'
-					//Rare audio
-						if(12)
-	//These sounds are (mostly) taken from Hidden: Source
-							var/list/creepyasssounds = list('sound/effects/ghost.ogg', 'sound/effects/ghost2.ogg', 'sound/effects/Heart Beat.ogg', 'sound/effects/screech.ogg',\
-								'sound/hallucinations/behind_you1.ogg', 'sound/hallucinations/behind_you2.ogg', 'sound/hallucinations/far_noise.ogg', 'sound/hallucinations/growl1.ogg', 'sound/hallucinations/growl2.ogg',\
-								'sound/hallucinations/growl3.ogg', 'sound/hallucinations/im_here1.ogg', 'sound/hallucinations/im_here2.ogg', 'sound/hallucinations/i_see_you1.ogg', 'sound/hallucinations/i_see_you2.ogg',\
-								'sound/hallucinations/look_up1.ogg', 'sound/hallucinations/look_up2.ogg', 'sound/hallucinations/over_here1.ogg', 'sound/hallucinations/over_here2.ogg', 'sound/hallucinations/over_here3.ogg',\
-								'sound/hallucinations/turn_around1.ogg', 'sound/hallucinations/turn_around2.ogg', 'sound/hallucinations/veryfar_noise.ogg', 'sound/hallucinations/wail.ogg')
-							src << pick(creepyasssounds)
+				//Rare audio
+					if(12)
+//These sounds are (mostly) taken from Hidden: Source
+						var/list/creepyasssounds = list('sound/effects/ghost.ogg', 'sound/effects/ghost2.ogg', 'sound/effects/Heart Beat.ogg', 'sound/effects/screech.ogg',\
+							'sound/hallucinations/behind_you1.ogg', 'sound/hallucinations/behind_you2.ogg', 'sound/hallucinations/far_noise.ogg', 'sound/hallucinations/growl1.ogg', 'sound/hallucinations/growl2.ogg',\
+							'sound/hallucinations/growl3.ogg', 'sound/hallucinations/im_here1.ogg', 'sound/hallucinations/im_here2.ogg', 'sound/hallucinations/i_see_you1.ogg', 'sound/hallucinations/i_see_you2.ogg',\
+							'sound/hallucinations/look_up1.ogg', 'sound/hallucinations/look_up2.ogg', 'sound/hallucinations/over_here1.ogg', 'sound/hallucinations/over_here2.ogg', 'sound/hallucinations/over_here3.ogg',\
+							'sound/hallucinations/turn_around1.ogg', 'sound/hallucinations/turn_around2.ogg', 'sound/hallucinations/veryfar_noise.ogg', 'sound/hallucinations/wail.ogg')
+						src << pick(creepyasssounds)
 			if(66 to 70)
 				//Flashes of danger
 				//src << "Danger Flash"
-				if(!halbody && client)
+				if(!halbody)
 					var/list/possible_points = list()
 					for(var/turf/simulated/floor/F in view(src,world.view))
 						possible_points += F
@@ -296,7 +295,7 @@ proc/check_panel(mob/M)
 				collapse()
 				continue
 			if(get_dist(src,my_target) > 1)
-				src.dir = get_dir(src,my_target)
+				src.set_dir(get_dir(src,my_target))
 				step_towards(src,my_target)
 				updateimage()
 			else
@@ -333,7 +332,7 @@ proc/check_panel(mob/M)
 		del(O)
 	return
 
-var/list/non_fakeattack_weapons = list(/obj/item/weapon/gun/projectile, /obj/item/ammo_storage/box/a357,\
+var/list/non_fakeattack_weapons = list(/obj/item/weapon/gun/projectile, /obj/item/ammo_magazine/a357,\
 	/obj/item/weapon/gun/energy/crossbow, /obj/item/weapon/melee/energy/sword,\
 	/obj/item/weapon/storage/box/syndicate, /obj/item/weapon/storage/box/emps,\
 	/obj/item/weapon/cartridge/syndicate, /obj/item/clothing/under/chameleon,\
@@ -343,11 +342,11 @@ var/list/non_fakeattack_weapons = list(/obj/item/weapon/gun/projectile, /obj/ite
 	/obj/item/weapon/storage/toolbox/syndicate, /obj/item/weapon/aiModule,\
 	/obj/item/device/radio/headset/syndicate,	/obj/item/weapon/plastique,\
 	/obj/item/device/powersink, /obj/item/weapon/storage/box/syndie_kit,\
-	/obj/item/toy/syndicateballoon, /obj/item/weapon/gun/energy/laser/captain,\
+	/obj/item/toy/syndicateballoon, /obj/item/weapon/gun/energy/captain,\
 	/obj/item/weapon/hand_tele, /obj/item/weapon/rcd, /obj/item/weapon/tank/jetpack,\
 	/obj/item/clothing/under/rank/captain, /obj/item/device/aicard,\
 	/obj/item/clothing/shoes/magboots, /obj/item/blueprints, /obj/item/weapon/disk/nuclear,\
-	/obj/item/clothing/suit/space/nasavoid, /obj/item/weapon/tank)
+	/obj/item/clothing/suit/space/void, /obj/item/weapon/tank)
 
 /proc/fake_attack(var/mob/living/target)
 //	var/list/possible_clones = new/list()

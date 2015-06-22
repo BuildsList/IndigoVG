@@ -5,43 +5,30 @@
 	throw_speed = 1
 	throw_range = 5
 	w_class = 3.0
-	flags = FPRINT
 	var/mob/affecting = null
 	var/deity_name = "Christ"
-
-	autoignition_temperature = 522 // Kelvin
-	fire_fuel = 2
-
-	suicide_act(mob/user)
-		viewers(user) << "\red <b>[user] is farting lightly on the [src.name]! It looks like \he's  trying to commit suicide!</b>"
-		return (user.death(1))
-
 
 /obj/item/weapon/storage/bible/booze
 	name = "bible"
 	desc = "To be applied to the head repeatedly."
 	icon_state ="bible"
 
-	autoignition_temperature = 0 // Not actually paper
-	fire_fuel = 0
-
 /obj/item/weapon/storage/bible/booze/New()
-	. = ..()
-	new /obj/item/weapon/reagent_containers/food/drinks/beer(src)
-	new /obj/item/weapon/reagent_containers/food/drinks/beer(src)
+	..()
+	new /obj/item/weapon/reagent_containers/food/drinks/cans/beer(src)
+	new /obj/item/weapon/reagent_containers/food/drinks/cans/beer(src)
 	new /obj/item/weapon/spacecash(src)
 	new /obj/item/weapon/spacecash(src)
 	new /obj/item/weapon/spacecash(src)
-
-//vg13 EDIT
-// All cult functionality moved to Null Rod
+//BS12 EDIT
+/* // All cult functionality moved to Null Rod
 /obj/item/weapon/storage/bible/proc/bless(mob/living/carbon/M as mob)
 	if(ishuman(M))
 		var/mob/living/carbon/human/H = M
-		var/heal_amt = 40
+		var/heal_amt = 10
 		for(var/datum/organ/external/affecting in H.organs)
 			if(affecting.heal_damage(heal_amt, heal_amt))
-				H.QueueUpdateDamageIcon()
+				H.UpdateDamageIcon()
 	return
 
 /obj/item/weapon/storage/bible/attack(mob/living/M as mob, mob/living/user as mob)
@@ -53,10 +40,6 @@
 
 	M.attack_log += text("\[[time_stamp()]\] <font color='orange'>Has been attacked with [src.name] by [user.name] ([user.ckey])</font>")
 	user.attack_log += text("\[[time_stamp()]\] <font color='red'>Used the [src.name] to attack [M.name] ([M.ckey])</font>")
-	if(!iscarbon(user))
-		M.LAssailant = null
-	else
-		M.LAssailant = user
 
 	log_attack("<font color='red'>[user.name] ([user.ckey]) attacked [M.name] ([M.ckey]) with [src.name] (INTENT: [uppertext(user.a_intent)])</font>")
 
@@ -68,7 +51,7 @@
 		user.take_organ_damage(0,10)
 		return
 
-	if ((M_CLUMSY in user.mutations) && prob(50))
+	if ((CLUMSY in user.mutations) && prob(50))
 		user << "\red The [src] slips out of your hand and hits your head."
 		user.take_organ_damage(10)
 		user.Paralyse(20)
@@ -81,35 +64,35 @@
 		if(M.mind && (M.mind.assigned_role == "Chaplain"))
 			user << "\red You can't heal yourself!"
 			return
-		if((M.mind in ticker.mode.cult && !(M.mind in ticker.mode.modePlayer)) && (prob(20))) // can't deconvert originals - Pomf
+		/*if((M.mind in ticker.mode.cult) && (prob(20)))
 			M << "\red The power of [src.deity_name] clears your mind of heresy!"
 			user << "\red You see how [M]'s eyes become clear, the cult no longer holds control over him!"
-			ticker.mode.remove_cultist(M.mind)
+			ticker.mode.remove_cultist(M.mind)*/
 		if ((istype(M, /mob/living/carbon/human) && prob(60)))
 			bless(M)
 			for(var/mob/O in viewers(M, null))
 				O.show_message(text("\red <B>[] heals [] with the power of [src.deity_name]!</B>", user, M), 1)
 			M << "\red May the power of [src.deity_name] compel you to be healed!"
-			playsound(get_turf(src), "punch", 25, 1, -1)
+			playsound(src.loc, "punch", 25, 1, -1)
 		else
 			if(ishuman(M) && !istype(M:head, /obj/item/clothing/head/helmet))
 				M.adjustBrainLoss(10)
 				M << "\red You feel dumber."
 			for(var/mob/O in viewers(M, null))
 				O.show_message(text("\red <B>[] beats [] over the head with []!</B>", user, M, src), 1)
-			playsound(get_turf(src), "punch", 25, 1, -1)
+			playsound(src.loc, "punch", 25, 1, -1)
 	else if(M.stat == 2)
 		for(var/mob/O in viewers(M, null))
 			O.show_message(text("\red <B>[] smacks []'s lifeless corpse with [].</B>", user, M, src), 1)
-		playsound(get_turf(src), "punch", 25, 1, -1)
+		playsound(src.loc, "punch", 25, 1, -1)
 	return
-
-/obj/item/weapon/storage/bible/afterattack(atom/A, mob/user as mob)
+*/
+/obj/item/weapon/storage/bible/afterattack(atom/A, mob/user as mob, proximity)
+	if(!proximity) return
 /*	if (istype(A, /turf/simulated/floor))
 		user << "\blue You hit the floor with the bible."
 		if(user.mind && (user.mind.assigned_role == "Chaplain"))
 			call(/obj/effect/rune/proc/revealrunes)(src)*/
-	user.delayNextAttack(5)
 	if(user.mind && (user.mind.assigned_role == "Chaplain"))
 		if(A.reagents && A.reagents.has_reagent("water")) //blesses all the water in the holder
 			user << "\blue You bless [A]."
@@ -118,5 +101,6 @@
 			A.reagents.add_reagent("holywater",water2holy)
 
 /obj/item/weapon/storage/bible/attackby(obj/item/weapon/W as obj, mob/user as mob)
-	playsound(get_turf(src), "rustle", 50, 1, -5)
+	if (src.use_sound)
+		playsound(src.loc, src.use_sound, 50, 1, -5)
 	..()

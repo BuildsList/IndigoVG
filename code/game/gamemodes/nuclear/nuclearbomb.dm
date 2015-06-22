@@ -8,6 +8,8 @@ var/bomb_set
 	density = 1
 	var/deployable = 0.0
 	var/extended = 0.0
+	var/lighthack = 0
+	var/opened = 0.0
 	var/timeleft = 60.0
 	var/timing = 0.0
 	var/r_code = "ADMIN"
@@ -15,14 +17,34 @@ var/bomb_set
 	var/yes_code = 0.0
 	var/safety = 1.0
 	var/obj/item/weapon/disk/nuclear/auth = null
+	var/list/wires = list()
+	var/light_wire
+	var/safety_wire
+	var/timing_wire
 	var/removal_stage = 0 // 0 is no removal, 1 is covers removed, 2 is covers open,
 	                      // 3 is sealant open, 4 is unwrenched, 5 is removed from bolts.
-	flags = FPRINT
 	use_power = 0
+
+
 
 /obj/machinery/nuclearbomb/New()
 	..()
 	r_code = "[rand(10000, 99999.0)]"//Creates a random code upon object spawn.
+
+	src.wires["Red"] = 0
+	src.wires["Blue"] = 0
+	src.wires["Green"] = 0
+	src.wires["Marigold"] = 0
+	src.wires["Fuschia"] = 0
+	src.wires["Black"] = 0
+	src.wires["Pearl"] = 0
+	var/list/w = list("Red","Blue","Green","Marigold","Black","Fuschia","Pearl")
+	src.light_wire = pick(w)
+	w -= src.light_wire
+	src.timing_wire = pick(w)
+	w -= src.timing_wire
+	src.safety_wire = pick(w)
+	w -= src.safety_wire
 
 /obj/machinery/nuclearbomb/process()
 	if (src.timing)
@@ -36,6 +58,34 @@ var/bomb_set
 	return
 
 /obj/machinery/nuclearbomb/attackby(obj/item/weapon/O as obj, mob/user as mob)
+
+	if (istype(O, /obj/item/weapon/screwdriver))
+		src.add_fingerprint(user)
+		if (src.auth)
+			if (src.opened == 0)
+				src.opened = 1
+				overlays += image(icon, "npanel_open")
+				user << "You unscrew the control panel of [src]."
+
+			else
+				src.opened = 0
+				overlays -= image(icon, "npanel_open")
+				user << "You screw the control panel of [src] back on."
+		else
+			if (src.opened == 0)
+				user << "The [src] emits a buzzing noise, the panel staying locked in."
+			if (src.opened == 1)
+				src.opened = 0
+				overlays -= image(icon, "npanel_open")
+				user << "You screw the control panel of [src] back on."
+			flick("nuclearbombc", src)
+
+		return
+	if (istype(O, /obj/item/weapon/wirecutters) || istype(O, /obj/item/device/multitool))
+		if (src.opened == 1)
+			nukehack_win(user)
+		return
+
 	if (src.extended)
 		if (istype(O, /obj/item/weapon/disk/nuclear))
 			usr.drop_item()
@@ -79,7 +129,7 @@ var/bomb_set
 					var/obj/item/weapon/weldingtool/WT = O
 					if(!WT.isOn()) return
 					if (WT.get_fuel() < 5) // uses up 5 fuel.
-						user << "<span class='notice'>You need more fuel to complete this task.</span>"
+						user << "\red You need more fuel to complete this task."
 						return
 
 					user.visible_message("[user] starts cutting apart the anchoring system sealant on [src].", "You start cutting apart the anchoring system's sealant with [O]...")
@@ -114,16 +164,15 @@ var/bomb_set
 				return
 	..()
 
-/obj/machinery/nuclearbomb/attack_paw(mob/user as mob)
-	return attack_hand(user)
-
-/obj/machinery/nuclearbomb/attack_ghost(mob/user as mob) //prevents ghosts from deploying the nuke
-	if (src.extended) //if the nuke is set
-		return attack_hand(user) //continue as normal
-	return 0 //otherwise nothing
-
 /obj/machinery/nuclearbomb/attack_hand(mob/user as mob)
 	if (src.extended)
+		if (!ishuman(user))
+			usr << "\red You don't have the dexterity to do this!"
+			return 1
+
+		if (!ishuman(user))
+			usr << "\red You don't have the dexterity to do this!"
+			return 1
 		user.set_machine(src)
 		var/dat = text("<TT><B>Nuclear Fission Explosive</B><BR>\nAuth. Disk: <A href='?src=\ref[];auth=1'>[]</A><HR>", src, (src.auth ? "++++++++++" : "----------"))
 		if (src.auth)
@@ -147,40 +196,94 @@ var/bomb_set
 	else if (src.deployable)
 		if(removal_stage < 5)
 			src.anchored = 1
-			visible_message("<span class='notice'>With a steely snap, bolts slide out of [src] and anchor it to the flooring!</span>")
+			visible_message("\red With a steely snap, bolts slide out of [src] and anchor it to the flooring!")
 		else
-			visible_message("<span class='notice'>\The [src] makes a highly unpleasant crunching noise. It looks like the anchoring bolts have been cut.</span>")
-		flick("nuclearbombc", src)
-		src.icon_state = "nuclearbomb1"
+			visible_message("\red \The [src] makes a highly unpleasant crunching noise. It looks like the anchoring bolts have been cut.")
+		if(!src.lighthack)
+			flick("nuclearbombc", src)
+			src.icon_state = "nuclearbomb1"
 		src.extended = 1
 	return
+
+obj/machinery/nuclearbomb/proc/nukehack_win(mob/user as mob)
+	var/dat as text
+	dat += "<TT><B>Nuclear Fission Explosive</B><BR>\nNuclear Device Wires:</A><HR>"
+	for(var/wire in src.wires)
+		dat += text("[wire] Wire: <A href='?src=\ref[src];wire=[wire];act=wire'>[src.wires[wire] ? "Mend" : "Cut"]</A> <A href='?src=\ref[src];wire=[wire];act=pulse'>Pulse</A><BR>")
+	dat += text("<HR>The device is [src.timing ? "shaking!" : "still"]<BR>")
+	dat += text("The device is [src.safety ? "quiet" : "whirring"].<BR>")
+	dat += text("The lights are [src.lighthack ? "static" : "functional"].<BR>")
+	user << browse("<HTML><HEAD><TITLE>Bomb Defusion</TITLE></HEAD><BODY>[dat]</BODY></HTML>","window=nukebomb_hack")
+	onclose(user, "nukebomb_hack")
 
 /obj/machinery/nuclearbomb/verb/make_deployable()
 	set category = "Object"
 	set name = "Make Deployable"
 	set src in oview(1)
 
-	if (!usr || usr.stat || usr.lying) return
-	if (!ishuman(usr))
-		usr << "<span class='warning'>You don't have the dexterity to do this!</span>"
-		return
-
-	if (src.deployable)
-		usr << "<span class='notice'>You close several panels to make [src] undeployable.</span>"
-		src.deployable = 0
-	else
-		usr << "<span class='notice'>You adjust some panels to make [src] deployable.</span>"
-		src.deployable = 1
-
-/obj/machinery/nuclearbomb/Topic(href, href_list)
-	..()
 	if (!usr.canmove || usr.stat || usr.restrained())
 		return
 	if (!ishuman(usr))
 		usr << "\red You don't have the dexterity to do this!"
 		return 1
+
+	if (src.deployable)
+		usr << "\red You close several panels to make [src] undeployable."
+		src.deployable = 0
+	else
+		usr << "\red You adjust some panels to make [src] deployable."
+		src.deployable = 1
+	return
+
+
+/obj/machinery/nuclearbomb/Topic(href, href_list)
+	..()
+	if (!usr.canmove || usr.stat || usr.restrained())
+		return
 	if ((usr.contents.Find(src) || (in_range(src, usr) && istype(src.loc, /turf))))
 		usr.set_machine(src)
+		if(href_list["act"])
+			var/temp_wire = href_list["wire"]
+			if(href_list["act"] == "pulse")
+				if (!istype(usr.get_active_hand(), /obj/item/device/multitool))
+					usr << "You need a multitool!"
+				else
+					if(src.wires[temp_wire])
+						usr << "You can't pulse a cut wire."
+					else
+						if(src.light_wire == temp_wire)
+							src.lighthack = !src.lighthack
+							spawn(100) src.lighthack = !src.lighthack
+						if(src.timing_wire == temp_wire)
+							if(src.timing)
+								explode()
+						if(src.safety_wire == temp_wire)
+							src.safety = !src.safety
+							spawn(100) src.safety = !src.safety
+							if(src.safety == 1)
+								visible_message("\blue The [src] quiets down.")
+								if(!src.lighthack)
+									if (src.icon_state == "nuclearbomb2")
+										src.icon_state = "nuclearbomb1"
+							else
+								visible_message("\blue The [src] emits a quiet whirling noise!")
+			if(href_list["act"] == "wire")
+				if (!istype(usr.get_active_hand(), /obj/item/weapon/wirecutters))
+					usr << "You need wirecutters!"
+				else
+					wires[temp_wire] = !wires[temp_wire]
+					if(src.safety_wire == temp_wire)
+						if(src.timing)
+							explode()
+					if(src.timing_wire == temp_wire)
+						if(!src.lighthack)
+							if (src.icon_state == "nuclearbomb2")
+								src.icon_state = "nuclearbomb1"
+						src.timing = 0
+						bomb_set = 0
+					if(src.light_wire == temp_wire)
+						src.lighthack = !src.lighthack
+
 		if (href_list["auth"])
 			if (src.auth)
 				src.auth.loc = src.loc
@@ -217,18 +320,20 @@ var/bomb_set
 					if (src.timing == -1.0)
 						return
 					if (src.safety)
-						usr << "<span class='warning'>The safety is still on.</span>"
+						usr << "\red The safety is still on."
 						return
 					src.timing = !( src.timing )
 					if (src.timing)
-						src.icon_state = "nuclearbomb2"
+						if(!src.lighthack)
+							src.icon_state = "nuclearbomb2"
 						if(!src.safety)
 							bomb_set = 1//There can still be issues with this reseting when there are multiple bombs. Not a big deal tho for Nuke/N
 						else
 							bomb_set = 0
 					else
-						src.icon_state = "nuclearbomb1"
 						bomb_set = 0
+						if(!src.lighthack)
+							src.icon_state = "nuclearbomb1"
 				if (href_list["safety"])
 					src.safety = !( src.safety )
 					if(safety)
@@ -238,15 +343,14 @@ var/bomb_set
 
 					if(removal_stage == 5)
 						src.anchored = 0
-						visible_message("<span class='warning'>\The [src] makes a highly unpleasant crunching noise. It looks like the anchoring bolts have been cut.</span>")
+						visible_message("\red \The [src] makes a highly unpleasant crunching noise. It looks like the anchoring bolts have been cut.")
 						return
 
 					src.anchored = !( src.anchored )
 					if(src.anchored)
-						visible_message("<span class='warning'>With a steely snap, bolts slide out of [src] and anchor it to the flooring.</span>")
-						playsound(src,'sound/effects/bolt.ogg', 70, 1)
+						visible_message("\red With a steely snap, bolts slide out of [src] and anchor it to the flooring.")
 					else
-						visible_message("<span class='warning'>The anchoring bolts slide back into the depths of [src].</span>")
+						visible_message("\red The anchoring bolts slide back into the depths of [src].")
 
 		src.add_fingerprint(usr)
 		for(var/mob/M in viewers(1, src))
@@ -277,32 +381,31 @@ var/bomb_set
 	src.timing = -1.0
 	src.yes_code = 0
 	src.safety = 1
-	src.icon_state = "nuclearbomb3"
+	if(!src.lighthack)
+		src.icon_state = "nuclearbomb3"
 	playsound(src,'sound/machines/Alarm.ogg',100,0,5)
 	if (ticker && ticker.mode)
 		ticker.mode.explosion_in_progress = 1
 	sleep(100)
 
-	enter_allowed = 0
-
 	var/off_station = 0
 	var/turf/bomb_location = get_turf(src)
-	if( bomb_location && (bomb_location.z == 1) )
+	if(bomb_location && (bomb_location.z in config.station_levels))
 		if( (bomb_location.x < (128-NUKERANGE)) || (bomb_location.x > (128+NUKERANGE)) || (bomb_location.y < (128-NUKERANGE)) || (bomb_location.y > (128+NUKERANGE)) )
 			off_station = 1
 	else
 		off_station = 2
 
 	if(ticker)
-		if(ticker.mode && ticker.mode.name == "nuclear emergency")
-			var/obj/machinery/computer/syndicate_station/syndie_location = locate(/obj/machinery/computer/syndicate_station)
+		if(ticker.mode && ticker.mode.name == "mercenary")
+			var/obj/machinery/computer/shuttle_control/multi/syndicate/syndie_location = locate(/obj/machinery/computer/shuttle_control/multi/syndicate)
 			if(syndie_location)
 				ticker.mode:syndies_didnt_escape = (syndie_location.z > 1 ? 0 : 1)	//muskets will make me change this, but it will do for now
 			ticker.mode:nuke_off_station = off_station
 		ticker.station_explosion_cinematic(off_station,null)
 		if(ticker.mode)
 			ticker.mode.explosion_in_progress = 0
-			if(ticker.mode.name == "nuclear emergency")
+			if(ticker.mode.name == "mercenary")
 				ticker.mode:nukes_left --
 			else
 				world << "<B>The station was destoyed by the nuclear blast!</B>"
@@ -317,20 +420,13 @@ var/bomb_set
 
 				if(blackbox)
 					blackbox.save_all_data_to_sql()
-
-				CallHook("Reboot",list())
-
-				if (watchdog.waiting)
-					world << "\blue <B>Server will shut down for an automatic update in a few seconds.</B>"
-					watchdog.signal_ready()
-					return
 				sleep(300)
 				log_game("Rebooting due to nuclear detonation")
 				world.Reboot()
 				return
 	return
 
-/obj/item/weapon/disk/nuclear/Destroy()
+/obj/item/weapon/disk/nuclear/Del()
 	if(blobstart.len > 0)
 		var/obj/D = new /obj/item/weapon/disk/nuclear(pick(blobstart))
 		message_admins("[src] has been destroyed. Spawning [D] at ([D.x], [D.y], [D.z]).")

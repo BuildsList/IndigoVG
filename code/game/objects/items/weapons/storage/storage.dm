@@ -9,12 +9,8 @@
 	name = "storage"
 	icon = 'icons/obj/storage.dmi'
 	w_class = 3.0
-
-	// These two accept a string containing the type path and the following optional prefixes:
-	//  = - Strict type matching.  Will NOT check for subtypes.
 	var/list/can_hold = new/list() //List of objects which this item can store (if set, it can't store anything else)
 	var/list/cant_hold = new/list() //List of objects which this item can't store (in effect only if can_hold isn't set)
-
 	var/max_w_class = 2 //Max size of objects that this object can store (in effect only if can_hold isn't set)
 	var/max_combined_w_class = 14 //The sum of the w_classes of all the items in this storage item.
 	var/storage_slots = 7 //The number of storage slots in this container.
@@ -26,30 +22,39 @@
 	var/allow_quick_gather	//Set this variable to allow the object to have the 'toggle mode' verb, which quickly collects all items from a tile.
 	var/collection_mode = 1;  //0 = pick one at a time, 1 = pick all on tile
 	var/foldable = null	// BubbleWrap - if set, can be folded (when empty) into a sheet of cardboard
-	var/foldable_amount = 1 // Number of foldables to produce, if any - N3X
+	var/use_sound = "rustle"	//sound played when used. null for no sound.
 
 /obj/item/weapon/storage/MouseDrop(obj/over_object as obj)
+
+	if(!canremove)
+		return
+
 	if (ishuman(usr) || ismonkey(usr)) //so monkeys can take off their backpacks -- Urist
-		var/mob/M = usr
+
+		if (istype(usr.loc,/obj/mecha)) // stops inventory actions in a mech
+			return
+
+		if(over_object == usr && Adjacent(usr)) // this must come before the screen objects only block
+			src.open(usr)
+			return
+
 		if (!( istype(over_object, /obj/screen) ))
 			return ..()
+
+		//makes sure that the storage is equipped, so that we can't drag it into our hand from miles away.
+		//there's got to be a better way of doing this.
 		if (!(src.loc == usr) || (src.loc && src.loc.loc == usr))
 			return
-		playsound(get_turf(src), "rustle", 50, 1, -5)
-		if (!( M.restrained() ) && !( M.stat ))
+
+		if (!( usr.restrained() ) && !( usr.stat ))
 			switch(over_object.name)
 				if("r_hand")
-					M.u_equip(src)
-					M.put_in_r_hand(src)
+					usr.u_equip(src)
+					usr.put_in_r_hand(src)
 				if("l_hand")
-					M.u_equip(src)
-					M.put_in_l_hand(src)
+					usr.u_equip(src)
+					usr.put_in_l_hand(src)
 			src.add_fingerprint(usr)
-			return
-		if(over_object == usr && in_range(src, usr) || usr.contents.Find(src))
-			if (usr.s_active)
-				usr.s_active.close(usr)
-			src.show_to(usr)
 			return
 	return
 
@@ -69,11 +74,10 @@
 	return L
 
 /obj/item/weapon/storage/proc/show_to(mob/user as mob)
-	if(isliving(user))
-		if(user.s_active != src)
-			for(var/obj/item/I in src)
-				if(I.on_found(user))
-					return
+	if(user.s_active != src)
+		for(var/obj/item/I in src)
+			if(I.on_found(user))
+				return
 	if(user.s_active)
 		user.s_active.hide_from(user)
 	user.client.screen -= src.boxes
@@ -95,6 +99,15 @@
 	if(user.s_active == src)
 		user.s_active = null
 	return
+
+/obj/item/weapon/storage/proc/open(mob/user as mob)
+	if (src.use_sound)
+		playsound(src.loc, src.use_sound, 50, 1, -5)
+
+	orient2hud(user)
+	if (user.s_active)
+		user.s_active.close(user)
+	show_to(user)
 
 /obj/item/weapon/storage/proc/close(mob/user as mob)
 
@@ -196,40 +209,17 @@
 			usr << "<span class='notice'>[src] is full, make some space.</span>"
 		return 0 //Storage item is full
 
-	if(can_hold.len)
-		var/ok = 0
-		for(var/A in can_hold)
-			if(dd_hasprefix(A,"="))
-				// Force strict matching of type.
-				// No subtypes allowed.
-				if("[W.type]"==copytext(A,2))
-					ok = 1
-					break
-			else if(istype(W, text2path(A) ))
-				ok = 1
-				break
-		if(!ok)
-			if(!stop_messages)
-				if (istype(W, /obj/item/weapon/hand_labeler))
-					return 0
-				usr << "<span class='notice'>[src] cannot hold [W].</span>"
-			return 0
+	if(can_hold.len && !is_type_in_list(W, can_hold))
+		if(!stop_messages)
+			if (istype(W, /obj/item/weapon/hand_labeler))
+				return 0
+			usr << "<span class='notice'>[src] cannot hold [W].</span>"
+		return 0
 
-	for(var/A in cant_hold) //Check for specific items which this container can't hold.
-		var/nope=0
-		if(dd_hasprefix(A,"="))
-			// Force strict matching of type.
-			// No subtypes allowed.
-			if("[W.type]"==copytext(A,2))
-				nope = 1
-				break
-		else if(istype(W, text2path(A) ))
-			nope = 1
-			break
-		if(nope)
-			if(!stop_messages)
-				usr << "<span class='notice'>[src] cannot hold [W].</span>"
-			return 0
+	if(cant_hold.len && is_type_in_list(W, cant_hold))
+		if(!stop_messages)
+			usr << "<span class='notice'>[src] cannot hold [W].</span>"
+		return 0
 
 	if (W.w_class > max_w_class)
 		if(!stop_messages)
@@ -272,7 +262,7 @@
 		if(!prevent_warning && !istype(W, /obj/item/weapon/gun/energy/crossbow))
 			for(var/mob/M in viewers(usr, null))
 				if (M == usr)
-					usr << "<span class='notice'>You put the [W] into [src].</span>"
+					usr << "<span class='notice'>You put \the [W] into [src].</span>"
 				else if (M in range(1)) //If someone is standing close enough, they can tell what it is...
 					M.show_message("<span class='notice'>[usr] puts [W] into [src].</span>")
 				else if (W && W.w_class >= 3.0) //Otherwise they can only see large or normal items from a distance...
@@ -322,20 +312,9 @@
 /obj/item/weapon/storage/attackby(obj/item/W as obj, mob/user as mob)
 	..()
 
-	// /vg/ #11: Recursion.
-	/*if(istype(W,/obj/item/weapon/implanter/compressed))
-		return*/
-
 	if(isrobot(user))
-		if(isMoMMI(user))
-			var/mob/living/silicon/robot/mommi/M = user
-			if(M.is_in_modules(W))
-				user << "<span class='notice'>You can't throw away something built into you.</span>"
-				return //Mommis cant give away their modules but can place other items
-		else
-			user << "<span class='notice'> You're a robot. No.</span>"
-			return //Robots can't interact with storage items.
-
+		user << "\blue You're a robot. No."
+		return //Robots can't interact with storage items.
 
 	if(!can_be_inserted(W))
 		return
@@ -344,33 +323,22 @@
 		var/obj/item/weapon/tray/T = W
 		if(T.calc_carry() > 0)
 			if(prob(85))
-				user << "<span class='warning'> The tray won't fit in [src].</span>"
+				user << "\red The tray won't fit in [src]."
 				return
 			else
 				W.loc = user.loc
 				if ((user.client && user.s_active != src))
 					user.client.screen -= W
 				W.dropped(user)
-				user << "<span class='warning'> God damnit!</span>"
+				user << "\red God damnit!"
 
-	handle_item_insertion(W)
-	return
+	W.add_fingerprint(user)
+	return handle_item_insertion(W)
 
 /obj/item/weapon/storage/dropped(mob/user as mob)
 	return
 
-/obj/item/weapon/storage/MouseDrop(over_object, src_location, over_location)
-	..()
-	orient2hud(usr)
-	if ((over_object == usr && (in_range(src, usr) || usr.contents.Find(src))))
-		if (usr.s_active)
-			usr.s_active.close(usr)
-		src.show_to(usr)
-	return
-
 /obj/item/weapon/storage/attack_hand(mob/user as mob)
-	playsound(get_turf(src), "rustle", 50, 1, -5)
-
 	if(ishuman(user))
 		var/mob/living/carbon/human/H = user
 		if(H.l_store == src && !H.get_active_hand())	//Prevents opening if it's in a pocket.
@@ -382,11 +350,8 @@
 			H.r_store = null
 			return
 
-	src.orient2hud(user)
 	if (src.loc == user)
-		if (user.s_active)
-			user.s_active.close(user)
-		src.show_to(user)
+		src.open(user)
 	else
 		..()
 		for(var/mob/M in range(1))
@@ -394,9 +359,6 @@
 				src.close(M)
 	src.add_fingerprint(user)
 	return
-
-/obj/item/weapon/storage/attack_paw(mob/user as mob)
-	return attack_hand(user)
 
 /obj/item/weapon/storage/verb/toggle_gathering_mode()
 	set name = "Switch Gathering Method"
@@ -423,7 +385,6 @@
 		remove_from_storage(I, T)
 
 /obj/item/weapon/storage/New()
-	. = ..()
 
 	if(allow_quick_empty)
 		verbs += /obj/item/weapon/storage/verb/quick_empty
@@ -446,17 +407,12 @@
 	src.closer.icon_state = "x"
 	src.closer.layer = 20
 	orient2hud()
+	return
 
 /obj/item/weapon/storage/emp_act(severity)
 	if(!istype(src.loc, /mob/living))
 		for(var/obj/O in contents)
 			O.emp_act(severity)
-	..()
-
-/obj/item/weapon/storage/ex_act(var/severity,var/child=null)
-	if(!istype(src.loc, /mob/living))
-		for(var/obj/O in contents)
-			O.ex_act(severity)
 	..()
 
 // BubbleWrap - A box can be folded up to make card
@@ -485,10 +441,48 @@
 		return
 	// Now make the cardboard
 	user << "<span class='notice'>You fold [src] flat.</span>"
-	new src.foldable(get_turf(src),foldable_amount)
+	new src.foldable(get_turf(src))
 	del(src)
 //BubbleWrap END
 
+/obj/item/weapon/storage/hear_talk(mob/M as mob, text, verb, datum/language/speaking)
+	for (var/atom/A in src)
+		if(istype(A,/obj/))
+			var/obj/O = A
+			O.hear_talk(M, text, verb, speaking)
 
+//Returns the storage depth of an atom. This is the number of storage items the atom is contained in before reaching toplevel (the area).
+//Returns -1 if the atom was not found on container.
+/atom/proc/storage_depth(atom/container)
+	var/depth = 0
+	var/atom/cur_atom = src
 
+	while (cur_atom && !(cur_atom in container.contents))
+		if (isarea(cur_atom))
+			return -1
+		if (istype(cur_atom.loc, /obj/item/weapon/storage))
+			depth++
+		cur_atom = cur_atom.loc
 
+	if (!cur_atom)
+		return -1	//inside something with a null loc.
+
+	return depth
+
+//Like storage depth, but returns the depth to the nearest turf
+//Returns -1 if no top level turf (a loc was null somewhere, or a non-turf atom's loc was an area somehow).
+/atom/proc/storage_depth_turf()
+	var/depth = 0
+	var/atom/cur_atom = src
+
+	while (cur_atom && !isturf(cur_atom))
+		if (isarea(cur_atom))
+			return -1
+		if (istype(cur_atom.loc, /obj/item/weapon/storage))
+			depth++
+		cur_atom = cur_atom.loc
+
+	if (!cur_atom)
+		return -1	//inside something with a null loc.
+
+	return depth

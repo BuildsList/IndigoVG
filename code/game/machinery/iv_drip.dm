@@ -2,7 +2,7 @@
 	name = "\improper IV drip"
 	icon = 'icons/obj/iv_drip.dmi'
 	anchored = 0
-	density = 0 //Tired of these blocking up the station
+	density = 1
 
 
 /obj/machinery/iv_drip/var/mob/living/carbon/human/attached = null
@@ -37,11 +37,7 @@
 
 /obj/machinery/iv_drip/MouseDrop(over_object, src_location, over_location)
 	..()
-	if(isobserver(usr)) return
-	if(usr.stat) // Stop interacting with shit while dead pls
-		return
-	if(isanimal(usr))
-		return
+
 	if(attached)
 		visible_message("[src.attached] is detached from \the [src]")
 		src.attached = null
@@ -55,17 +51,6 @@
 
 
 /obj/machinery/iv_drip/attackby(obj/item/weapon/W as obj, mob/user as mob)
-	if(isobserver(user)) return
-	if(user.stat)
-		return
-	if(istype(W, /obj/item/weapon/wrench))
-		playsound(get_turf(src), 'sound/items/Ratchet.ogg', 50, 1)
-		new /obj/item/stack/sheet/metal(src.loc,2)
-		if(src.beaker)
-			src.beaker.loc = get_turf(src)
-			src.beaker = null
-		user << "<span class='notice'>You dismantle \the [name].</span>"
-		del(src)
 	if (istype(W, /obj/item/weapon/reagent_containers))
 		if(!isnull(src.beaker))
 			user << "There is already a reagent container loaded!"
@@ -82,9 +67,10 @@
 
 
 /obj/machinery/iv_drip/process()
-	//set background = 1
+	set background = 1
 
 	if(src.attached)
+
 		if(!(get_dist(src, src.attached) <= 1 && isturf(src.attached.loc)))
 			visible_message("The needle is ripped out of [src.attached], doesn't that hurt?")
 			src.attached:apply_damage(3, BRUTE, pick("r_arm", "l_arm"))
@@ -117,7 +103,10 @@
 			if(!istype(T)) return
 			if(!T.dna)
 				return
-			if(M_NOCLONE in T.mutations)
+			if(NOCLONE in T.mutations)
+				return
+
+			if(T.species && T.species.flags & NO_BLOOD)
 				return
 
 			// If the human is losing too much blood, beep.
@@ -134,8 +123,6 @@
 				update_icon()
 
 /obj/machinery/iv_drip/attack_hand(mob/user as mob)
-	if(isobserver(usr)) return
-	if(user.stat) return
 	if(src.beaker)
 		src.beaker.loc = get_turf(src)
 		src.beaker = null
@@ -145,27 +132,32 @@
 
 
 /obj/machinery/iv_drip/verb/toggle_mode()
+	set category = "Object"
 	set name = "Toggle Mode"
 	set src in view(1)
 
 	if(!istype(usr, /mob/living))
-		usr << "<span class='warning'>You can't do that.</span>"
+		usr << "\red You can't do that."
 		return
 
 	if(usr.stat)
 		return
 
 	mode = !mode
-	usr << "The [src] is now [mode ? "injecting" : "taking blood"]."
+	usr << "The IV drip is now [mode ? "injecting" : "taking blood"]."
 
 /obj/machinery/iv_drip/examine(mob/user)
-	..()
-	user << "The [src] is [mode ? "injecting" : "taking blood"]."
+	..(user)
+	if (!(user in view(2)) && user!=src.loc) return
+
+	user << "The IV drip is [mode ? "injecting" : "taking blood"]."
+
 	if(beaker)
 		if(beaker.reagents && beaker.reagents.reagent_list.len)
-			user << "<span class='info'>Attached is \a [beaker] with [beaker.reagents.total_volume] units of liquid.</span>"
+			usr << "\blue Attached is \a [beaker] with [beaker.reagents.total_volume] units of liquid."
 		else
-			user << "<span class='info'>Attached is \an empty [beaker].</span>"
+			usr << "\blue Attached is an empty [beaker]."
 	else
-		user << "<span class='info'>No chemicals are attached.</span>"
-	user << "<span class='info'>It is attached to [attached ? attached : "no one"].</span>"
+		usr << "\blue No chemicals are attached."
+
+	usr << "\blue [attached ? attached : "No one"] is attached."

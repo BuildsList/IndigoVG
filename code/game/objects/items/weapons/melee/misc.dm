@@ -3,9 +3,7 @@
 	desc = "A tool used by great men to placate the frothing masses."
 	icon_state = "chain"
 	item_state = "chain"
-	hitsound = "sound/weapons/whip.ogg"
-	flags = FPRINT
-	siemens_coefficient = 1
+	flags = CONDUCT
 	slot_flags = SLOT_BELT
 	force = 10
 	throwforce = 7

@@ -178,7 +178,7 @@
 			center = locate(x+center_x, y+center_y, z)
 			if(center)
 				for(var/obj/M in orange(magnetic_field, center))
-					if(!M.anchored && (M.is_conductor()))
+					if(!M.anchored && (M.flags & CONDUCT))
 						step_towards(M, center)
 
 				for(var/mob/living/silicon/S in orange(magnetic_field, center))
@@ -244,7 +244,6 @@
 
 
 	attack_ai(mob/user as mob)
-		src.add_hiddenprint(user)
 		return src.attack_hand(user)
 
 	attack_hand(mob/user as mob)
@@ -267,23 +266,15 @@
 				i++
 				dat += "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;< \[[i]\] (<a href='?src=\ref[src];radio-op=togglepower'>[M.on ? "On":"Off"]</a>) | Electricity level: <a href='?src=\ref[src];radio-op=minuselec'>-</a> [M.electricity_level] <a href='?src=\ref[src];radio-op=pluselec'>+</a>; Magnetic field: <a href='?src=\ref[src];radio-op=minusmag'>-</a> [M.magnetic_field] <a href='?src=\ref[src];radio-op=plusmag'>+</a><br>"
 
+		dat += "<br>Speed: <a href='?src=\ref[src];operation=minusspeed'>-</a> [speed] <a href='?src=\ref[src];operation=plusspeed'>+</a><br>"
+		dat += "Path: {<a href='?src=\ref[src];operation=setpath'>[path]</a>}<br>"
+		dat += "Moving: <a href='?src=\ref[src];operation=togglemoving'>[moving ? "Enabled":"Disabled"]</a>"
 
-		// AUTOFIXED BY fix_string_idiocy.py
-		// C:\Users\Rob\Documents\Projects\vgstation13\code\game\machinery\magnet.dm:270: dat += "<br>Speed: <a href='?src=\ref[src];operation=minusspeed'>-</a> [speed] <a href='?src=\ref[src];operation=plusspeed'>+</a><br>"
-		dat += {"<br>Speed: <a href='?src=\ref[src];operation=minusspeed'>-</a> [speed] <a href='?src=\ref[src];operation=plusspeed'>+</a><br>
-			Path: {<a href='?src=\ref[src];operation=setpath'>[path]</a>}<br>
-			Moving: <a href='?src=\ref[src];operation=togglemoving'>[moving ? "Enabled":"Disabled"]</a>"}
-		// END AUTOFIX
+
 		user << browse(dat, "window=magnet;size=400x500")
 		onclose(user, "magnet")
 
 	Topic(href, href_list)
-		if(..())
-			return
-		if(usr.stat)
-			return
-		if(!in_range(src, usr) && !istype(usr, /mob/living/silicon))
-			return
 		if(stat & (BROKEN|NOPOWER))
 			return
 		usr.set_machine(src)
@@ -332,7 +323,7 @@
 					if(speed <= 0)
 						speed = 1
 				if("setpath")
-					var/newpath = copytext(sanitize(input(usr, "Please define a new path!",,path) as text|null),1,MAX_MESSAGE_LEN)
+					var/newpath = sanitize(copytext(input(usr, "Please define a new path!",,path) as text|null,1,MAX_MESSAGE_LEN))
 					if(newpath && newpath != "")
 						moving = 0 // stop moving
 						path = newpath
@@ -407,3 +398,26 @@
 				rpath += copytext(path, i, i+1) // else, add to list
 
 			// there doesn't HAVE to be separators but it makes paths syntatically visible
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

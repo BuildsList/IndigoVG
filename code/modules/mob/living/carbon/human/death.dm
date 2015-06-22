@@ -1,20 +1,11 @@
 /mob/living/carbon/human/gib()
-	death(1)
-	var/atom/movable/overlay/animation = null
-	monkeyizing = 1
-	canmove = 0
-	icon = null
-	invisibility = 101
 
-	animation = new(loc)
-	animation.icon_state = "blank"
-	animation.icon = 'icons/mob/mob.dmi'
-	animation.master = src
-
-	// If we have brain worms, dump 'em.
-	var/mob/living/simple_animal/borer/B=has_brain_worms()
-	if(B)
-		B.detach()
+	for(var/datum/organ/internal/I in internal_organs)
+		var/obj/item/organ/current_organ = I.remove()
+		if(current_organ)
+			if(istype(loc,/turf))
+				current_organ.throw_at(get_edge_target_turf(src,pick(alldirs)),rand(1,3),30)
+			current_organ.removed(src)
 
 	for(var/datum/organ/external/E in src.organs)
 		if(istype(E, /datum/organ/external/chest))
@@ -24,91 +15,84 @@
 			// Override the current limb status and don't cause an explosion
 			E.droplimb(1,1)
 
-	flick("gibbed-h", animation)
+	for(var/obj/item/I in src)
+		drop_from_inventory(I)
+		I.throw_at(get_edge_target_turf(src,pick(alldirs)), rand(1,3), round(30/I.w_class))
 
-	hgibs(loc, viruses, dna, species.flesh_color, species.blood_color)
-
-	spawn(15)
-		if(animation)	del(animation)
-		if(src)			del(src)
+	..(species.gibbed_anim)
+	gibs(loc, viruses, dna, null, species.flesh_color, species.blood_color)
 
 /mob/living/carbon/human/dust()
-	death(1)
-	var/atom/movable/overlay/animation = null
-	monkeyizing = 1
-	canmove = 0
-	icon = null
-	invisibility = 101
-
-	animation = new(loc)
-	animation.icon_state = "blank"
-	animation.icon = 'icons/mob/mob.dmi'
-	animation.master = src
-
-	// If we have brain worms, dump 'em.
-	var/mob/living/simple_animal/borer/B=has_brain_worms()
-	if(B)
-		B.detach()
-
-	if (istype(src, /mob/living/carbon/human/manifested))
-		flick("dust-hm", animation)
+	if(species)
+		..(species.dusted_anim, species.remains_type)
 	else
-		flick("dust-h", animation)
-	new /obj/effect/decal/remains/human(loc)
-
-	spawn(15)
-		if(animation)	del(animation)
-		if(src)			del(src)
-
+		..()
 
 /mob/living/carbon/human/death(gibbed)
-	if(stat == DEAD)	return
-	if(healths)		healths.icon_state = "health7"
-	stat = DEAD
-	dizziness = 0
-	jitteriness = 0
 
-	// If we have brain worms, dump 'em.
-	var/mob/living/simple_animal/borer/B=has_brain_worms()
-	if(B && B.controlling)
-		src << "<span class='danger'>Your host has died.  You reluctantly release control.</span>"
-		B.host_brain << "<span class='danger'>Just before your body passes, you feel a brief return of sensation.  You are now in control...  And dead.</span>"
-		do_release_control(0)
+	if(stat == DEAD) return
 
-	//Check for heist mode kill count.
-	if(ticker.mode && ( istype( ticker.mode,/datum/game_mode/heist) ) )
-		//Check for last assailant's mutantrace.
-		/*if( LAssailant && ( istype( LAssailant,/mob/living/carbon/human ) ) )
-			var/mob/living/carbon/human/V = LAssailant
-			if (V.dna && (V.dna.mutantrace == "vox"))*/ //Not currently feasible due to terrible LAssailant tracking.
-		//world << "Vox kills: [vox_kills]"
-		vox_kills++ //Bad vox. Shouldn't be killing humans.
-	if(ishuman(LAssailant))
-		var/mob/living/carbon/human/H=LAssailant
-		if(H.mind)
-			H.mind.kills += "[name] ([ckey])"
+	BITSET(hud_updateflag, HEALTH_HUD)
+	BITSET(hud_updateflag, STATUS_HUD)
 
-	if(!gibbed)
-		emote("deathgasp") //let the world KNOW WE ARE DEAD
+	handle_hud_list()
 
-		//For ninjas exploding when they die.
-		if( istype(wear_suit, /obj/item/clothing/suit/space/space_ninja) && wear_suit:s_initialized )
-			src << browse(null, "window=spideros")//Just in case.
-			var/location = loc
-			explosion(location, 1, 2, 3, 4)
+	//Handle species-specific deaths.
+	if(species) species.handle_death(src)
 
-		update_canmove()
-		if(client)	blind.layer = 0
+	//Handle brain slugs.
+	var/datum/organ/external/head = get_organ("head")
+	var/mob/living/simple_animal/borer/B
 
-	tod = worldtime2text()		//weasellos time of death patch
-	if(mind)	mind.store_memory("Time of death: [tod]", 0)
+	for(var/I in head.implants)
+		if(istype(I,/mob/living/simple_animal/borer))
+			B = I
+	if(B)
+		if(!B.ckey && ckey && B.controlling)
+			B.ckey = ckey
+			B.controlling = 0
+		if(B.host_brain.ckey)
+			ckey = B.host_brain.ckey
+			B.host_brain.ckey = null
+			B.host_brain.name = "host brain"
+			B.host_brain.real_name = "host brain"
+
+		verbs -= /mob/living/carbon/proc/release_control
+
+	callHook("death", list(src, gibbed))
+
+	if(!gibbed && species.death_sound)
+		playsound(loc, species.death_sound, 80, 1, 1)
+
+
 	if(ticker && ticker.mode)
-//		world.log << "k"
 		sql_report_death(src)
-		ticker.mode.check_win()		//Calls the rounds wincheck, mainly for wizard, malf, and changeling now
-	return ..(gibbed)
+		ticker.mode.check_win()
+		if(istype(ticker.mode,/datum/game_mode/heist))
+			vox_kills++ //Bad vox. Shouldn't be killing humans.
 
-/mob/living/carbon/human/proc/makeSkeleton()
+	return ..(gibbed,species.death_message)
+
+/mob/living/carbon/human/proc/ChangeToHusk()
+	if(HUSK in mutations)	return
+
+	if(f_style)
+		f_style = "Shaved"		//we only change the icon_state of the hair datum, so it doesn't mess up their UI/UE
+	if(h_style)
+		h_style = "Bald"
+	update_hair(0)
+
+	mutations.Add(HUSK)
+	status_flags |= DISFIGURED	//makes them unknown without fucking up other stuff like admintools
+	update_body(1)
+	return
+
+/mob/living/carbon/human/proc/Drain()
+	ChangeToHusk()
+	mutations |= HUSK
+	return
+
+/mob/living/carbon/human/proc/ChangeToSkeleton()
 	if(SKELETON in src.mutations)	return
 
 	if(f_style)
@@ -120,25 +104,4 @@
 	mutations.Add(SKELETON)
 	status_flags |= DISFIGURED
 	update_body(0)
-	update_mutantrace()
-	return
-
-/mob/living/carbon/human/proc/ChangeToHusk()
-	if(M_HUSK in mutations)	return
-
-	if(f_style)
-		f_style = "Shaved"		//we only change the icon_state of the hair datum, so it doesn't mess up their UI/UE
-	if(h_style)
-		h_style = "Bald"
-	update_hair(0)
-
-	mutations.Add(M_HUSK)
-	status_flags |= DISFIGURED	//makes them unknown without fucking up other stuff like admintools
-	update_body(0)
-	update_mutantrace()
-	return
-
-/mob/living/carbon/human/proc/Drain()
-	ChangeToHusk()
-	mutations |= M_NOCLONE
 	return

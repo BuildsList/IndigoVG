@@ -4,8 +4,7 @@
 	icon_state = "voice0"
 	item_state = "flashbang"	//looks exactly like a flash (and nothing like a flashbang)
 	w_class = 1.0
-	flags = FPRINT
-	siemens_coefficient = 1
+	flags = CONDUCT
 
 	var/spamcheck = 0
 	var/emagged = 0

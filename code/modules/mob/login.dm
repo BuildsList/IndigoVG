@@ -11,7 +11,7 @@
 				var/matches
 				if( (M.lastKnownIP == client.address) )
 					matches += "IP ([client.address])"
-				if( (M.computer_id == client.computer_id) )
+				if( (client.connection != "web") && (M.computer_id == client.computer_id) )
 					if(matches)	matches += " and "
 					matches += "ID ([client.computer_id])"
 					spawn() alert("You have logged in already with another key this round, please log out of this one NOW or risk being banned!")
@@ -24,6 +24,7 @@
 						log_access("Notice: [key_name(src)] has the same [matches] as [key_name(M)] (no longer logged in).")
 
 /mob/Login()
+
 	player_list |= src
 	update_Login_details()
 	world.update_status()
@@ -32,10 +33,8 @@
 	client.screen = null				//remove hud items just in case
 	if(hud_used)	del(hud_used)		//remove the hud objects
 	hud_used = new /datum/hud(src)
-	gui_icons = new /datum/ui_icons(src)
 
-	delayNextMove(0)
-
+	next_move = 1
 	sight |= SEE_SELF
 	..()
 
@@ -45,19 +44,3 @@
 	else
 		client.eye = src
 		client.perspective = MOB_PERSPECTIVE
-
-	//Clear ability list and update from mob.
-	client.verbs -= ability_verbs
-
-	if(abilities)
-		client.verbs |= abilities
-
-	if(istype(src,/mob/living/carbon/human))
-		var/mob/living/carbon/human/H = src
-		if(H.species && H.species.abilities)
-			H.verbs |= H.species.abilities
-	if(ckey in deadmins)
-		verbs += /client/proc/reload_admins
-		verbs += /client/verb/adminwho
-
-	CallHook("Login", list("client" = src.client, "mob" = src))

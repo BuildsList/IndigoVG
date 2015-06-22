@@ -1,98 +1,72 @@
-/mob/living/carbon/human/attack_hand(mob/living/carbon/human/M as mob)
-	//M.delayNextAttack(10)
-	if (istype(loc, /turf) && istype(loc.loc, /area/start))
-		M << "No attacking people at spawn, you jackass."
-		return
+/mob/living/carbon/human/attack_hand(mob/living/carbon/M as mob)
 
-	var/datum/organ/external/temp = M:organs_by_name["r_hand"]
-	if (M.hand)
-		temp = M:organs_by_name["l_hand"]
-	if(temp && !temp.is_usable())
-		M << "\red You can't use your [temp.display_name]."
-		return
+	var/mob/living/carbon/human/H = M
+	if(istype(H))
+		var/datum/organ/external/temp = H.organs_by_name["r_hand"]
+		if(H.hand)
+			temp = H.organs_by_name["l_hand"]
+		if(temp && !temp.is_usable())
+			H << "\red You can't use your [temp.display_name]."
+			return
 
 	..()
 
-	if((M != src) && check_shields(0, M.name))
-		visible_message("\red <B>[M] attempted to touch [src]!</B>")
-		return 0
+	// Should this all be in Touch()?
+	if(istype(H))
+		if((H != src) && check_shields(0, H.name))
+			visible_message("\red <B>[H] attempted to touch [src]!</B>")
+			return 0
 
-
-	if(M.gloves && istype(M.gloves,/obj/item/clothing/gloves))
-		var/obj/item/clothing/gloves/G = M.gloves
-		if(G.cell)
-			if(M.a_intent == "hurt")//Stungloves. Any contact will stun the alien.
-				if(G.cell.charge >= 2500)
-					G.cell.use(2500)
-					visible_message("\red <B>[src] has been touched with the stun gloves by [M]!</B>")
-					M.attack_log += text("\[[time_stamp()]\] <font color='red'>Stungloved [src.name] ([src.ckey])</font>")
-					src.attack_log += text("\[[time_stamp()]\] <font color='orange'>Has been stungloved by [M.name] ([M.ckey])</font>")
-					if(!iscarbon(M))
-						LAssailant = null
-					else
-						LAssailant = M
-
-					log_attack("<font color='red'>[M.name] ([M.ckey]) stungloved [src.name] ([src.ckey])</font>")
-
-					var/armorblock = run_armor_check(M.zone_sel.selecting, "energy")
-					apply_effects(5,5,0,0,5,0,0,armorblock)
-					return 1
-				else
-					M << "\red Not enough charge! "
-					visible_message("\red <B>[src] has been touched with the stun gloves by [M]!</B>")
-				return
-
-		if(istype(M.gloves , /obj/item/clothing/gloves/boxing/hologlove))
+		if(istype(H.gloves, /obj/item/clothing/gloves/boxing/hologlove))
 
 			var/damage = rand(0, 9)
 			if(!damage)
 				playsound(loc, 'sound/weapons/punchmiss.ogg', 25, 1, -1)
-				visible_message("\red <B>[M] has attempted to punch [src]!</B>")
+				visible_message("\red <B>[H] has attempted to punch [src]!</B>")
 				return 0
-			var/datum/organ/external/affecting = get_organ(ran_zone(M.zone_sel.selecting))
+			var/datum/organ/external/affecting = get_organ(ran_zone(H.zone_sel.selecting))
 			var/armor_block = run_armor_check(affecting, "melee")
 
-			if(M_HULK in M.mutations)			damage += 5
+			if(HULK in H.mutations)
+				damage += 5
 
 			playsound(loc, "punch", 25, 1, -1)
 
-			visible_message("\red <B>[M] has punched [src]!</B>")
+			visible_message("\red <B>[H] has punched [src]!</B>")
 
 			apply_damage(damage, HALLOSS, affecting, armor_block)
 			if(damage >= 9)
-				visible_message("\red <B>[M] has weakened [src]!</B>")
+				visible_message("\red <B>[H] has weakened [src]!</B>")
 				apply_effect(4, WEAKEN, armor_block)
 
 			return
-	else
-		if(istype(M,/mob/living/carbon))
-//			log_debug("No gloves, [M] is truing to infect [src]")
-			M.spread_disease_to(src, "Contact")
 
+	if(istype(M,/mob/living/carbon))
+		M.spread_disease_to(src, "Contact")
 
 	switch(M.a_intent)
 		if("help")
-			if(health >= config.health_threshold_crit)
+
+			if(istype(H) && health < config.health_threshold_crit)
+
+				if((H.head && (H.head.flags & HEADCOVERSMOUTH)) || (H.wear_mask && (H.wear_mask.flags & MASKCOVERSMOUTH)))
+					H << "\blue <B>Remove your mask!</B>"
+					return 0
+				if((head && (head.flags & HEADCOVERSMOUTH)) || (wear_mask && (wear_mask.flags & MASKCOVERSMOUTH)))
+					H << "\blue <B>Remove [src]'s mask!</B>"
+					return 0
+
+				var/obj/effect/equip_e/human/O = new /obj/effect/equip_e/human()
+				O.source = M
+				O.target = src
+				O.s_loc = M.loc
+				O.t_loc = loc
+				O.place = "CPR"
+				requests += O
+				spawn(0)
+					O.process()
+			else
 				help_shake_act(M)
-				return 1
-//			if(M.health < -75)	return 0
-
-			if(M.check_body_part_coverage(MOUTH))
-				M << "<span class='notice'><B>Remove your mask!</B></span>"
-				return 0
-			if(src.check_body_part_coverage(MOUTH))
-				M << "<span class='notice'><B>Remove his mask!</B></span>"
-				return 0
-
-			var/obj/effect/equip_e/human/O = new /obj/effect/equip_e/human()
-			O.source = M
-			O.target = src
-			O.s_loc = M.loc
-			O.t_loc = loc
-			O.place = "CPR"
-			requests += O
-			spawn(0)
-				O.process()
 			return 1
 
 		if("grab")
@@ -107,136 +81,149 @@
 			if(!G)	//the grab will delete itself in New if affecting is anchored
 				return
 			M.put_in_active_hand(G)
-			grabbed_by += G
 			G.synch()
 			LAssailant = M
 
 			playsound(loc, 'sound/weapons/thudswoosh.ogg', 50, 1, -1)
-			visible_message("\red [M] has grabbed [src] passively!")
+			visible_message("<span class='warning'>[M] has grabbed [src] passively!</span>")
 			return 1
 
 		if("hurt")
-			//Vampire code
-			if(M.zone_sel && M.zone_sel.selecting == "head" && src != M)
-				if(M.mind && M.mind.vampire && (M.mind in ticker.mode.vampires) && !M.mind.vampire.draining)
-					if(src.check_body_part_coverage(MOUTH))
-						M << "<span class='warning'>Remove their mask!</span>"
-						return 0
-					if(M.check_body_part_coverage(MOUTH))
-						M << "<span class='warning'>Remove your mask!</span>"
-						return 0
-					if(mind && mind.vampire && (mind in ticker.mode.vampires))
-						M << "<span class='warning'>Your fangs fail to pierce [src.name]'s cold flesh.</span>"
-						return 0
-					//we're good to suck the blood, blaah
-					M.handle_bloodsucking(src)
-					return
-			//end vampire codes
 
-			// BITING
-			var/can_bite = 0
-			for(var/datum/disease/D in M.viruses)
-				if(D.spread == "Bite")
-					can_bite = 1
-					break
-			if(can_bite)
-				if ((prob(75) && health > 0))
-					playsound(loc, 'sound/weapons/bite.ogg', 50, 1, -1)
-					for(var/mob/O in viewers(src, null))
-						O.show_message("\red <B>[M.name] has bit [name]!</B>", 1)
-					var/damage = rand(1, 5)
-					adjustBruteLoss(damage)
-					health = 100 - getOxyLoss() - getToxLoss() - getFireLoss() - getBruteLoss()
-					for(var/datum/disease/D in M.viruses)
-						if(D.spread == "Bite")
-							contract_disease(D,1,0)
-					M.attack_log += text("\[[time_stamp()]\] <font color='red'>bitten by [src.name] ([src.ckey])</font>")
-					src.attack_log += text("\[[time_stamp()]\] <font color='orange'>Has been bitten by [M.name] ([M.ckey])</font>")
-					if(!iscarbon(M))
-						LAssailant = null
+			if(!istype(H))
+				attack_generic(H,rand(1,3),"punched")
+				return
+
+			var/rand_damage = rand(1, 5)
+			var/block = 0
+			var/accurate = 0
+			var/hit_zone = H.zone_sel.selecting
+			var/datum/organ/external/affecting = get_organ(hit_zone)
+
+			switch(src.a_intent)
+				if("help")
+					// We didn't see this coming, so we get the full blow
+					rand_damage = 5
+					accurate = 1
+				if("hurt", "grab")
+					// We're in a fighting stance, there's a chance we block
+					if(src.canmove && src!=H && prob(20))
+						block = 1
+
+			if (M.grabbed_by.len)
+				// Someone got a good grip on them, they won't be able to do much damage
+				rand_damage = max(1, rand_damage - 2)
+
+			if(src.grabbed_by.len || src.buckled || !src.canmove || src==H)
+				accurate = 1 // certain circumstances make it impossible for us to evade punches
+				rand_damage = 5
+
+			// Process evasion and blocking
+			var/miss_type = 0
+			var/attack_message
+			if(!accurate)
+				/* ~Hubblenaut
+					This place is kind of convoluted and will need some explaining.
+					ran_zone() will pick out of 11 zones, thus the chance for hitting
+					our target where we want to hit them is circa 9.1%.
+
+					Now since we want to statistically hit our target organ a bit more
+					often than other organs, we add a base chance of 20% for hitting it.
+
+					This leaves us with the following chances:
+
+					If aiming for chest:
+						27.3% chance you hit your target organ
+						70.5% chance you hit a random other organ
+						 2.2% chance you miss
+
+					If aiming for something else:
+						23.2% chance you hit your target organ
+						56.8% chance you hit a random other organ
+						15.0% chance you miss
+
+					Note: We don't use get_zone_with_miss_chance() here since the chances
+						  were made for projectiles.
+					TODO: proc for melee combat miss chances depending on organ?
+				*/
+				if(prob(80))
+					hit_zone = ran_zone(hit_zone)
+				if(prob(15) && hit_zone != "chest") // Missed!
+					if(!src.lying)
+						attack_message = "[H] attempted to strike [src], but missed!"
 					else
-						LAssailant = M
-					log_attack("[M.name] ([M.ckey]) bitten by [src.name] ([src.ckey])")
-					return
-			//end biting
+						attack_message = "[H] attempted to strike [src], but \he rolled out of the way!"
+						src.set_dir(pick(cardinal))
+					miss_type = 1
 
-			M.attack_log += text("\[[time_stamp()]\] <font color='red'>[M.species.attack_verb]ed [src.name] ([src.ckey])</font>")
-			src.attack_log += text("\[[time_stamp()]\] <font color='orange'>Has been [M.species.attack_verb]ed by [M.name] ([M.ckey])</font>")
-			if(!iscarbon(M))
-				LAssailant = null
-			else
-				LAssailant = M
+			if(!miss_type && block)
+				attack_message = "[H] went for [src]'s [affecting.display_name] but was blocked!"
+				miss_type = 2
 
-			log_attack("[M.name] ([M.ckey]) [M.species.attack_verb]ed [src.name] ([src.ckey])")
-
-			var/damage = rand(0, M.species.max_hurt_damage)//BS12 EDIT // edited again by Iamgoofball to fix species attacks
-			if(!damage)
-				if(M.species.attack_verb == "punch")
-					playsound(loc, 'sound/weapons/punchmiss.ogg', 25, 1, -1)
+			// See what attack they use
+			var/datum/unarmed_attack/attack = null
+			for(var/datum/unarmed_attack/u_attack in H.species.unarmed_attacks)
+				if(!u_attack.is_usable(H, src, hit_zone))
+					continue
 				else
-					playsound(loc, 'sound/weapons/slashmiss.ogg', 25, 1, -1)
-
-				visible_message("\red <B>[M] has attempted to [M.species.attack_verb] [src]!</B>")
+					attack = u_attack
+					break
+			if(!attack)
 				return 0
 
-
-			var/datum/organ/external/affecting = get_organ(ran_zone(M.zone_sel.selecting))
-			var/armor_block = run_armor_check(affecting, "melee")
-
-			if(M_HULK in M.mutations)			damage += 5
-
-
-			if(M.species.attack_verb == "punch")
-				playsound(loc, "punch", 25, 1, -1)
+			if(!attack_message)
+				attack.show_attack(H, src, hit_zone, rand_damage)
 			else
-				playsound(loc, 'sound/weapons/slice.ogg', 25, 1, -1)
+				H.visible_message("<span class='danger'>[attack_message]</span>")
 
-			visible_message("\red <B>[M] has [M.species.attack_verb]ed [src]!</B>")
-			//Rearranged, so claws don't increase weaken chance.
-			if(damage >= M.species.max_hurt_damage && prob(50))
-				visible_message("\red <B>[M] has weakened [src]!</B>")
-				apply_effect(2, WEAKEN, armor_block)
+			playsound(loc, ((miss_type) ? (miss_type == 1 ? attack.miss_sound : 'sound/weapons/thudswoosh.ogg') : attack.attack_sound), 25, 1, -1)
+			H.attack_log += text("\[[time_stamp()]\] <font color='red'>[miss_type ? (miss_type == 1 ? "Missed" : "Blocked") : "[pick(attack.attack_verb)]"] [src.name] ([src.ckey])</font>")
+			src.attack_log += text("\[[time_stamp()]\] <font color='orange'>[miss_type ? (miss_type == 1 ? "Was missed by" : "Has blocked") : "Has Been [pick(attack.attack_verb)]"] by [H.name] ([H.ckey])</font>")
+			msg_admin_attack("[key_name(H)] [miss_type ? (miss_type == 1 ? "has missed" : "was blocked by") : "has [pick(attack.attack_verb)]"] [key_name(src)]")
 
-			if(M.species.punch_damage)
-				damage += M.species.punch_damage
-			apply_damage(damage, BRUTE, affecting, armor_block)
+			if(miss_type)
+				return 0
 
-			// Horror form can punch people so hard they learn how to fly.
-			if(M.species.punch_throw_range && prob(25))
-				visible_message("\red <B>[src] is thrown by the force of the assault!</B>")
-				var/turf/T = get_turf(src)
-				var/turf/target
-				if(istype(T, /turf/space)) // if ended in space, then range is unlimited
-					target = get_edge_target_turf(T, M.dir)
-				else						// otherwise limit to 10 tiles
-					target = get_ranged_target_turf(T, M.dir, M.species.punch_throw_range)
-				src.throw_at(target,100,M.species.punch_throw_speed)
+			var/real_damage = rand_damage
+			real_damage += attack.get_unarmed_damage(H)
+			real_damage *= damage_multiplier
+			rand_damage *= damage_multiplier
+			if(HULK in H.mutations)
+				real_damage *= 2 // Hulks do twice the damage
+				rand_damage *= 2
+			real_damage = max(1, real_damage)
 
+			var/armour = run_armor_check(affecting, "melee")
+			// Apply additional unarmed effects.
+			attack.apply_effects(H, src, armour, rand_damage, hit_zone)
+
+			// Finally, apply damage to target
+			apply_damage(real_damage, BRUTE, affecting, armour, sharp=attack.sharp, edge=attack.edge)
 
 		if("disarm")
 			M.attack_log += text("\[[time_stamp()]\] <font color='red'>Disarmed [src.name] ([src.ckey])</font>")
 			src.attack_log += text("\[[time_stamp()]\] <font color='orange'>Has been disarmed by [M.name] ([M.ckey])</font>")
 
-			log_attack("[M.name] ([M.ckey]) disarmed [src.name] ([src.ckey])")
+			msg_admin_attack("[key_name(M)] disarmed [src.name] ([src.ckey])")
 
 			if(w_uniform)
 				w_uniform.add_fingerprint(M)
 			var/datum/organ/external/affecting = get_organ(ran_zone(M.zone_sel.selecting))
 
-			if (istype(r_hand,/obj/item/weapon/gun) || istype(l_hand,/obj/item/weapon/gun))
+			if(istype(r_hand,/obj/item/weapon/gun) || istype(l_hand,/obj/item/weapon/gun))
 				var/obj/item/weapon/gun/W = null
 				var/chance = 0
 
 				if (istype(l_hand,/obj/item/weapon/gun))
 					W = l_hand
-					chance = hand ? 40 : 20
+					chance += hand ? 40 : 20
 
-				if (istype(r_hand,/obj/item/weapon/gun))
+				else if (istype(r_hand,/obj/item/weapon/gun))
 					W = r_hand
-					chance = !hand ? 40 : 20
+					chance += !hand ? 40 : 20
 
 				if (prob(chance))
-					visible_message("<spawn class=danger>[W], held by [src], goes off during struggle!")
+					visible_message("<span class='danger'>[src]'s [W.name] goes off during struggle!")
 					var/list/turfs = list()
 					for(var/turf/T in view())
 						turfs += T
@@ -244,18 +231,14 @@
 					return W.afterattack(target,src)
 
 			var/randn = rand(1, 100)
-			if (randn <= 25)
-				apply_effect(4, WEAKEN, run_armor_check(affecting, "melee"))
+			if(!(species.flags & NO_SLIP) && randn <= 25)
+				var/armor_check = run_armor_check(affecting, "melee")
+				apply_effect(3, WEAKEN, armor_check)
 				playsound(loc, 'sound/weapons/thudswoosh.ogg', 50, 1, -1)
-				visible_message("\red <B>[M] has pushed [src]!</B>")
-				M.attack_log += text("\[[time_stamp()]\] <font color='red'>Pushed [src.name] ([src.ckey])</font>")
-				src.attack_log += text("\[[time_stamp()]\] <font color='orange'>Has been pushed by [M.name] ([M.ckey])</font>")
-				if(!iscarbon(M))
-					LAssailant = null
+				if(armor_check < 2)
+					visible_message("<span class='danger'>[M] has pushed [src]!</span>")
 				else
-					LAssailant = M
-
-				log_attack("[M.name] ([M.ckey]) pushed [src.name] ([src.ckey])")
+					visible_message("<span class='warning'>[M] attempted to push [src]!</span>")
 				return
 
 			var/talked = 0	// BubbleWrap
@@ -297,3 +280,19 @@
 
 /mob/living/carbon/human/proc/afterattack(atom/target as mob|obj|turf|area, mob/living/user as mob|obj, inrange, params)
 	return
+
+/mob/living/carbon/human/attack_generic(var/mob/user, var/damage, var/attack_message)
+
+	if(!damage)
+		return
+
+	user.attack_log += text("\[[time_stamp()]\] <font color='red'>attacked [src.name] ([src.ckey])</font>")
+	src.attack_log += text("\[[time_stamp()]\] <font color='orange'>was attacked by [user.name] ([user.ckey])</font>")
+	src.visible_message("<span class='danger'>[user] has [attack_message] [src]!</span>")
+
+	var/dam_zone = pick("head", "chest", "l_arm", "r_arm", "l_leg", "r_leg", "groin")
+	var/datum/organ/external/affecting = get_organ(ran_zone(dam_zone))
+	var/armor_block = run_armor_check(affecting, "melee")
+	apply_damage(damage, BRUTE, affecting, armor_block)
+	updatehealth()
+	return 1

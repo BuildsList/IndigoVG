@@ -112,8 +112,6 @@ var/list/diseases = typesof(/datum/disease) - /datum/disease
 
 	// If we're overriding how we spread, say so here
 	var/how_spread = spread_type
-	if(!istype(affected_mob))
-		return 0
 	if(force_spread)
 		how_spread = force_spread
 
@@ -128,6 +126,7 @@ var/list/diseases = typesof(/datum/disease) - /datum/disease
 			source = affected_mob
 		else //no source and no mob affected. Rogue disease. Break
 			return
+	
 	if(affected_mob.reagents != null)
 		if(affected_mob)
 			if(affected_mob.reagents.has_reagent("spaceacillin"))
@@ -203,6 +202,6 @@ var/list/diseases = typesof(/datum/disease) - /datum/disease
 	return new type(process, src)
 
 /*
-/datum/disease/Destroy()
+/datum/disease/Del()
 	active_diseases.Remove(src)
 */

@@ -1,5 +1,6 @@
 /mob/living/carbon/slime/examine(mob/user)
-	var/msg = "<span class='info'>*---------*\nThis is \icon[src] \a <EM>[src]</EM>!\n"
+	..(user)
+	var/msg = ""
 	if (src.stat == DEAD)
 		msg += "<span class='deadsay'>It is limp and unresponsive.</span>\n"
 	else
@@ -23,7 +24,8 @@
 				msg += "<span class='warning'>It is glowing brightly with high levels of electrical activity.</span>\n"
 
 			if(10)
-				msg += "<span class='danger'>It is radiating with massive levels of electrical activity!</span>\n"
+				msg += "<span class='warning'><B>It is radiating with massive levels of electrical activity!</B></span>\n"
 
 	msg += "*---------*</span>"
 	user << msg
+	return

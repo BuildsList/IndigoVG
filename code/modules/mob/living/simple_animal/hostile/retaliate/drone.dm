@@ -1,7 +1,7 @@
 
 //malfunctioning combat drones
 /mob/living/simple_animal/hostile/retaliate/malf_drone
-	name = "Combat Drone"
+	name = "combat drone"
 	desc = "An automated combat drone armed with state of the art weaponry and shielding."
 	icon_state = "drone3"
 	icon_living = "drone3"
@@ -10,26 +10,23 @@
 	rapid = 1
 	speak_chance = 5
 	turns_per_move = 3
-	response_help = "pokes the"
-	response_disarm = "gently pushes aside the"
-	response_harm = "hits the"
+	response_help = "pokes"
+	response_disarm = "gently pushes aside"
+	response_harm = "hits"
 	speak = list("ALERT.","Hostile-ile-ile entities dee-twhoooo-wected.","Threat parameterszzzz- szzet.","Bring sub-sub-sub-systems uuuup to combat alert alpha-a-a.")
 	emote_see = list("beeps menacingly","whirrs threateningly","scans its immediate vicinity")
-	a_intent = "hurt"
+	a_intent = "harm"
 	stop_automated_movement_when_pulled = 0
 	health = 300
 	maxHealth = 300
 	speed = 8
 	projectiletype = /obj/item/projectile/beam/drone
 	projectilesound = 'sound/weapons/laser3.ogg'
-	environment_smash = 2
-	minimum_distance = 3
-	retreat_distance = 2
-	var/datum/effect/effect/system/trail/ion_trail
-	var/hostile_time = 0
+	destroy_surroundings = 0
+	var/datum/effect/effect/system/ion_trail_follow/ion_trail
 
-	//the drone randomly switches between hostile/retaliation only states because it's malfunctioning
-	//hostile
+	//the drone randomly switches between these states because it's malfunctioning
+	var/hostile_drone = 0
 	//0 - retaliate, only attack enemies that attack it
 	//1 - hostile, attack everything that comes near
 
@@ -64,6 +61,12 @@
 /mob/living/simple_animal/hostile/retaliate/malf_drone/Process_Spacemove(var/check_drift = 0)
 	return 1
 
+/mob/living/simple_animal/hostile/retaliate/malf_drone/ListTargets()
+	if(hostile_drone)
+		return view(src, 10)
+	else
+		return ..()
+
 //self repair systems have a chance to bring the drone back to life
 /mob/living/simple_animal/hostile/retaliate/malf_drone/Life()
 
@@ -74,16 +77,15 @@
 		disabled--
 		wander = 0
 		speak_chance = 0
-		LoseTarget()
-	else
-		stat = CONSCIOUS
-		icon_state = "drone0"
-		wander = 1
-		speak_chance = 5
+		if(disabled <= 0)
+			stat = CONSCIOUS
+			icon_state = "drone0"
+			wander = 1
+			speak_chance = 5
 
 	//repair a bit of damage
-	if(health != maxHealth && prob(3))
-		src.visible_message("<span class='warning'>  \icon[src] [src] shudders and shakes as some of it's damaged systems come back online.</span>")
+	if(prob(1))
+		src.visible_message("\red \icon[src] [src] shudders and shakes as some of it's damaged systems come back online.")
 		var/datum/effect/effect/system/spark_spread/s = new /datum/effect/effect/system/spark_spread
 		s.set_up(3, 1, src)
 		s.start()
@@ -96,16 +98,13 @@
 		s.start()
 
 	//sometimes our targetting sensors malfunction, and we attack anyone nearby
-	if(prob(disabled ? 0 : 1) && hostile == 0)
-		src.visible_message("<span class='warning'> \icon[src] [src] suddenly lights up, and additional targeting vanes slide into place.</span>")
-		hostile = 1
-		hostile_time = rand(20,35)
-	else if(hostile == 1)
-		hostile_time--
-		if(hostile_time == 0)
-			hostile = 0
-			src.visible_message("<span class='notice'> \icon[src] [src] retracts several targeting vanes, and dulls it's running lights.</span>")
-			LoseTarget()
+	if(prob(disabled ? 0 : 1))
+		if(hostile_drone)
+			src.visible_message("\blue \icon[src] [src] retracts several targetting vanes, and dulls it's running lights.")
+			hostile_drone = 0
+		else
+			src.visible_message("\red \icon[src] [src] suddenly lights up, and additional targetting vanes slide into place.")
+			hostile_drone = 1
 
 	if(health / maxHealth > 0.9)
 		icon_state = "drone3"
@@ -123,19 +122,19 @@
 		//if health gets too low, shut down
 		icon_state = "drone_dead"
 		exploding = 0
-		if(!disabled && prob(30))
+		if(!disabled)
 			if(prob(50))
-				src.visible_message("<span class='notice'> \icon[src] [src] suddenly shuts down!</span>")
+				src.visible_message("\blue \icon[src] [src] suddenly shuts down!")
 			else
-				src.visible_message("<span class='warning'> \icon[src] [src] suddenly lies still and quiet.")
-			disabled = rand(20, 40)
+				src.visible_message("\blue \icon[src] [src] suddenly lies still and quiet.")
+			disabled = rand(150, 600)
 			walk(src,0)
 
 	if(exploding && prob(20))
 		if(prob(50))
-			src.visible_message("<span class='warning'> \icon[src] [src] begins to spark and shake violenty!</span>")
+			src.visible_message("\red \icon[src] [src] begins to spark and shake violenty!")
 		else
-			src.visible_message("<span class='warning'> \icon[src] [src] sparks and shakes like it's about to explode!</span>")
+			src.visible_message("\red \icon[src] [src] sparks and shakes like it's about to explode!")
 		var/datum/effect/effect/system/spark_spread/s = new /datum/effect/effect/system/spark_spread
 		s.set_up(3, 1, src)
 		s.start()
@@ -145,29 +144,24 @@
 		stat = UNCONSCIOUS
 		wander = 1
 		walk(src,0)
-		spawn(rand(50,80))
+		spawn(rand(50,150))
 			if(!disabled && exploding)
 				explosion(get_turf(src), 0, 1, 4, 7)
 				//proc/explosion(turf/epicenter, devastation_range, heavy_impact_range, light_impact_range, flash_range, adminlog = 1)
-	return ..()
+	..()
 
 //ion rifle!
 /mob/living/simple_animal/hostile/retaliate/malf_drone/emp_act(severity)
-	if(flags & INVULNERABLE)
-		return
-
 	health -= rand(3,15) * (severity + 1)
-	disabled = rand(5, 20)
-	hostile = 0
-	hostile_time = 0
+	disabled = rand(150, 600)
+	hostile_drone = 0
 	walk(src,0)
 
-/mob/living/simple_animal/hostile/retaliate/malf_drone/Die()
-	src.visible_message("<span class='notice'> \icon[src] [src] suddenly breaks apart.</span>")
-	..()
-	qdel(src)
+/mob/living/simple_animal/hostile/retaliate/malf_drone/death()
+	..(null,"suddenly breaks apart.")
+	del(src)
 
-/mob/living/simple_animal/hostile/retaliate/malf_drone/Destroy()
+/mob/living/simple_animal/hostile/retaliate/malf_drone/Del()
 	//some random debris left behind
 	if(has_loot)
 		var/datum/effect/effect/system/spark_spread/s = new /datum/effect/effect/system/spark_spread
@@ -176,16 +170,16 @@
 		var/obj/O
 
 		//shards
-		O = getFromPool(/obj/item/weapon/shard, loc)
+		O = new /obj/item/weapon/shard(src.loc)
 		step_to(O, get_turf(pick(view(7, src))))
 		if(prob(75))
-			O = getFromPool(/obj/item/weapon/shard, loc)
+			O = new /obj/item/weapon/shard(src.loc)
 			step_to(O, get_turf(pick(view(7, src))))
 		if(prob(50))
-			O = getFromPool(/obj/item/weapon/shard, loc)
+			O = new /obj/item/weapon/shard(src.loc)
 			step_to(O, get_turf(pick(view(7, src))))
 		if(prob(25))
-			O = getFromPool(/obj/item/weapon/shard, loc)
+			O = new /obj/item/weapon/shard(src.loc)
 			step_to(O, get_turf(pick(view(7, src))))
 
 		//rods
@@ -263,8 +257,8 @@
 
 		if(spawnees & 128)
 			C = new(src.loc)
-			C.name = "Drone plasma overcharge counter"
-			C.origin_tech = "plasmatech=[rand(3,6)]"
+			C.name = "Drone phoron overcharge counter"
+			C.origin_tech = "phorontech=[rand(3,6)]"
 
 		if(spawnees & 256)
 			C = new(src.loc)
@@ -279,7 +273,7 @@
 	..()
 
 /obj/item/projectile/beam/drone
-	damage = 10
+	damage = 15
 
 /obj/item/projectile/beam/pulse/drone
-	damage = 7
+	damage = 10

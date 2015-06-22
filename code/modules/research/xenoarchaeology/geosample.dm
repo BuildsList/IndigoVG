@@ -20,15 +20,17 @@
 	icon = 'icons/obj/xenoarchaeology.dmi'
 	icon_state = "sliver1"	//0-4
 	w_class = 1
+	sharp = 1
 	//item_state = "electronic"
-	var/source_rock = "/turf/unsimulated/mineral/"
+	var/source_rock = "/turf/simulated/mineral/"
 	var/datum/geosample/geological_data
 
 /obj/item/weapon/rocksliver/New()
-	. = ..()
 	icon_state = "sliver[rand(1,3)]"
-	pixel_x = rand(-8, 8)
-	pixel_y = rand(-8, 0)
+	pixel_x = rand(0,16)-8
+	pixel_y = rand(0,8)-8
+	create_reagents(50)
+	reagents.add_reagent("ground_rock",50)
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Geosample datum
@@ -41,17 +43,18 @@
 	var/artifact_id = ""					//id of a nearby artifact, if there is one
 	var/artifact_distance = -1				//proportional to distance
 	var/source_mineral = "chlorine"			//machines will pop up a warning telling players that the sample may be confused
-	var/total_spread = 0
 	//
 	//var/source_mineral
 	//all potential finds are initialised to null, so nullcheck before you access them
 	var/list/find_presence = list()
 
-/datum/geosample/New(var/turf/unsimulated/mineral/container)
+/datum/geosample/New(var/turf/simulated/mineral/container)
+
 	UpdateTurf(container)
 
 //this should only need to be called once
-/datum/geosample/proc/UpdateTurf(var/turf/unsimulated/mineral/container)
+/datum/geosample/proc/UpdateTurf(var/turf/simulated/mineral/container)
+	set background = 1
 	if(!container || !istype(container))
 		return
 
@@ -85,17 +88,17 @@
 				age_million = rand(1,999)
 				find_presence["iron"] = rand(1,1000) / 100
 				source_mineral = "iron"
-			if("Plasma")
+			if("Phoron")
 				age_thousand = rand(1,999)
 				age_million = rand(1,999)
 				age_billion = rand(10, 13)
-				find_presence["plasma"] = rand(1,1000) / 100
-				source_mineral = "plasma"
+				find_presence["phoron"] = rand(1,1000) / 100
+				source_mineral = "phoron"
 			if("Clown")
 				age = rand(-1,-999)				//thats the joke
 				age_thousand = rand(-1,-999)
-				find_presence["plasma"] = rand(1,1000) / 100
-				source_mineral = "plasma"
+				find_presence["phoron"] = rand(1,1000) / 100
+				source_mineral = "phoron"
 
 	if(prob(75))
 		find_presence["phosphorus"] = rand(1,500) / 100
@@ -115,11 +118,11 @@
 	for(var/carrier in find_presence)
 		find_presence[carrier] = find_presence[carrier] / total_presence
 
-	for(var/entry in find_presence)
-		total_spread += find_presence[entry]
+	/*for(var/entry in find_presence)
+		total_spread += find_presence[entry]*/
 
 //have this separate from UpdateTurf() so that we dont have a billion turfs being updated (redundantly) every time an artifact spawns
-/datum/geosample/proc/UpdateNearbyArtifactInfo(var/turf/unsimulated/mineral/container)
+/datum/geosample/proc/UpdateNearbyArtifactInfo(var/turf/simulated/mineral/container)
 	if(!container || !istype(container))
 		return
 
@@ -128,7 +131,7 @@
 		artifact_id = container.artifact_find.artifact_id
 	else
 		if(master_controller) //Sanity check due to runtimes ~Z
-			for(var/turf/unsimulated/mineral/T in master_controller.artifact_spawning_turfs)
+			for(var/turf/simulated/mineral/T in master_controller.artifact_spawning_turfs)
 				if(T.artifact_find)
 					var/cur_dist = get_dist(container, T) * 2
 					if( (artifact_distance < 0 || cur_dist < artifact_distance) && cur_dist <= T.artifact_find.artifact_detect_range )

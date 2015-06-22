@@ -5,8 +5,9 @@
 	icon_state = "secure1"
 	density = 1
 	opened = 0
-	large = 1
-	locked = 1
+	var/locked = 1
+	var/broken = 0
+	var/large = 1
 	icon_closed = "secure"
 	var/icon_locked = "secure1"
 	icon_opened = "secureopen"
@@ -16,17 +17,17 @@
 	health = 200
 
 /obj/structure/closet/secure_closet/can_open()
-	if(!..())
-		return 0
 	if(src.locked)
 		return 0
-	return 1
+	return ..()
 
 /obj/structure/closet/secure_closet/close()
-	..()
-	if(broken)
-		icon_state = src.icon_off
-	return 1
+	if(..())
+		if(broken)
+			icon_state = src.icon_off
+		return 1
+	else
+		return 0
 
 /obj/structure/closet/secure_closet/emp_act(severity)
 	for(var/obj/O in src)
@@ -44,33 +45,39 @@
 	..()
 
 /obj/structure/closet/secure_closet/proc/togglelock(mob/user as mob)
+	if(src.opened)
+		user << "<span class='notice'>Close the locker first.</span>"
+		return
+	if(src.broken)
+		user << "<span class='warning'>The locker appears to be broken.</span>"
+		return
+	if(user.loc == src)
+		user << "<span class='notice'>You can't reach the lock from inside.</span>"
+		return
 	if(src.allowed(user))
 		src.locked = !src.locked
 		for(var/mob/O in viewers(user, 3))
 			if((O.client && !( O.blinded )))
 				O << "<span class='notice'>The locker has been [locked ? null : "un"]locked by [user].</span>"
-		if(src.locked)
-			src.icon_state = src.icon_locked
-		else
-			src.icon_state = src.icon_closed
+		update_icon()
 	else
 		user << "<span class='notice'>Access Denied</span>"
 
 /obj/structure/closet/secure_closet/attackby(obj/item/weapon/W as obj, mob/user as mob)
 	if(src.opened)
 		if(istype(W, /obj/item/weapon/grab))
+			var/obj/item/weapon/grab/G = W
 			if(src.large)
-				src.MouseDrop_T(W:affecting, user)	//act like they were dragged onto the closet
+				src.MouseDrop_T(G.affecting, user)	//act like they were dragged onto the closet
 			else
-				user << "<span class='notice'>The locker is too small to stuff [W] into!</span>"
+				user << "<span class='notice'>The locker is too small to stuff [G.affecting] into!</span>"
 		if(isrobot(user))
+			return
+		if(W.loc != user) // This should stop mounted modules ending up outside the module.
 			return
 		user.drop_item()
 		if(W)
 			W.loc = src.loc
-	else if(src.broken)
-		user << "<span class='notice'>The locker appears to be broken.</span>"
-		return
 	else if((istype(W, /obj/item/weapon/card/emag)||istype(W, /obj/item/weapon/melee/energy/blade)) && !src.broken)
 		broken = 1
 		locked = 0
@@ -81,112 +88,24 @@
 			var/datum/effect/effect/system/spark_spread/spark_system = new /datum/effect/effect/system/spark_spread()
 			spark_system.set_up(5, 0, src.loc)
 			spark_system.start()
-			playsound(get_turf(src), 'sound/weapons/blade1.ogg', 50, 1)
-			playsound(get_turf(src), "sparks", 50, 1)
+			playsound(src.loc, 'sound/weapons/blade1.ogg', 50, 1)
+			playsound(src.loc, "sparks", 50, 1)
 			for(var/mob/O in viewers(user, 3))
 				O.show_message("<span class='warning'>The locker has been sliced open by [user] with an energy blade!</span>", 1, "You hear metal being sliced and sparks flying.", 2)
 		else
 			for(var/mob/O in viewers(user, 3))
 				O.show_message("<span class='warning'>The locker has been broken by [user] with an electromagnetic card!</span>", 1, "You hear a faint electrical spark.", 2)
-	else if(istype(W, /obj/item/weapon/weldingtool))
-		var/obj/item/weapon/weldingtool/WT = W
-		if(!WT.remove_fuel(0,user))
-			user << "<span class='notice'>You need more welding fuel to complete this task.</span>"
-			return
-		src.welded =! src.welded
-		src.update_icon()
-		for(var/mob/M in viewers(src))
-			M.show_message("<span class='warning'>[src] has been [welded?"welded shut":"unwelded"] by [user.name].</span>", 3, "You hear welding.", 2)
-	else if(istype(W, /obj/item/device/multitool) && !src.broken)
-		var/obj/item/device/multitool/multi = W
-		if(multi.is_used)
-			user << "\red This multitool is already in use!"
-			return
-		multi.is_used = 1
-		user << "\red Resetting circuitry(0/6)..."
-		playsound(user, 'sound/machines/lockreset.ogg', 50, 1)
-		var/obj/structure/closet/secure_closet/crat = src
-		src = null
-		if(do_mob(user, crat, 200))
-			user << "\red Resetting circuitry(1/6)..."
-			for(var/mob/O in viewers(world.view, user))
-				if(O != user)
-					O.show_message(text("\red <B>[] picks in wires of the [] with a multitool.</B>", user, crat), 1)
-			if(do_mob(user, crat, 200))
-				user << "\red Resetting circuitry(2/6)..."
-				for(var/mob/O in viewers(world.view, user))
-					if(O != user)
-						O.show_message(text("\red <B>[] picks in wires of the [] with a multitool.</B>", user, crat), 1)
-				if(do_mob(user, crat, 200))
-					user << "\red Resetting circuitry(3/6)..."
-					for(var/mob/O in viewers(world.view, user))
-						if(O != user)
-							O.show_message(text("\red <B>[] picks in wires of the [] with a multitool.</B>", user, crat), 1)
-					if(do_mob(user, crat, 200))
-						user << "\red Resetting circuitry(4/6)..."
-						for(var/mob/O in viewers(world.view, user))
-							if(O != user)
-								O.show_message(text("\red <B>[] picks in wires of the [] with a multitool.</B>", user, crat), 1)
-						if(do_mob(user, crat, 200))
-							user << "\red Resetting circuitry(5/6)..."
-							for(var/mob/O in viewers(world.view, user))
-								if(O != user)
-									O.show_message(text("\red <B>[] picks in wires of the [] with a multitool.</B>", user, crat), 1)
-							if(do_mob(user, crat, 200))
-								crat.locked = !crat.locked
-								if(crat.locked)
-									crat.icon_state = crat.icon_locked
-									user << "\blue You enable the locking modules."
-									for(var/mob/O in viewers(world.view, user))
-										if(O != user)
-											O.show_message(text("\red <B>[] locks [] with a multitool.</B>", user, crat), 1)
-								else
-									crat.icon_state = crat.icon_closed
-									user << "\blue You disable the locking modules."
-									for(var/mob/O in viewers(world.view, user))
-										if(O != user)
-											O.show_message(text("\red <B>[] unlocks [] with a multitool.</B>", user, crat), 1)
-		multi.is_used = 0
+	else if(istype(W,/obj/item/weapon/packageWrap) || istype(W,/obj/item/weapon/weldingtool))
+		return ..(W,user)
 	else
 		togglelock(user)
 
-/obj/structure/closet/secure_closet/relaymove(mob/user as mob)
-	if(user.stat || !isturf(src.loc))
-		return
-
-	if(!(src.locked) && !(src.welded))
-		for(var/obj/item/I in src)
-			I.loc = src.loc
-		for(var/mob/M in src)
-			M.loc = src.loc
-			if(M.client)
-				M.client.eye = M.client.mob
-				M.client.perspective = MOB_PERSPECTIVE
-		src.icon_state = src.icon_opened
-		src.opened = 1
-		src.density = 0
-		playsound(get_turf(src), 'sound/machines/click.ogg', 15, 1, -3)
-	else
-		if(!can_open())
-			user << "<span class='notice'>It won't budge!</span>"
-		else
-			user << "<span class='notice'>The locker is locked!</span>"
-		if(world.time > lastbang+5)
-			lastbang = world.time
-			for(var/mob/M in hearers(src, null))
-				M << "<FONT size=[max(0, 5 - get_dist(src, M))]>BANG, bang!</FONT>"
-	return
-
 /obj/structure/closet/secure_closet/attack_hand(mob/user as mob)
-	if(!Adjacent(user))
-		return
 	src.add_fingerprint(user)
-
-	if(!src.toggle())
-		return src.attackby(null, user)
-
-/obj/structure/closet/secure_closet/attack_paw(mob/user as mob)
-	return src.attack_hand(user)
+	if(src.locked)
+		src.togglelock(user)
+	else
+		src.toggle(user)
 
 /obj/structure/closet/secure_closet/verb/verb_togglelock()
 	set src in oview(1) // One square distance
@@ -196,20 +115,14 @@
 	if(!usr.canmove || usr.stat || usr.restrained()) // Don't use it if you're not able to! Checks for stuns, ghost and restrain
 		return
 
-	if(get_dist(usr, src) != 1)
-		return
-
-	if(src.broken)
-		return
-
-	if (ishuman(usr))
-		if (!opened)
-			togglelock(usr)
+	if(ishuman(usr))
+		src.add_fingerprint(usr)
+		src.togglelock(usr)
 	else
 		usr << "<span class='warning'>This mob type can't use this verb.</span>"
 
 /obj/structure/closet/secure_closet/update_icon()//Putting the welded stuff in updateicon() so it's easy to overwrite for special cases (Fridges, cabinets, and whatnot)
-	overlays.len = 0
+	overlays.Cut()
 	if(!opened)
 		if(locked)
 			icon_state = icon_locked
@@ -219,3 +132,25 @@
 			overlays += "welded"
 	else
 		icon_state = icon_opened
+
+
+/obj/structure/closet/secure_closet/req_breakout()
+	if(!opened && locked) return 1
+	return ..() //It's a secure closet, but isn't locked.
+
+/obj/structure/closet/secure_closet/break_open()
+	desc += " It appears to be broken."
+	icon_state = icon_off
+	spawn()
+		flick(icon_broken, src)
+		sleep(10)
+		flick(icon_broken, src)
+		sleep(10)
+	broken = 1
+	locked = 0
+	update_icon()
+	//Do this to prevent contents from being opened into nullspace (read: bluespace)
+	if(istype(loc, /obj/structure/bigDelivery))
+		var/obj/structure/bigDelivery/BD = loc
+		BD.unwrap()
+	open()

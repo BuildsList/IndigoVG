@@ -6,7 +6,6 @@ var/list/spells = typesof(/obj/effect/proc_holder/spell) //needed for the badmin
 /obj/effect/proc_holder/spell
 	name = "Spell"
 	desc = "A wizard spell"
-	panel = "Spells"//What panel the proc holder needs to go on.
 	density = 0
 	opacity = 0
 
@@ -16,23 +15,17 @@ var/list/spells = typesof(/obj/effect/proc_holder/spell) //needed for the badmin
 
 	var/charge_max = 100 //recharge time in deciseconds if charge_type = "recharge" or starting charges if charge_type = "charges"
 	var/charge_counter = 0 //can only cast spells if it equals recharge, ++ each decisecond if charge_type = "recharge" or -- each cast if charge_type = "charges"
-	var/still_recharging_msg = "<span class='notice'>The spell is still recharging.</span>"
 
 	var/holder_var_type = "bruteloss" //only used if charge_type equals to "holder_var"
 	var/holder_var_amount = 20 //same. The amount adjusted with the mob's var when the spell is used
 
-	var/ghost = 0 // Skip life check.
 	var/clothes_req = 1 //see if it requires clothes
-	var/human_req = 0 //spell can only be cast by humans
 	var/stat_allowed = 0 //see if it requires being conscious/alive, need to set to 1 for ghostpells
 	var/invocation = "HURP DURP" //what is uttered when the wizard casts the spell
-	var/invocation_type = "none" //can be none, whisper, shout, and emote
+	var/invocation_type = "none" //can be none, whisper and shout
 	var/range = 7 //the range of the spell; outer radius for aoe spells
 	var/message = "" //whatever it says to the guy affected by it
 	var/selection_type = "view" //can be "range" or "view"
-	var/spell_level = 0 //if a spell can be taken multiple times, this raises
-	var/level_max = 4 //The max possible level_max is 4
-	var/cooldown_min = 0 //This defines what spell quickened four timeshas as a cooldown. Make sure to set this for every spell
 
 	var/overlay = 0
 	var/overlay_icon = 'icons/obj/wizard.dmi'
@@ -49,56 +42,46 @@ var/list/spells = typesof(/obj/effect/proc_holder/spell) //needed for the badmin
 
 /obj/effect/proc_holder/spell/proc/cast_check(skipcharge = 0,mob/user = usr) //checks if the spell can be cast based on its settings; skipcharge is used when an additional cast_check is called inside the spell
 
-	if(!(src in user.spell_list))
-		user << "<span class='warning'>You shouldn't have this spell! Something's wrong.</span>"
+	if(!(src in usr.spell_list))
+		usr << "\red You shouldn't have this spell! Something's wrong."
 		return 0
 
 	if(usr.z == 2 && !centcomm_cancast) //Certain spells are not allowed on the centcomm zlevel
 		return 0
 
-	if(istype(usr, /mob/living/simple_animal))
-		var/mob/living/simple_animal/SA = usr
-		if(SA.purge)
-			SA << "<span class='warning'>The nullrod's power interferes with your own!</span>"
-			return 0
-
 	if(!skipcharge)
 		switch(charge_type)
 			if("recharge")
 				if(charge_counter < charge_max)
-					user << still_recharging_msg
+					usr << "[name] is still recharging."
 					return 0
 			if("charges")
 				if(!charge_counter)
-					user << "<span class='notice'>[name] has no charges left.</span>"
+					usr << "[name] has no charges left."
 					return 0
-	if(!ghost)
-		if(usr.stat && !stat_allowed)
-			usr << "Not when you're incapacitated."
+
+	if(usr.stat && !stat_allowed)
+		usr << "Not when you're incapacitated."
+		return 0
+
+	if(ishuman(usr) || ismonkey(usr))
+		if(istype(usr.wear_mask, /obj/item/clothing/mask/muzzle))
+			usr << "Mmmf mrrfff!"
 			return 0
 
-		if(ishuman(usr) || ismonkey(usr))
-			if(istype(usr.wear_mask, /obj/item/clothing/mask/muzzle))
-				usr << "Mmmf mrrfff!"
-				return 0
-	var/obj/effect/proc_holder/spell/noclothes/spell = locate() in user.spell_list
-	if(clothes_req && !(spell && istype(spell)))//clothes check
-		if(!usr.wearing_wiz_garb())
-			return 0
-		/*  This is all rendered obsolete.  Use mob.wearing_wiz_garb() instead.
+	if(clothes_req) //clothes check
 		if(!istype(usr, /mob/living/carbon/human))
 			usr << "You aren't a human, Why are you trying to cast a human spell, silly non-human? Casting human spells is for humans."
 			return 0
-		if(!istype(usr:wear_suit, /obj/item/clothing/suit/wizrobe) && !istype(user:wear_suit, /obj/item/clothing/suit/space/rig/wizard))
+		if(!istype(usr:wear_suit, /obj/item/clothing/suit/wizrobe) && !istype(user:wear_suit, /obj/item/clothing/suit/space/void/wizard))
 			usr << "I don't feel strong enough without my robe."
 			return 0
 		if(!istype(usr:shoes, /obj/item/clothing/shoes/sandal))
 			usr << "I don't feel strong enough without my sandals."
 			return 0
-		if(!istype(usr:head, /obj/item/clothing/head/wizard) && !istype(user:head, /obj/item/clothing/head/helmet/space/rig/wizard))
+		if(!istype(usr:head, /obj/item/clothing/head/wizard) && !istype(user:head, /obj/item/clothing/head/helmet/space/void/wizard))
 			usr << "I don't feel strong enough without my hat."
 			return 0
-		*/
 
 	if(!skipcharge)
 		switch(charge_type)
@@ -116,30 +99,28 @@ var/list/spells = typesof(/obj/effect/proc_holder/spell) //needed for the badmin
 	switch(invocation_type)
 		if("shout")
 			if(prob(50))//Auto-mute? Fuck that noise
-				user.say(invocation)
+				usr.say(invocation)
 			else
-				user.say(replacetext(invocation," ","`"))
+				usr.say(replacetext(invocation," ","`"))
+			if(usr.gender==MALE)
+				playsound(usr.loc, pick('sound/misc/null.ogg','sound/misc/null.ogg'), 100, 1)
+			else
+				playsound(usr.loc, pick('sound/misc/null.ogg','sound/misc/null.ogg'), 100, 1)
 		if("whisper")
 			if(prob(50))
-				user.whisper(invocation)
+				usr.whisper(invocation)
 			else
-				user.whisper(replacetext(invocation," ","`"))
-		if("emote")
-			user.visible_message(invocation)
+				usr.whisper(replacetext(invocation," ","`"))
 
 /obj/effect/proc_holder/spell/New()
 	..()
 
-	still_recharging_msg = "<span class='notice'>[name] is still recharging.</span>"
 	charge_counter = charge_max
 
 /obj/effect/proc_holder/spell/Click()
-	..()
-
-	if(!cast_check())
-		return
-
-	choose_targets()
+    if(cast_check())
+        choose_targets()
+    return 1
 
 /obj/effect/proc_holder/spell/proc/choose_targets(mob/user = usr) //depends on subtype - /targeted or /aoe_turf
 	return
@@ -149,10 +130,9 @@ var/list/spells = typesof(/obj/effect/proc_holder/spell) //needed for the badmin
 		sleep(1)
 		charge_counter++
 
-/obj/effect/proc_holder/spell/proc/perform(list/targets, recharge = 1, mob/user = usr) //if recharge is started is important for the trigger spells
+/obj/effect/proc_holder/spell/proc/perform(list/targets, recharge = 1) //if recharge is started is important for the trigger spells
 	before_cast(targets)
 	invocation()
-	user.attack_log += text("\[[time_stamp()]\] <font color='red'>[user.real_name] ([user.ckey]) cast the spell [name].</font>")
 	spawn(0)
 		if(charge_type == "recharge" && recharge)
 			start_recharge()
@@ -163,15 +143,8 @@ var/list/spells = typesof(/obj/effect/proc_holder/spell) //needed for the badmin
 	after_cast(targets)
 
 /obj/effect/proc_holder/spell/proc/before_cast(list/targets)
-	var/valid_targets[0]
-	for(var/atom/target in targets)
-		// Check range again (fixes long-range EI NATH)
-		if(!(target in view_or_range(range,usr,selection_type)))
-			continue
-
-		valid_targets += target
-
-		if(overlay)
+	if(overlay)
+		for(var/atom/target in targets)
 			var/location
 			if(istype(target,/mob/living))
 				location = target.loc
@@ -183,8 +156,7 @@ var/list/spells = typesof(/obj/effect/proc_holder/spell) //needed for the badmin
 			spell.anchored = 1
 			spell.density = 0
 			spawn(overlay_lifespan)
-				qdel(spell)
-	return valid_targets
+				del(spell)
 
 /obj/effect/proc_holder/spell/proc/after_cast(list/targets)
 	for(var/atom/target in targets)
@@ -272,11 +244,7 @@ var/list/spells = typesof(/obj/effect/proc_holder/spell) //needed for the badmin
 						continue
 					possible_targets += M
 
-				//targets += input("Choose the target for the spell.", "Targeting") as mob in possible_targets
-				//Adds a safety check post-input to make sure those targets are actually in range.
-				var/mob/M = input("Choose the target for the spell.", "Targeting") as mob in possible_targets
-				if(M in view_or_range(range, user, selection_type)) targets += M
-
+				targets += input("Choose the target for the spell.", "Targeting") as mob in possible_targets
 		else
 			var/list/possible_targets = list()
 			for(var/mob/living/target in view_or_range(range, user, selection_type))

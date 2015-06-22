@@ -9,10 +9,9 @@ proc/cardinalrange(var/center)
 
 /obj/machinery/am_shielding
 	name = "antimatter reactor section"
-	desc = "This device was built using a plasma life-form that seems to increase plasma's natural ability to react with neutrinos while reducing the combustibility."
+	desc = "This device was built using a phoron life-form that seems to increase phoron's natural ability to react with neutrinos while reducing the combustibility."
 
-	//icon = 'icons/obj/machines/antimatter.dmi'
-	icon = 'icons/obj/machines/new_ame.dmi'
+	icon = 'icons/obj/machines/antimatter.dmi'
 	icon_state = "shield"
 	anchored = 1
 	density = 1
@@ -24,9 +23,7 @@ proc/cardinalrange(var/center)
 	var/obj/machinery/power/am_control_unit/control_unit = null
 	var/processing = 0//To track if we are in the update list or not, we need to be when we are damaged and if we ever
 	var/stability = 100//If this gets low bad things tend to happen
-	var/efficiency = 1//How many cores this core counts for when doing power processing, plasma in the air and stability could affect this
-	var/coredirs = 0
-	var/dirs=0
+	var/efficiency = 1//How many cores this core counts for when doing power processing, phoron in the air and stability could affect this
 
 
 /obj/machinery/am_shielding/New(loc)
@@ -52,7 +49,7 @@ proc/cardinalrange(var/center)
 		if(AMS && AMS.control_unit && link_control(AMS.control_unit))
 			break
 
-	if(!control_unit)//No other guys nearby, look for a control unit
+	if(!control_unit)//No other guys nearby look for a control unit
 		for(var/direction in cardinal)
 		for(var/obj/machinery/power/am_control_unit/AMC in cardinalrange(src))
 			if(AMC.add_shielding(src))
@@ -68,7 +65,7 @@ proc/cardinalrange(var/center)
 	return
 
 
-/obj/machinery/am_shielding/Destroy()
+/obj/machinery/am_shielding/Del()
 	if(control_unit)	control_unit.remove_shielding(src)
 	if(processing)	shutdown_core()
 	visible_message("\red The [src.name] melts!")
@@ -77,7 +74,7 @@ proc/cardinalrange(var/center)
 	return
 
 
-/obj/machinery/am_shielding/CanPass(atom/movable/mover, turf/target, height=1.5, air_group = 0)
+/obj/machinery/am_shielding/CanPass(atom/movable/mover, turf/target, height=0, air_group=0)
 	if(air_group || (height==0))	return 1
 	return 0
 
@@ -85,7 +82,7 @@ proc/cardinalrange(var/center)
 /obj/machinery/am_shielding/process()
 	if(!processing) . = PROCESS_KILL
 	//TODO: core functions and stability
-	//TODO: think about checking the airmix for plasma and increasing power output
+	//TODO: think about checking the airmix for phoron and increasing power output
 	return
 
 
@@ -120,39 +117,20 @@ proc/cardinalrange(var/center)
 
 
 /obj/machinery/am_shielding/bullet_act(var/obj/item/projectile/Proj)
-	if(Proj.flag != "bullet")
+	if(Proj.check_armour != "bullet")
 		stability -= Proj.force/2
 	return 0
 
 
 /obj/machinery/am_shielding/update_icon()
-	overlays.len = 0
-	coredirs = 0
-	dirs = 0
+	overlays.Cut()
 	for(var/direction in alldirs)
-		var/turf/T = get_step(loc, direction)
-		for(var/obj/machinery/machine in T)
-			// Detect cores
-			if((istype(machine, /obj/machinery/am_shielding) && machine:control_unit == control_unit && machine:processing))
-				coredirs |= direction
-
-			// Detect cores, shielding, and control boxen.
-			if(direction in cardinal)
-				if((istype(machine, /obj/machinery/am_shielding) && machine:control_unit == control_unit) || (istype(machine, /obj/machinery/power/am_control_unit) && machine == control_unit))
-					dirs |= direction
-
-	// If we're next to a core, set the prefix.
-	var/prefix = ""
-	var/icondirs=dirs
-
-	if(coredirs)
-		prefix="core"
-
-	// Set our overlay
-	icon_state = "[prefix]shield_[icondirs]"
+		var/machine = locate(/obj/machinery, get_step(loc, direction))
+		if((istype(machine, /obj/machinery/am_shielding) && machine:control_unit == control_unit)||(istype(machine, /obj/machinery/power/am_control_unit) && machine == control_unit))
+			overlays += "shield_[direction]"
 
 	if(core_check())
-		overlays += "core[control_unit && control_unit.active]"
+		overlays += "core"
 		if(!processing) setup_core()
 	else if(processing) shutdown_core()
 
@@ -179,15 +157,9 @@ proc/cardinalrange(var/center)
 //Scans cards for shields or the control unit and if all there it
 /obj/machinery/am_shielding/proc/core_check()
 	for(var/direction in alldirs)
-		var/found_am_device=0
-		for(var/obj/machinery/machine in get_step(loc, direction))
-			if(!machine)
-				continue
-			if(istype(machine, /obj/machinery/am_shielding) || istype(machine, /obj/machinery/power/am_control_unit))
-				found_am_device=1
-				break
-		if(!found_am_device)
-			return 0
+		var/machine = locate(/obj/machinery, get_step(loc, direction))
+		if(!machine) return 0//Need all for a core
+		if(!istype(machine, /obj/machinery/am_shielding) && !istype(machine, /obj/machinery/power/am_control_unit))	return 0
 	return 1
 
 
@@ -234,13 +206,11 @@ proc/cardinalrange(var/center)
 	icon_state = "box"
 	item_state = "electronic"
 	w_class = 4.0
-	flags = FPRINT
-	siemens_coefficient = 1
+	flags = CONDUCT
 	throwforce = 5
 	throw_speed = 1
 	throw_range = 2
-	m_amt = CC_PER_SHEET_METAL*2
-	w_type = RECYK_METAL
+	matter = list("metal" = 100, "waste" = 2000)
 
 /obj/item/device/am_shielding_container/attackby(var/obj/item/I, var/mob/user)
 	if(istype(I, /obj/item/device/multitool) && istype(src.loc,/turf))

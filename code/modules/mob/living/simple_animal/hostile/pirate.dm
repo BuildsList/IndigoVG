@@ -9,7 +9,7 @@
 	response_help = "pushes"
 	response_disarm = "shoves"
 	response_harm = "hits"
-	speed = -1
+	speed = 4
 	stop_automated_movement_when_pulled = 0
 	maxHealth = 100
 	health = 100
@@ -17,7 +17,7 @@
 	harm_intent_damage = 5
 	melee_damage_lower = 30
 	melee_damage_upper = 30
-	attacktext = "slashes"
+	attacktext = "slashed"
 	attack_sound = 'sound/weapons/bladeslice.ogg'
 
 	min_oxy = 5
@@ -42,14 +42,12 @@
 	projectilesound = 'sound/weapons/laser.ogg'
 	ranged = 1
 	rapid = 1
-	retreat_distance = 5
-	minimum_distance = 5
 	projectiletype = /obj/item/projectile/beam
 	corpse = /obj/effect/landmark/mobcorpse/pirate/ranged
 	weapon1 = /obj/item/weapon/gun/energy/laser
 
 
-/mob/living/simple_animal/hostile/pirate/Die()
+/mob/living/simple_animal/hostile/pirate/death()
 	..()
 	if(corpse)
 		new corpse (src.loc)

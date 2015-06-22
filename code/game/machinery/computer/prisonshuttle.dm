@@ -11,35 +11,50 @@ var/prison_shuttle_time = 0
 var/prison_shuttle_timeleft = 0
 
 /obj/machinery/computer/prison_shuttle
-	name = "Prison Shuttle Console"
+	name = "prison shuttle control console"
 	icon = 'icons/obj/computer.dmi'
 	icon_state = "shuttle"
 	req_access = list(access_security)
 	circuit = "/obj/item/weapon/circuitboard/prison_shuttle"
 	var/temp = null
+	var/hacked = 0
 	var/allowedtocall = 0
 	var/prison_break = 0
 
+	attack_ai(var/mob/user as mob)
+		return src.attack_hand(user)
 
 	attackby(I as obj, user as mob)
-		if(!..())
-			src.attack_hand(user)
+		if(istype(I, /obj/item/weapon/screwdriver))
+			playsound(src.loc, 'sound/items/Screwdriver.ogg', 50, 1)
+			if(do_after(user, 20))
+				var/obj/structure/computerframe/A = new /obj/structure/computerframe( src.loc )
+				var/obj/item/weapon/circuitboard/prison_shuttle/M = new /obj/item/weapon/circuitboard/prison_shuttle( A )
+				for (var/obj/C in src)
+					C.loc = src.loc
+				A.circuit = M
+				A.anchored = 1
 
-	attack_ai(var/mob/user as mob)
-		src.add_hiddenprint(user)
-		return src.attack_hand(user)
+				if (src.stat & BROKEN)
+					user << "\blue The broken glass falls out."
+					new /obj/item/weapon/shard( src.loc )
+					A.state = 3
+					A.icon_state = "3"
+				else
+					user << "\blue You disconnect the monitor."
+					A.state = 4
+					A.icon_state = "4"
 
+				del(src)
+		else if(istype(I,/obj/item/weapon/card/emag) && (!hacked))
+			hacked = 1
+			user << "\blue You disable the lock."
+		else
+			return src.attack_hand(user)
 
-	attack_paw(var/mob/user as mob)
-		return src.attack_hand(user)
-
-	emag(mob/user as mob)
-		emagged = 1
-		user << "\blue You disable the lock."
-		return
 
 	attack_hand(var/mob/user as mob)
-		if(!src.allowed(user) && (!emagged))
+		if(!src.allowed(user) && (!hacked))
 			user << "\red Access Denied."
 			return
 		if(prison_break)
@@ -210,5 +225,12 @@ var/prison_shuttle_timeleft = 0
 						AM.Move(D)
 					if(istype(T, /turf/simulated))
 						del(T)
+
+				for(var/mob/living/carbon/bug in end_location) // If someone somehow is still in the shuttle's docking area...
+					bug.gib()
+
+				for(var/mob/living/simple_animal/pest in end_location) // And for the other kind of bug...
+					pest.gib()
+
 				start_location.move_contents_to(end_location)
 		return

@@ -19,7 +19,7 @@ var/global/sent_strike_team = 0
 
 	var/input = null
 	while(!input)
-		input = copytext(sanitize(input(src, "Please specify which mission the death commando squad shall undertake.", "Specify Mission", "")),1,MAX_MESSAGE_LEN)
+		input = sanitize(copytext(input(src, "Please specify which mission the death commando squad shall undertake.", "Specify Mission", ""),1,MAX_MESSAGE_LEN))
 		if(!input)
 			if(alert("Error, no mission set. Do you want to exit the setup process?",,"Yes","No")=="Yes")
 				return
@@ -30,7 +30,7 @@ var/global/sent_strike_team = 0
 
 	sent_strike_team = 1
 
-	if (emergency_shuttle.direction == 1 && emergency_shuttle.online == 1)
+	if (emergency_shuttle.can_recall())
 		emergency_shuttle.recall()
 
 	var/commando_number = commandos_possible //for selecting a leader
@@ -124,41 +124,41 @@ var/global/sent_strike_team = 0
 /mob/living/carbon/human/proc/equip_death_commando(leader_selected = 0)
 
 	var/obj/item/device/radio/R = new /obj/item/device/radio/headset(src)
-	R.set_frequency(1341)
-	equip_to_slot_or_del(R, slot_ears)
+	R.set_frequency(DTH_FREQ)
+	equip_to_slot_or_del(R, slot_l_ear)
 	if (leader_selected == 0)
 		equip_to_slot_or_del(new /obj/item/clothing/under/color/green(src), slot_w_uniform)
 	else
 		equip_to_slot_or_del(new /obj/item/clothing/under/rank/centcom_officer(src), slot_w_uniform)
-	equip_to_slot_or_del(new /obj/item/clothing/shoes/magboots/deathsquad(src), slot_shoes)
-	equip_to_slot_or_del(new /obj/item/clothing/suit/space/rig/deathsquad(src), slot_wear_suit)
-	equip_to_slot_or_del(new /obj/item/clothing/gloves/combat(src), slot_gloves)
-	equip_to_slot_or_del(new /obj/item/clothing/head/helmet/space/rig/deathsquad(src), slot_head)
+	equip_to_slot_or_del(new /obj/item/clothing/shoes/swat(src), slot_shoes)
+	equip_to_slot_or_del(new /obj/item/clothing/suit/armor/swat(src), slot_wear_suit)
+	equip_to_slot_or_del(new /obj/item/clothing/gloves/swat(src), slot_gloves)
+	equip_to_slot_or_del(new /obj/item/clothing/head/helmet/space/deathsquad(src), slot_head)
 	equip_to_slot_or_del(new /obj/item/clothing/mask/gas/swat(src), slot_wear_mask)
 	equip_to_slot_or_del(new /obj/item/clothing/glasses/thermal(src), slot_glasses)
 
 	equip_to_slot_or_del(new /obj/item/weapon/storage/backpack/security(src), slot_back)
 	equip_to_slot_or_del(new /obj/item/weapon/storage/box(src), slot_in_backpack)
 
-	equip_to_slot_or_del(new /obj/item/ammo_storage/box/a357(src), slot_in_backpack)
+	equip_to_slot_or_del(new /obj/item/ammo_magazine/a357(src), slot_in_backpack)
 	equip_to_slot_or_del(new /obj/item/weapon/storage/firstaid/regular(src), slot_in_backpack)
-	equip_to_slot_or_del(new /obj/item/weapon/pinpointer(src), slot_in_backpack)
-	equip_to_slot_or_del(new /obj/item/weapon/shield/energy(src), slot_in_backpack)
+	equip_to_slot_or_del(new /obj/item/weapon/storage/box/flashbangs(src), slot_in_backpack)
+	equip_to_slot_or_del(new /obj/item/device/flashlight(src), slot_in_backpack)
 	if (!leader_selected)
 		equip_to_slot_or_del(new /obj/item/weapon/plastique(src), slot_in_backpack)
 	else
+		equip_to_slot_or_del(new /obj/item/weapon/pinpointer(src), slot_in_backpack)
 		equip_to_slot_or_del(new /obj/item/weapon/disk/nuclear(src), slot_in_backpack)
 
 	equip_to_slot_or_del(new /obj/item/weapon/melee/energy/sword(src), slot_l_store)
-	equip_to_slot_or_del(new /obj/item/weapon/tank/emergency_oxygen/double(src), slot_s_store)
-	equip_to_slot_or_del(new /obj/item/weapon/gun/projectile/mateba(src), slot_belt)
+	equip_to_slot_or_del(new /obj/item/weapon/grenade/flashbang(src), slot_r_store)
+	equip_to_slot_or_del(new /obj/item/weapon/tank/emergency_oxygen(src), slot_s_store)
+	equip_to_slot_or_del(new /obj/item/weapon/gun/projectile/revolver/mateba(src), slot_belt)
 
 	equip_to_slot_or_del(new /obj/item/weapon/gun/energy/pulse_rifle(src), slot_r_hand)
 
 
-	var/obj/item/weapon/implant/loyalty/L = new/obj/item/weapon/implant/loyalty(src)//Here you go Deuryn
-	L.imp_in = src
-	L.implanted = 1
+	implant_loyalty(src)
 
 
 

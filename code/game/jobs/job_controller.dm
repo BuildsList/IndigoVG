@@ -59,7 +59,6 @@ var/global/datum/controller/occupations/job_master
 				Debug("Player: [player] is now Rank: [rank], JCP:[job.current_positions], JPL:[position_limit]")
 				player.mind.assigned_role = rank
 				player.mind.role_alt_title = GetPlayerAltTitle(player, rank)
-
 				unassigned -= player
 				job.current_positions++
 				return 1
@@ -68,7 +67,7 @@ var/global/datum/controller/occupations/job_master
 
 	proc/FreeRole(var/rank)	//making additional slot on the fly
 		var/datum/job/job = GetJob(rank)
-		if(job && job.current_positions >= job.total_positions)
+		if(job && job.current_positions >= job.total_positions && job.total_positions != -1)
 			job.total_positions++
 			return 1
 		return 0
@@ -83,7 +82,7 @@ var/global/datum/controller/occupations/job_master
 			if(!job.player_old_enough(player.client))
 				Debug("FOC player not old enough, Player: [player]")
 				continue
-			if(flag && !player.client.desires_role(job.title))
+			if(flag && (!player.client.prefs.be_special & flag))
 				Debug("FOC flag failed, Player: [player], Flag: [flag], ")
 				continue
 			if(player.client.prefs.GetJobDepartment(job, level) & job.flag)
@@ -135,7 +134,40 @@ var/global/datum/controller/occupations/job_master
 				if(!job)	continue
 				var/list/candidates = FindOccupationCandidates(job, level)
 				if(!candidates.len)	continue
-				var/mob/new_player/candidate = pick(candidates)
+
+				// Build a weighted list, weight by age.
+				var/list/weightedCandidates = list()
+
+				// Different head positions have different good ages.
+				var/good_age_minimal = 25
+				var/good_age_maximal = 60
+				if(command_position == "Captain")
+					good_age_minimal = 30
+					good_age_maximal = 70 // Old geezer captains ftw
+
+				for(var/mob/V in candidates)
+					// Log-out during round-start? What a bad boy, no head position for you!
+					if(!V.client) continue
+					var/age = V.client.prefs.age
+					switch(age)
+						if(good_age_minimal - 10 to good_age_minimal)
+							weightedCandidates[V] = 3 // Still a bit young.
+						if(good_age_minimal to good_age_minimal + 10)
+							weightedCandidates[V] = 6 // Better.
+						if(good_age_minimal + 10 to good_age_maximal - 10)
+							weightedCandidates[V] = 10 // Great.
+						if(good_age_maximal - 10 to good_age_maximal)
+							weightedCandidates[V] = 6 // Still good.
+						if(good_age_maximal to good_age_maximal + 10)
+							weightedCandidates[V] = 6 // Bit old, don't you think?
+						if(good_age_maximal to good_age_maximal + 50)
+							weightedCandidates[V] = 3 // Geezer.
+						else
+							// If there's ABSOLUTELY NOBODY ELSE
+							if(candidates.len == 1) weightedCandidates[V] = 1
+
+
+				var/mob/new_player/candidate = pickweight(weightedCandidates)
 				if(AssignRole(candidate, command_position))
 					return 1
 		return 0
@@ -163,7 +195,7 @@ var/global/datum/controller/occupations/job_master
 			for(var/level = 1 to 3)
 				var/list/candidates = list()
 				if(ticker.mode.name == "AI malfunction")//Make sure they want to malf if its malf
-					candidates = FindOccupationCandidates(job, level, ROLE_MALF)
+					candidates = FindOccupationCandidates(job, level, BE_MALF)
 				else
 					candidates = FindOccupationCandidates(job, level)
 				if(candidates.len)
@@ -202,7 +234,7 @@ var/global/datum/controller/occupations/job_master
 		for(var/mob/new_player/player in player_list)
 			if(player.ready && player.mind && !player.mind.assigned_role)
 				unassigned += player
-				if(player.client.prefs.randomslot) player.client.prefs.random_character_sqlite(player, player.ckey)
+
 		Debug("DO, Len: [unassigned.len]")
 		if(unassigned.len == 0)	return 0
 
@@ -309,15 +341,69 @@ var/global/datum/controller/occupations/job_master
 		for(var/mob/new_player/player in unassigned)
 			if(player.client.prefs.alternate_option == RETURN_TO_LOBBY)
 				player.ready = 0
+				player.new_player_panel_proc()
 				unassigned -= player
 		return 1
 
 
 	proc/EquipRank(var/mob/living/carbon/human/H, var/rank, var/joined_late = 0)
-		if(!H)	return 0
+
+		if(!H)	return null
+
 		var/datum/job/job = GetJob(rank)
+		var/list/spawn_in_storage = list()
+
 		if(job)
+
+			//Equip custom gear loadout.
+			var/list/custom_equip_slots = list() //If more than one item takes the same slot, all after the first one spawn in storage.
+			var/list/custom_equip_leftovers = list()
+			if(H.client.prefs.gear && H.client.prefs.gear.len && job.title != "Cyborg" && job.title != "AI")
+
+				for(var/thing in H.client.prefs.gear)
+					var/datum/gear/G = gear_datums[thing]
+					if(G)
+						var/permitted
+						if(G.allowed_roles)
+							for(var/job_name in G.allowed_roles)
+								if(job.title == job_name)
+									permitted = 1
+						else
+							permitted = 1
+
+						if(G.whitelisted && !is_alien_whitelisted(H, G.whitelisted))
+							permitted = 0
+
+						if(!permitted)
+							H << "\red Your current job or whitelist status does not permit you to spawn with [thing]!"
+							continue
+
+						if(G.slot && !(G.slot in custom_equip_slots))
+							// This is a miserable way to fix the loadout overwrite bug, but the alternative requires
+							// adding an arg to a bunch of different procs. Will look into it after this merge. ~ Z
+							if(G.slot == slot_wear_mask || G.slot == slot_wear_suit || G.slot == slot_head)
+								custom_equip_leftovers += thing
+							else if(H.equip_to_slot_or_del(new G.path(H), G.slot))
+								H << "\blue Equipping you with [thing]!"
+								custom_equip_slots.Add(G.slot)
+							else
+								custom_equip_leftovers.Add(thing)
+						else
+							spawn_in_storage += thing
+			//Equip job items.
 			job.equip(H)
+			job.apply_fingerprints(H)
+			//If some custom items could not be equipped before, try again now.
+			for(var/thing in custom_equip_leftovers)
+				var/datum/gear/G = gear_datums[thing]
+				if(G.slot in custom_equip_slots)
+					spawn_in_storage += thing
+				else
+					if(H.equip_to_slot_or_del(new G.path(H), G.slot))
+						H << "\blue Equipping you with [thing]!"
+						custom_equip_slots.Add(G.slot)
+					else
+						spawn_in_storage += thing
 		else
 			H << "Your job is [rank] and the game just can't handle it! Please report this bug to an administrator."
 
@@ -334,38 +420,40 @@ var/global/datum/controller/occupations/job_master
 				S = locate("start*[rank]") // use old stype
 			if(istype(S, /obj/effect/landmark/start) && istype(S.loc, /turf))
 				H.loc = S.loc
+			// Moving wheelchair if they have one
+			if(H.buckled && istype(H.buckled, /obj/structure/bed/chair/wheelchair))
+				H.buckled.loc = H.loc
+				H.buckled.set_dir(H.dir)
 
 		//give them an account in the station database
-		if(centcomm_account_db)
-			var/balance = round(rand(1,5))*100 // Between $100 and $500
-			var/datum/money_account/M = create_account(H.real_name, balance , null)
-			if(H.mind)
-				var/remembered_info = ""
-				remembered_info += "<b>Your account number is:</b> #[M.account_number]<br>"
-				remembered_info += "<b>Your account pin is:</b> [M.remote_access_pin]<br>"
-				remembered_info += "<b>Your account funds are:</b> $[M.money]<br>"
+		var/datum/money_account/M = create_account(H.real_name, rand(50,500)*10, null)
+		if(H.mind)
+			var/remembered_info = ""
+			remembered_info += "<b>Your account number is:</b> #[M.account_number]<br>"
+			remembered_info += "<b>Your account pin is:</b> [M.remote_access_pin]<br>"
+			remembered_info += "<b>Your account funds are:</b> $[M.money]<br>"
 
-				if(M.transaction_log.len)
-					var/datum/transaction/T = M.transaction_log[1]
-					remembered_info += "<b>Your account was created:</b> [T.time], [T.date] at [T.source_terminal]<br>"
-				H.mind.store_memory(remembered_info)
+			if(M.transaction_log.len)
+				var/datum/transaction/T = M.transaction_log[1]
+				remembered_info += "<b>Your account was created:</b> [T.time], [T.date] at [T.source_terminal]<br>"
+			H.mind.store_memory(remembered_info)
 
-				H.mind.initial_account = M
+			H.mind.initial_account = M
 
-			// If they're head, give them the account info for their department
-			if(H.mind && job.head_position)
-				var/remembered_info = ""
-				var/datum/money_account/department_account = department_accounts[job.department]
+		// If they're head, give them the account info for their department
+		if(H.mind && job.head_position)
+			var/remembered_info = ""
+			var/datum/money_account/department_account = department_accounts[job.department]
 
-				if(department_account)
-					remembered_info += "<b>Your department's account number is:</b> #[department_account.account_number]<br>"
-					remembered_info += "<b>Your department's account pin is:</b> [department_account.remote_access_pin]<br>"
-					remembered_info += "<b>Your department's account funds are:</b> $[department_account.money]<br>"
+			if(department_account)
+				remembered_info += "<b>Your department's account number is:</b> #[department_account.account_number]<br>"
+				remembered_info += "<b>Your department's account pin is:</b> [department_account.remote_access_pin]<br>"
+				remembered_info += "<b>Your department's account funds are:</b> $[department_account.money]<br>"
 
-				H.mind.store_memory(remembered_info)
+			H.mind.store_memory(remembered_info)
 
-			spawn(0)
-				H << "\blue<b>Your account number is: [M.account_number], your account pin is: [M.remote_access_pin]</b>"
+		spawn(0)
+			H << "\blue<b>Your account number is: [M.account_number], your account pin is: [M.remote_access_pin]</b>"
 
 		var/alt_title = null
 		if(H.mind)
@@ -374,53 +462,88 @@ var/global/datum/controller/occupations/job_master
 
 			switch(rank)
 				if("Cyborg")
-					H.Robotize()
-					return 1
-				if("Mobile MMI")
-					H.MoMMIfy(1)
-					return 1
-				if("AI","Clown")	//don't need bag preference stuff!
-					if(rank=="Clown") // Clowns DO need to breathe, though - N3X
-						H.species.equip(H)
+					return H.Robotize()
+				if("AI")
+					return H
+				if("Clown")	//don't need bag preference stuff!
 				else
 					switch(H.backbag) //BS12 EDIT
 						if(1)
-							if(H.species.survival_gear)
-								H.equip_to_slot_or_del(new H.species.survival_gear(H), slot_r_hand)
+							H.equip_to_slot_or_del(new /obj/item/weapon/storage/box/survival(H), slot_r_hand)
 						if(2)
 							var/obj/item/weapon/storage/backpack/BPK = new/obj/item/weapon/storage/backpack(H)
-							if(H.species.survival_gear)
-								new H.species.survival_gear(BPK)
+							new /obj/item/weapon/storage/box/survival(BPK)
 							H.equip_to_slot_or_del(BPK, slot_back,1)
 						if(3)
 							var/obj/item/weapon/storage/backpack/BPK = new/obj/item/weapon/storage/backpack/satchel_norm(H)
-							if(H.species.survival_gear)
-								new H.species.survival_gear(BPK)
+							new /obj/item/weapon/storage/box/survival(BPK)
 							H.equip_to_slot_or_del(BPK, slot_back,1)
 						if(4)
 							var/obj/item/weapon/storage/backpack/BPK = new/obj/item/weapon/storage/backpack/satchel(H)
-							if(H.species.survival_gear)
-								new H.species.survival_gear(BPK)
+							new /obj/item/weapon/storage/box/survival(BPK)
 							H.equip_to_slot_or_del(BPK, slot_back,1)
-					H.species.equip(H)
 
+					//Deferred item spawning.
+					if(spawn_in_storage && spawn_in_storage.len)
+						var/obj/item/weapon/storage/B
+						for(var/obj/item/weapon/storage/S in H.contents)
+							B = S
+							break
+
+						if(!isnull(B))
+							for(var/thing in spawn_in_storage)
+								H << "\blue Placing [thing] in your [B]!"
+								var/datum/gear/G = gear_datums[thing]
+								new G.path(B)
+						else
+							H << "\red Failed to locate a storage object on your mob, either you spawned with no arms and no backpack or this is a bug."
+
+		//TODO: Generalize this by-species
+		if(H.species)
+			if(H.species.name == "Tajara" || H.species.name == "Unathi")
+				H.equip_to_slot_or_del(new /obj/item/clothing/shoes/sandal(H),slot_shoes,1)
+			else if(H.species.name == "Vox")
+				H.equip_to_slot_or_del(new /obj/item/clothing/mask/breath(H), slot_wear_mask)
+				if(!H.r_hand)
+					H.equip_to_slot_or_del(new /obj/item/weapon/tank/nitrogen(H), slot_r_hand)
+					H.internal = H.r_hand
+				else if (!H.l_hand)
+					H.equip_to_slot_or_del(new /obj/item/weapon/tank/nitrogen(H), slot_l_hand)
+					H.internal = H.l_hand
+				H.internals.icon_state = "internal1"
+
+		if(istype(H)) //give humans wheelchairs, if they need them.
+			var/datum/organ/external/l_foot = H.get_organ("l_foot")
+			var/datum/organ/external/r_foot = H.get_organ("r_foot")
+			if((!l_foot || l_foot.status & ORGAN_DESTROYED) && (!r_foot || r_foot.status & ORGAN_DESTROYED))
+				var/obj/structure/bed/chair/wheelchair/W = new /obj/structure/bed/chair/wheelchair(H.loc)
+				H.buckled = W
+				H.update_canmove()
+				W.set_dir(H.dir)
+				W.buckled_mob = H
+				W.add_fingerprint(H)
 
 		H << "<B>You are the [alt_title ? alt_title : rank].</B>"
 		H << "<b>As the [alt_title ? alt_title : rank] you answer directly to [job.supervisors]. Special circumstances may change this.</b>"
+		H << "<b>To speak on your department's radio channel use :h. For the use of other channels, examine your headset.</b>"
 		if(job.req_admin_notify)
 			H << "<b>You are playing a job that is important for Game Progression. If you have to disconnect, please notify the admins via adminhelp.</b>"
 
 		spawnId(H, rank, alt_title)
-		H.equip_or_collect(new /obj/item/device/radio/headset(H), slot_ears)
+		H.equip_to_slot_or_del(new /obj/item/device/radio/headset(H), slot_l_ear)
 
 		//Gives glasses to the vision impaired
-		if(H.disabilities & DISABILITY_FLAG_NEARSIGHTED)
+		if(H.disabilities & NEARSIGHTED)
 			var/equipped = H.equip_to_slot_or_del(new /obj/item/clothing/glasses/regular(H), slot_glasses)
 			if(equipped != 1)
 				var/obj/item/clothing/glasses/G = H.glasses
 				G.prescription = 1
 //		H.update_icons()
-		return 1
+
+		BITSET(H.hud_updateflag, ID_HUD)
+		BITSET(H.hud_updateflag, IMPLOYAL_HUD)
+		BITSET(H.hud_updateflag, SPECIALROLE_HUD)
+		return H
 
 
 	proc/spawnId(var/mob/living/carbon/human/H, rank, title)
@@ -434,7 +557,7 @@ var/global/datum/controller/occupations/job_master
 				break
 
 		if(job)
-			if(job.title == "Cyborg" || job.title=="Mobile MMI")
+			if(job.title == "Cyborg")
 				return
 			else
 				C = new job.idtype(H)
@@ -451,17 +574,17 @@ var/global/datum/controller/occupations/job_master
 			if(H.mind && H.mind.initial_account)
 				C.associated_account_number = H.mind.initial_account.account_number
 
-			H.equip_or_collect(C, slot_wear_id)
+			H.equip_to_slot_or_del(C, slot_wear_id)
 
-		H.equip_or_collect(new job.pdatype(H), job.pdaslot)
+		H.equip_to_slot_or_del(new /obj/item/device/pda(H), slot_belt)
 		if(locate(/obj/item/device/pda,H))
 			var/obj/item/device/pda/pda = locate(/obj/item/device/pda,H)
 			pda.owner = H.real_name
 			pda.ownjob = C.assignment
+			pda.ownrank = C.rank
 			pda.name = "PDA-[H.real_name] ([pda.ownjob])"
 
 		return 1
-
 
 
 	proc/LoadJobs(jobsfile) //ran during round setup, reads info from jobs.txt -- Urist
@@ -493,7 +616,7 @@ var/global/datum/controller/occupations/job_master
 				if(!J)	continue
 				J.total_positions = text2num(value)
 				J.spawn_positions = text2num(value)
-				if(name == "AI" || name == "Cyborg" || name == "Mobile MMI")//I dont like this here but it will do for now
+				if(name == "AI" || name == "Cyborg")//I dont like this here but it will do for now
 					J.total_positions = 0
 
 		return 1

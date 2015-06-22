@@ -5,34 +5,34 @@
 		switch(place)
 			if("head")
 				if (!( target.wear_mask ))
-					qdel(src)
+					del(src)
 					return
 			if("l_hand")
 				if (!( target.l_hand ))
-					qdel(src)
+					del(src)
 					return
 			if("r_hand")
 				if (!( target.r_hand ))
-					qdel(src)
+					del(src)
 					return
 			if("back")
 				if (!( target.back ))
-					qdel(src)
+					del(src)
 					return
 			if("handcuff")
 				if (!( target.handcuffed ))
-					qdel(src)
+					del(src)
 					return
 			if("internal")
 				if ((!( (istype(target.wear_mask, /obj/item/clothing/mask) && istype(target.back, /obj/item/weapon/tank) && !( target.internal )) ) && !( target.internal )))
-					qdel(src)
+					del(src)
 					return
 
 	if (item)
 		if(isrobot(source) && place != "handcuff")
 			var/list/L = list( "syringe", "pill", "drink", "dnainjector", "fuel")
 			if(!(L.Find(place)))
-				qdel(src)
+				del(src)
 				return
 		for(var/mob/O in viewers(target, null))
 			if ((O.client && !( O.blinded )))
@@ -58,6 +58,8 @@
 					message = text("\red <B>[] is trying to remove []'s internals</B>", source, target)
 				else
 					message = text("\red <B>[] is trying to set on []'s internals.</B>", source, target)
+			if("pockets")
+				message = text("\red <B>[] is trying to empty []'s pockets</B>",source, target)
 			else
 		for(var/mob/M in viewers(target, null))
 			M.show_message(message, 1)
@@ -187,7 +189,7 @@
 		else
 	source.regenerate_icons()
 	target.regenerate_icons()
-	qdel(src)
+	del(src)
 	return
 
 

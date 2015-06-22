@@ -4,24 +4,24 @@
 	icon_state = "pai"
 	item_state = "electronic"
 	w_class = 2.0
-	flags = FPRINT
 	slot_flags = SLOT_BELT
 	origin_tech = "programming=2"
 	var/obj/item/device/radio/radio
 	var/looking_for_personality = 0
 	var/mob/living/silicon/pai/pai
 
+/*/obj/item/device/paicard/relaymove(var/mob/user, var/direction)
+	if(src.loc && istype(src.loc.loc, /obj/item/rig_module))
+		var/obj/item/rig_module/module = src.loc.loc
+		if(!module.holder || !direction)
+			return
+		module.holder.forced_move(direction)*/
+
 /obj/item/device/paicard/New()
 	..()
 	overlays += "pai-off"
 
-#ifdef DEBUG_ROLESELECT
-/obj/item/device/paicard/test/New()
-	src.looking_for_personality = 1
-	paiController.findPAI(src, usr)
-#endif
-
-/obj/item/device/paicard/Destroy()
+/obj/item/device/paicard/Del()
 	//Will stop people throwing friend pAIs into the singularity so they can respawn
 	if(!isnull(pai))
 		pai.death(0)
@@ -31,48 +31,194 @@
 	if (!in_range(src, user))
 		return
 	user.set_machine(src)
-	var/dat = "<TT><B>Personal AI Device</B><BR>"
-	if(pai && (!pai.master_dna || !pai.master))
-		dat += "<a href='byond://?src=\ref[src];setdna=1'>Imprint Master DNA</a><br>"
+	var/dat = {"
+		<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">
+		<html>
+			<head>
+				<style>
+					body {
+					    margin-top:5px;
+					    font-family:Verdana;
+					    color:white;
+					    font-size:13px;
+					    background-image:url('uiBackground.png');
+					    background-repeat:repeat-x;
+					    background-color:#272727;
+						background-position:center top;
+					}
+					table {
+					    font-size:13px;
+					    margin-left:-2px;
+					}
+					table.request {
+					    border-collapse:collapse;
+					}
+					table.desc {
+					    border-collapse:collapse;
+					    font-size:13px;
+					    border: 1px solid #161616;
+					    width:100%;
+					}
+					table.download {
+					    border-collapse:collapse;
+					    font-size:13px;
+					    border: 1px solid #161616;
+					    width:100%;
+					}
+					tr.d0 td, tr.d0 th {
+					    background-color: #506070;
+					    color: white;
+					}
+					tr.d1 td, tr.d1 th {
+					    background-color: #708090;
+					    color: white;
+					}
+					tr.d2 td {
+					    background-color: #00FF00;
+					    color: white;
+					    text-align:center;
+					}
+					td.button {
+					    border: 1px solid #161616;
+					    background-color: #40628a;
+					}
+					td.button {
+					    border: 1px solid #161616;
+					    background-color: #40628a;
+					    text-align: center;
+					}
+					td.button_red {
+					    border: 1px solid #161616;
+					    background-color: #B04040;
+					    text-align: center;
+					}
+					td.download {
+					    border: 1px solid #161616;
+					    background-color: #40628a;
+					    text-align: center;
+					}
+					th {
+					    text-align:left;
+					    width:125px;
+					}
+					td.request {
+					    width:140px;
+					    vertical-align:top;
+					}
+					td.radio {
+					    width:90px;
+					    vertical-align:top;
+					}
+					td.request {
+					    vertical-align:top;
+					}
+					a {
+					    color:#4477E0;
+					}
+					a.button {
+					    color:white;
+					    text-decoration: none;
+					}
+					h2 {
+					    font-size:15px;
+					}
+				</style>
+			</head>
+			<body>
+	"}
+
 	if(pai)
-
-		// AUTOFIXED BY fix_string_idiocy.py
-		// C:\Users\Rob\Documents\Projects\vgstation13\code\game\objects\items\devices\paicard.dm:32: dat += "Installed Personality: [pai.name]<br>"
-		dat += {"Installed Personality: [pai.name]<br>
-			Prime directive: <br>[pai.pai_law0]<br>
-			Additional directives: <br>[pai.pai_laws]<br>
-			<a href='byond://?src=\ref[src];setlaws=1'>Configure Directives</a><br>
+		dat += {"
+			<b><font size='3px'>Personal AI Device</font></b><br><br>
+			<table class="request">
+				<tr>
+					<td class="request">Installed Personality:</td>
+					<td>[pai.name]</td>
+				</tr>
+				<tr>
+					<td class="request">Prime directive:</td>
+					<td>[pai.pai_law0]</td>
+				</tr>
+				<tr>
+					<td class="request">Additional directives:</td>
+					<td>[pai.pai_laws]</td>
+				</tr>
+			</table>
 			<br>
-			<h3>Device Settings</h3><br>"}
-		// END AUTOFIX
+		"}
+		dat += {"
+			<table>
+				<td class="button">
+					<a href='byond://?src=\ref[src];setlaws=1' class='button'>Configure Directives</a>
+				</td>
+			</table>
+		"}
+		if(pai && (!pai.master_dna || !pai.master))
+			dat += {"
+				<table>
+					<td class="button">
+						<a href='byond://?src=\ref[src];setdna=1' class='button'>Imprint Master DNA</a>
+					</td>
+				</table>
+			"}
+		dat += "<br>"
 		if(radio)
-			dat += "<b>Radio Uplink</b><br>"
-			dat += "Transmit: <A href='byond://?src=\ref[src];wires=[WIRE_TRANSMIT]'>[(radio.wires.IsIndexCut(WIRE_TRANSMIT)) ? "Disabled" : "Enabled"]</A><br>"
-			dat += "Receive: <A href='byond://?src=\ref[src];wires=[WIRE_RECEIVE]'>[(radio.wires.IsIndexCut(WIRE_RECEIVE)) ? "Disabled" : "Enabled"]</A><br>"
-		else
+			dat += "<b>Radio Uplink</b>"
+			dat += {"
+				<table class="request">
+					<tr>
+						<td class="radio">Transmit:</td>
+						<td><a href='byond://?src=\ref[src];wires=4'>[radio.broadcasting ? "<font color=#55FF55>En" : "<font color=#FF5555>Dis" ]abled</font></a>
 
-			// AUTOFIXED BY fix_string_idiocy.py
-			// C:\Users\Rob\Documents\Projects\vgstation13\code\game\objects\items\devices\paicard.dm:44: dat += "<b>Radio Uplink</b><br>"
-			dat += {"<b>Radio Uplink</b><br>
-				<font color=red><i>Radio firmware not loaded. Please install a pAI personality to load firmware.</i></font><br>"}
-		// END AUTOFIX
-		dat += "<A href='byond://?src=\ref[src];wipe=1'>\[Wipe current pAI personality\]</a><br>"
+						</td>
+					</tr>
+					<tr>
+						<td class="radio">Receive:</td>
+						<td><a href='byond://?src=\ref[src];wires=2'>[radio.listening ? "<font color=#55FF55>En" : "<font color=#FF5555>Dis" ]abled</font></a>
+
+						</td>
+					</tr>
+				</table>
+				<br>
+			"}
+		else
+			dat += "<b>Radio Uplink</b><br>"
+			dat += "<font color=red><i>Radio firmware not loaded. Please install a pAI personality to load firmware.</i></font><br>"
+		dat += {"
+			<table>
+				<td class="button_red"><a href='byond://?src=\ref[src];wipe=1' class='button'>Wipe current pAI personality</a>
+
+				</td>
+			</table>
+		"}
 	else
 		if(looking_for_personality)
+			dat += {"
+				<b><font size='3px'>pAI Request Module</font></b><br><br>
+				<p>Requesting AI personalities from central database... If there are no entries, or if a suitable entry is not listed, check again later as more personalities may be added.</p>
+				<img src='loading.gif' /> Searching for personalities<br><br>
 
-			// AUTOFIXED BY fix_string_idiocy.py
-			// C:\Users\Rob\Documents\Projects\vgstation13\code\game\objects\items\devices\paicard.dm:49: dat += "Searching for a personality..."
-			dat += {"Searching for a personality...
-				<A href='byond://?src=\ref[src];request=1'>\[View available personalities\]</a><br>"}
-			// END AUTOFIX
+				<table>
+					<tr>
+						<td class="button">
+							<a href='byond://?src=\ref[src];request=1' class="button">Refresh available personalities</a>
+						</td>
+					</tr>
+				</table><br>
+			"}
 		else
-
-			// AUTOFIXED BY fix_string_idiocy.py
-			// C:\Users\Rob\Documents\Projects\vgstation13\code\game\objects\items\devices\paicard.dm:52: dat += "No personality is installed.<br>"
-			dat += {"No personality is installed.<br>
-				<A href='byond://?src=\ref[src];request=1'>\[Request personal AI personality\]</a><br>
-				Each time this button is pressed, a request will be sent out to any available personalities. Check back often and alot time for personalities to respond. This process could take anywhere from 15 seconds to several minutes, depending on the available personalities' timeliness."}
-			// END AUTOFIX
+			dat += {"
+				<b><font size='3px'>pAI Request Module</font></b><br><br>
+			    <p>No personality is installed.</p>
+				<table>
+					<tr>
+						<td class="button"><a href='byond://?src=\ref[src];request=1' class="button">Request personality</a>
+						</td>
+					</tr>
+				</table>
+				<br>
+				<p>Each time this button is pressed, a request will be sent out to any available personalities. Check back often give plenty of time for personalities to respond. This process could take anywhere from 15 seconds to several minutes, depending on the available personalities' timeliness.</p>
+			"}
 	user << browse(dat, "window=paicard")
 	onclose(user, "paicard")
 	return
@@ -108,14 +254,17 @@
 			removePersonality()
 	if(href_list["wires"])
 		var/t1 = text2num(href_list["wires"])
-		if(radio)
-			radio.wires.CutWireIndex(t1)
+		switch(t1)
+			if(4)
+				radio.ToggleBroadcast()
+			if(2)
+				radio.ToggleReception()
 	if(href_list["setlaws"])
-		var/newlaws = copytext(sanitize(input("Enter any additional directives you would like your pAI personality to follow. Note that these directives will not override the personality's allegiance to its imprinted master. Conflicting directives will be ignored.", "pAI Directive Configuration", pai.pai_laws) as message),1,MAX_MESSAGE_LEN)
+		var/newlaws = sanitize(copytext(input("Enter any additional directives you would like your pAI personality to follow. Note that these directives will not override the personality's allegiance to its imprinted master. Conflicting directives will be ignored.", "pAI Directive Configuration", pai.pai_laws) as message,1,MAX_MESSAGE_LEN))
 		if(newlaws)
 			pai.pai_laws = newlaws
 			pai << "Your supplemental directives have been updated. Your new directives are:"
-			pai << "Prime Directive : <br>[pai.pai_law0]"
+			pai << "Prime Directive: <br>[pai.pai_law0]"
 			pai << "Supplemental Directives: <br>[pai.pai_laws]"
 	attack_self(usr)
 
@@ -129,12 +278,14 @@
 
 /obj/item/device/paicard/proc/removePersonality()
 	src.pai = null
-	src.overlays.len = 0
+	src.overlays.Cut()
 	src.overlays += "pai-off"
 
+/obj/item/device/paicard
+	var/current_emotion = 1
 /obj/item/device/paicard/proc/setEmotion(var/emotion)
 	if(pai)
-		src.overlays.len = 0
+		src.overlays.Cut()
 		switch(emotion)
 			if(1) src.overlays += "pai-happy"
 			if(2) src.overlays += "pai-cat"
@@ -145,24 +296,25 @@
 			if(7) src.overlays += "pai-sad"
 			if(8) src.overlays += "pai-angry"
 			if(9) src.overlays += "pai-what"
-			if(10) src.overlays += "pai-longface"
-			if(11) src.overlays += "pai-sick"
-			if(12) src.overlays += "pai-high"
-			if(13) src.overlays += "pai-love"
-			if(14) src.overlays += "pai-electric"
-			if(15) src.overlays += "pai-pissed"
-			if(16) src.overlays += "pai-nose"
-			if(17) src.overlays += "pai-kawaii"
-			if(18) src.overlays += "pai-cry"
+		current_emotion = emotion
 
 /obj/item/device/paicard/proc/alertUpdate()
-	var/turf/T = get_turf(src.loc)
+	var/turf/T = get_turf_or_move(src.loc)
 	for (var/mob/M in viewers(T))
 		M.show_message("\blue [src] flashes a message across its screen, \"Additional personalities available for download.\"", 3, "\blue [src] bleeps electronically.", 2)
-		playsound(loc, 'sound/machines/paistartup.ogg', 50, 1)
 
 /obj/item/device/paicard/emp_act(severity)
 	for(var/mob/M in src)
 		M.emp_act(severity)
-	..()
 
+/obj/item/device/paicard/ex_act(severity)
+	if(pai)
+		pai.ex_act(severity)
+	else
+		del(src)
+
+/obj/item/device/paicard/see_emote(mob/living/M, text)
+	if(pai && pai.client)
+		var/rendered = "<span class='message'>[text]</span>"
+		pai.show_message(rendered, 2)
+	..()

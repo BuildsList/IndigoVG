@@ -1,11 +1,11 @@
 /obj/item/latexballon
-	name = "Latex glove"
-	desc = "" //todo
+	name = "latex glove"
+	desc = "A latex glove, usually used as a balloon."
 	icon_state = "latexballon"
 	item_state = "lgloves"
 	force = 0
 	throwforce = 0
-	w_class = 1.0
+	w_class = 2.0
 	throw_speed = 1
 	throw_range = 15
 	var/state
@@ -30,19 +30,19 @@
 	burst()
 	switch(severity)
 		if (1)
-			qdel(src)
+			del(src)
 		if (2)
 			if (prob(50))
-				qdel(src)
+				del(src)
 
 /obj/item/latexballon/bullet_act()
 	burst()
 
-/obj/item/latexballon/fire_act(datum/gas_mixture/air, exposed_temperature, exposed_volume)
-	if(exposed_temperature > T0C+100)
+/obj/item/latexballon/fire_act(datum/gas_mixture/air, temperature, volume)
+	if(temperature > T0C+100)
 		burst()
 	return
 
 /obj/item/latexballon/attackby(obj/item/W as obj, mob/user as mob)
-	if (is_sharp(W))
+	if (can_puncture(W))
 		burst()

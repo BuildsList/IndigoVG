@@ -67,9 +67,9 @@
 	return
 
 
-/obj/item/weapon/fuel/examine()
-	..()
-	user << "<span class='info'>A magnetic storage ring, it contains [fuel]kg of [content ? content : "nothing"].</span>"
+/obj/item/weapon/fuel/examine(mob/user)
+	if(get_dist(src, user) <= 1)
+		user << "A magnetic storage ring, it contains [fuel]kg of [content ? content : "nothing"]."
 
 /obj/item/weapon/fuel/proc/injest(mob/M as mob)
 	switch(content)

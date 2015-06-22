@@ -14,39 +14,28 @@
 	//should have format of list("emagged" = 1,"name" = "Wizard's Justicebot"), for example
 	var/delay = 1//Go Go Gadget Inheritance
 
-	var/cast_sound = 'sound/items/welder.ogg'
-
 /obj/effect/proc_holder/spell/aoe_turf/conjure/cast(list/targets)
 
 	for(var/turf/T in targets)
 		if(T.density && !summon_ignore_density)
 			targets -= T
-
-	playsound(get_turf(src), cast_sound, 50, 1)
+	playsound(src.loc, 'sound/items/welder.ogg', 50, 1)
 
 	if(do_after(usr,delay))
 		for(var/i=0,i<summon_amt,i++)
 			if(!targets.len)
 				break
 			var/summoned_object_type = pick(summon_type)
-			var/turf/spawn_place = pick(targets)
+			var/spawn_place = pick(targets)
 			if(summon_ignore_prev_spawn_points)
 				targets -= spawn_place
-			if(istype(spawn_place,/turf/simulated/shuttle))
-				usr << "<span class='warning'>You can't build things on shuttles!</span>"
-				break
-			var/atom/movable/overlay/animation = new /atom/movable/overlay(spawn_place)
-			animation.name = "conjure"
-			animation.density = 0
-			animation.anchored = 1
-			animation.icon = 'icons/effects/effects.dmi'
-			animation.layer = 3
 			if(ispath(summoned_object_type,/turf))
-				animation.master = summoned_object_type
-				spawn_place.ChangeTurf(summoned_object_type)
+				var/turf/O = spawn_place
+				var/turf/N = summoned_object_type
+				O.ChangeTurf(N)
 			else
 				var/atom/summoned_object = new summoned_object_type(spawn_place)
-				animation.master = summoned_object
+
 				for(var/varName in newVars)
 					if(varName in summoned_object.vars)
 						summoned_object.vars[varName] = newVars[varName]
@@ -55,7 +44,6 @@
 					spawn(summon_lifespan)
 						if(summoned_object)
 							del(summoned_object)
-			conjure_animation(animation, spawn_place)
 	else
 		switch(charge_type)
 			if("recharge")
@@ -63,16 +51,14 @@
 			if("charges")
 				charge_counter++//Ditto, just for different spell types
 
-	return
 
-/obj/effect/proc_holder/spell/aoe_turf/conjure/proc/conjure_animation(var/atom/movable/overlay/animation, var/turf/target)
-	qdel(animation)
+	return
 
 /obj/effect/proc_holder/spell/aoe_turf/conjure/summonEdSwarm //test purposes
 	name = "Dispense Wizard Justice"
 	desc = "This spell dispenses wizard justice."
 
-	summon_type = list(/obj/machinery/bot/ed209)
+	summon_type = list(/obj/item/weapon/secbot_assembly/ed209_assembly)
 	summon_amt = 10
 	range = 3
 	newVars = list("emagged" = 1,"name" = "Wizard's Justicebot")
@@ -99,16 +85,3 @@
 			for(var/mob/M in T)
 				Proj.on_hit(M,M.bullet_act(Proj, def_zone))
 		return
-
-//Code for the Juggernaut construct's forcefield, that seemed like a good place to put it.
-/obj/effect/forcefield/cult
-	desc = "That eerie looking obstacle seems to have been pulled from another dimension through sheer force"
-	name = "Juggerwall"
-	icon = 'icons/effects/effects.dmi'
-	icon_state = "m_shield_cult"
-	l_color = "#B40000"
-	luminosity = 2
-
-
-/obj/effect/forcefield/cult/cultify()
-	return

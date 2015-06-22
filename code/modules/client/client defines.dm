@@ -3,6 +3,7 @@
 		//ADMIN THINGS//
 		////////////////
 	var/datum/admins/holder = null
+	var/datum/admins/deadmin_holder = null
 	var/buildmode		= 0
 
 	var/last_message	= "" //Contains the last message sent by this client - used to protect against copy-paste spamming.
@@ -12,13 +13,13 @@
 		//OTHER//
 		/////////
 	var/datum/preferences/prefs = null
+	var/move_delay		= 1
 	var/moving			= null
 	var/adminobs		= null
 	var/area			= null
 	var/time_died_as_mouse = null //when the client last died as a mouse
-	var/work_chosen		= null // ¬ыбранный высший приоритет профессии для отображения в Lobby
 
-
+	var/adminhelped = 0
 
 		///////////////
 		//SOUND STUFF//
@@ -33,6 +34,10 @@
 	// comment out the line below when debugging locally to enable the options & messages menu
 	//control_freak = 1
 
+	var/received_irc_pm = -99999
+	var/irc_admin			//IRC admin that spoke with them last.
+	var/mute_irc = 0
+
 
 		////////////////////////////////////
 		//things that require the database//
@@ -41,13 +46,4 @@
 	var/related_accounts_ip = "Requires database"	//So admins know why it isn't working - Used to determine what other accounts previously logged in from this ip
 	var/related_accounts_cid = "Requires database"	//So admins know why it isn't working - Used to determine what other accounts previously logged in from this computer id
 
-	//This breaks a lot of shit.  - N3X
-	preload_rsc = 1 // This is 0 so we can set it to an URL once the player logs in and have them download the resources from a different server.
-
-	// Used by html_interface module.
-	var/hi_last_pos
-
-	/////////////////////////////////////////////
-	// /vg/: MEDIAAAAAAAA
-	// Set on login.
-	var/datum/media_manager/media = null
+	preload_rsc = 0 // This is 0 so we can set it to an URL once the player logs in and have them download the resources from a different server.

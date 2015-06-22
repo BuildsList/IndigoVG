@@ -9,76 +9,86 @@ Pipes -> Pipelines
 Pipelines + Other Objects -> Pipe network
 
 */
-
-#define PIPE_TYPE_STANDARD 0
-#define PIPE_TYPE_HE       1
-
 /obj/machinery/atmospherics
 	anchored = 1
 	idle_power_usage = 0
 	active_power_usage = 0
 	power_channel = ENVIRON
 	var/nodealert = 0
+	var/power_rating //the maximum amount of power the machine can use to do work, affects how powerful the machine is, in Watts
 
-	// Which directions can we connect with?
+	layer = 2.4 //under wires with their 2.44
+
+	var/connect_types = CONNECT_TYPE_REGULAR
+	var/icon_connect_type = "" //"-supply" or "-scrubbers"
+
 	var/initialize_directions = 0
+	var/pipe_color
 
-	var/obj/machinery/atmospherics/mirror //not actually an object reference, but a type. The reflection of the current pipe
+	var/global/datum/pipe_icon_manager/icon_manager
 
-	// Pipe painter color setting.
-	var/_color
+/obj/machinery/atmospherics/New()
+	if(!icon_manager)
+		icon_manager = new()
 
-	var/list/available_colors
+	if(!pipe_color)
+		pipe_color = color
+	color = null
 
-	// Investigation logs
-	var/log
+	if(!pipe_color_check(pipe_color))
+		pipe_color = null
+	..()
 
-// Find a connecting /obj/machinery/atmospherics in specified direction.
-/obj/machinery/atmospherics/proc/findConnecting(var/direction)
-	for(var/obj/machinery/atmospherics/target in get_step(src,direction))
-		if(target.initialize_directions & get_dir(target,src))
-			return target
+/obj/machinery/atmospherics/attackby(atom/A, mob/user as mob)
+	if(istype(A, /obj/item/device/pipe_painter))
+		return
+	..()
 
-// Ditto, but for heat-exchanging pipes.
-/obj/machinery/atmospherics/proc/findConnectingHE(var/direction)
-	for(var/obj/machinery/atmospherics/pipe/simple/heat_exchanging/target in get_step(src,direction))
-		if(target.initialize_directions_he & get_dir(target,src))
-			return target
+/obj/machinery/atmospherics/proc/add_underlay(var/turf/T, var/obj/machinery/atmospherics/node, var/direction, var/icon_connect_type)
+	if(node)
+		if(T.intact && node.level == 1 && istype(node, /obj/machinery/atmospherics/pipe))
+			//underlays += icon_manager.get_atmos_icon("underlay_down", direction, color_cache_name(node))
+			underlays += icon_manager.get_atmos_icon("underlay", direction, color_cache_name(node), "down" + icon_connect_type)
+		else
+			//underlays += icon_manager.get_atmos_icon("underlay_intact", direction, color_cache_name(node))
+			underlays += icon_manager.get_atmos_icon("underlay", direction, color_cache_name(node), "intact" + icon_connect_type)
+	else
+		//underlays += icon_manager.get_atmos_icon("underlay_exposed", direction, pipe_color)
+		underlays += icon_manager.get_atmos_icon("underlay", direction, color_cache_name(node), "exposed" + icon_connect_type)
 
-/obj/machinery/atmospherics/proc/getNodeType(var/node_id)
-	return PIPE_TYPE_STANDARD
+/obj/machinery/atmospherics/proc/update_underlays()
+	if(check_icon_cache())
+		return 1
+	else
+		return 0
 
-// A bit more flexible.
-// @param connect_dirs integer Directions at which we should check for connections.
-/obj/machinery/atmospherics/proc/findAllConnections(var/connect_dirs)
-	var/node_id=0
-	for(var/direction in cardinal)
-		if(connect_dirs & direction)
-			node_id++
-			var/obj/machinery/atmospherics/found
-			var/node_type=getNodeType(node_id)
-			switch(node_type)
-				if(PIPE_TYPE_STANDARD)
-					found = findConnecting(direction)
-				if(PIPE_TYPE_HE)
-					found = findConnectingHE(direction)
-				else
-					error("UNKNOWN RESPONSE FROM [src.type]/getNodeType([node_id]): [node_type]")
-					return
-			if(!found) continue
-			var/node_var="node[node_id]"
-			if(!(node_var in vars))
-				testing("[node_var] not in vars.")
-				return
-			if(!vars[node_var])
-				vars[node_var] = found
+obj/machinery/atmospherics/proc/check_connect_types(obj/machinery/atmospherics/atmos1, obj/machinery/atmospherics/atmos2)
+	return (atmos1.connect_types & atmos2.connect_types)
 
-// Wait..  What the fuck?
-// I asked /tg/ and bay and they have no idea why this is here, so into the trash it goes. - N3X
-// Re-enabled for debugging.
+/obj/machinery/atmospherics/proc/check_connect_types_construction(obj/machinery/atmospherics/atmos1, obj/item/pipe/pipe2)
+	return (atmos1.connect_types & pipe2.connect_types)
+
+/obj/machinery/atmospherics/proc/check_icon_cache(var/safety = 0)
+	if(!istype(icon_manager))
+		if(!safety) //to prevent infinite loops
+			icon_manager = new()
+			check_icon_cache(1)
+		return 0
+
+	return 1
+
+/obj/machinery/atmospherics/proc/color_cache_name(var/obj/machinery/atmospherics/node)
+	//Don't use this for standard pipes
+	if(!istype(node))
+		return null
+
+	return node.pipe_color
+
 /obj/machinery/atmospherics/process()
+	last_flow_rate = 0
+	last_power_draw = 0
+	
 	build_network()
-	//testing("[src] called parent process to build_network()")
 
 /obj/machinery/atmospherics/proc/network_expand(datum/pipe_network/new_network, obj/machinery/atmospherics/pipe/reference)
 	// Check to see if should be added to network. Add self if so and adjust variables appropriately.
@@ -88,6 +98,7 @@ Pipelines + Other Objects -> Pipe network
 
 /obj/machinery/atmospherics/proc/build_network()
 	// Called to build a network from this node
+
 	return null
 
 /obj/machinery/atmospherics/proc/return_network(obj/machinery/atmospherics/reference)
@@ -109,7 +120,3 @@ Pipelines + Other Objects -> Pipe network
 
 /obj/machinery/atmospherics/update_icon()
 	return null
-
-/obj/machinery/atmospherics/proc/buildFrom(var/mob/usr,var/obj/item/pipe/pipe)
-	error("[src] does not define a buildFrom!")
-	return FALSE

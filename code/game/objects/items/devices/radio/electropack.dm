@@ -4,31 +4,18 @@
 	icon_state = "electropack0"
 	item_state = "electropack"
 	frequency = 1449
-	flags = FPRINT
-	siemens_coefficient = 1
+	flags = CONDUCT
 	slot_flags = SLOT_BACK
 	w_class = 5.0
-	g_amt = 2500
-	m_amt = 10000
-	w_type = RECYK_ELECTRONIC
+
+	matter = list("metal" = 10000,"glass" = 2500)
+
 	var/code = 2
 
 /obj/item/device/radio/electropack/attack_hand(mob/user as mob)
 	if(src == user.back)
 		user << "<span class='notice'>You need help taking this off!</span>"
 		return
-	..()
-
-/obj/item/device/radio/electropack/Destroy()
-	if(istype(src.loc, /obj/item/assembly/shock_kit))
-		var/obj/item/assembly/shock_kit/S = src.loc
-		if(S.part1 == src)
-			S.part1 = null
-		else if(S.part2 == src)
-			S.part2 = null
-		master = null
-	if(radio_controller)
-		radio_controller.remove_object(src, frequency)
 	..()
 
 /obj/item/device/radio/electropack/attackby(obj/item/weapon/W as obj, mob/user as mob)
@@ -112,7 +99,7 @@
 
 		M.Weaken(10)
 
-	if(master && isWireCut(1))
+	if(master && wires & 1)
 		master.receive_signal()
 	return
 

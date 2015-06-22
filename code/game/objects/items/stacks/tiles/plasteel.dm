@@ -3,26 +3,28 @@
 	singular_name = "floor tile"
 	desc = "Those could work as a pretty decent throwing weapon"
 	icon_state = "tile"
-	w_class = 3.0
 	force = 6.0
-	m_amt = 937.5
-	w_type = RECYK_METAL
-	melt_temperature = MELTPOINT_STEEL
+	matter = list("metal" = 937.5)
 	throwforce = 15.0
 	throw_speed = 5
 	throw_range = 20
-	flags = FPRINT
-	siemens_coefficient = 1
-	max_amount = 60
+	flags = CONDUCT
 
-/obj/item/stack/tile/plasteel/New()
-	. = ..()
-	pixel_x = rand(1, 14)
-	pixel_y = rand(1, 14)
+/obj/item/stack/tile/plasteel/New(var/loc, var/amount=null)
+	..()
+	src.pixel_x = rand(1, 14)
+	src.pixel_y = rand(1, 14)
+	return
 
-/obj/item/stack/tile/plasteel/recycle(var/datum/materials/rec)
-	rec.addAmount("iron",amount/4)
-	return 1
+/obj/item/stack/tile/plasteel/cyborg
+	name = "floor tile synthesizer"
+	desc = "A device that makes floor tiles."
+	gender = NEUTER
+	matter = null
+	uses_charge = 1
+	charge_costs = list(250)
+	stacktype = /obj/item/stack/tile/plasteel
+	build_type = /obj/item/stack/tile/plasteel
 
 /*
 /obj/item/stack/tile/plasteel/attack_self(mob/user as mob)
@@ -42,33 +44,10 @@
 */
 
 /obj/item/stack/tile/plasteel/proc/build(turf/S as turf)
-	if (istype(S,/turf/space) || istype(S,/turf/unsimulated))
+	if (istype(S,/turf/space))
 		S.ChangeTurf(/turf/simulated/floor/plating/airless)
 	else
 		S.ChangeTurf(/turf/simulated/floor/plating)
 //	var/turf/simulated/floor/W = S.ReplaceWithFloor()
 //	W.make_plating()
 	return
-
-/obj/item/stack/tile/plasteel/attackby(obj/item/W as obj, mob/user as mob)
-	..()
-	if(iswelder(W))
-		var/obj/item/weapon/weldingtool/WT = W
-		if(amount < 4)
-			user << "<span class='warning'>You need at least four tiles to do this.</span>"
-			return
-
-		if(WT.remove_fuel(0,user))
-			var/obj/item/stack/sheet/metal/new_item = new(usr.loc)
-			new_item.add_to_stacks(usr)
-			user.visible_message("<span class='warning'>[src] is shaped into metal by [user.name] with the weldingtool.</span>", \
-			"<span class='warning'>You shape the [src] into metal with the weldingtool.</span>", \
-			"<span class='warning'>You hear welding.</span>")
-			var/obj/item/stack/tile/plasteel/R = src
-			src = null
-			var/replace = (user.get_inactive_hand()==R)
-			R.use(4)
-			if (!R && replace)
-				user.put_in_hands(new_item)
-		return
-	..()

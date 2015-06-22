@@ -1,156 +1,214 @@
 /obj/machinery/computer/centrifuge
-	name = "Isolation Centrifuge"
+	name = "isolation centrifuge"
 	desc = "Used to separate things with different weight. Spin 'em round, round, right round."
 	icon = 'icons/obj/virology.dmi'
 	icon_state = "centrifuge"
-	circuit = "/obj/item/weapon/circuitboard/centrifuge"
 	var/curing
 	var/isolating
 
 	var/obj/item/weapon/reagent_containers/glass/beaker/vial/sample = null
 	var/datum/disease2/disease/virus2 = null
 
-	l_color = "#000000"
+/obj/machinery/computer/centrifuge/attackby(var/obj/O as obj, var/mob/user as mob)
+	if(istype(O, /obj/item/weapon/screwdriver))
+		return ..(O,user)
 
-/obj/machinery/computer/centrifuge/attackby(var/obj/item/weapon/reagent_containers/glass/beaker/vial/I, var/mob/user as mob)
-	if(!istype(I))
-		return ..()
+	if(istype(O,/obj/item/weapon/reagent_containers/glass/beaker/vial))
+		if(sample)
+			user << "\The [src] is already loaded."
+			return
 
-	var/mob/living/carbon/C = user
-	if(!sample)
-		sample = I
-		C.drop_item()
-		I.loc = src
+		sample = O
+		user.drop_item()
+		O.loc = src
 
-	attack_hand(user)
+		user.visible_message("[user] adds \a [O] to \the [src]!", "You add \a [O] to \the [src]!")
+		nanomanager.update_uis(src)
+
+	src.attack_hand(user)
 
 /obj/machinery/computer/centrifuge/update_icon()
 	..()
 	if(! (stat & (BROKEN|NOPOWER)) && (isolating || curing))
-		l_color = "#7BF9FF"
 		icon_state = "centrifuge_moving"
 
 /obj/machinery/computer/centrifuge/attack_hand(var/mob/user as mob)
-	if(..())
-		return
-	user.set_machine(src)
-	var/dat= ""
-	if(curing)
-		dat = "Antibody isolation in progress"
-	else if(isolating)
-		dat = "Pathogen isolation in progress"
-	else
-		dat += "<BR>Blood sample:"
-		dat += "<br><table cellpadding='10'><tr><td>"
-		if(sample)
-			var/datum/reagent/blood/B = locate(/datum/reagent/blood) in sample.reagents.reagent_list
-			if(B)
-				dat += "Sample inserted."
-				if (B.data["antibodies"])
-					dat += "</td></tr><tr><td>"
-					dat += "Antibodies: [antigens2string(B.data["antibodies"])]"
-					dat += "</td><td><A href='?src=\ref[src];action=antibody'>Isolate</a>"
+	if(..()) return
+	ui_interact(user)
 
+/obj/machinery/computer/centrifuge/ui_interact(mob/user, ui_key = "main", var/datum/nanoui/ui = null, var/force_open = 1)
+	user.set_machine(src)
+
+	var/data[0]
+	data["antibodies"] = null
+	data["pathogens"] = null
+	data["is_antibody_sample"] = null
+
+	if (curing)
+		data["busy"] = "Isolating antibodies..."
+	else if (isolating)
+		data["busy"] = "Isolating pathogens..."
+	else
+		data["sample_inserted"] = !!sample
+
+		if (sample)
+			var/datum/reagent/blood/B = locate(/datum/reagent/blood) in sample.reagents.reagent_list
+			if (B)
+				data["antibodies"] = antigens2string(B.data["antibodies"], none=null)
+
+				var/list/pathogens[0]
 				var/list/virus = B.data["virus2"]
 				for (var/ID in virus)
 					var/datum/disease2/disease/V = virus[ID]
-					dat += " </td></tr><tr><td> pathogen [V.name()]"
-					dat += "</td><td><A href='?src=\ref[src];action=isolate;isolate=[V.uniqueID]'>Isolate</a>"
+					pathogens.Add(list(list("name" = V.name(), "spread_type" = V.spreadtype, "reference" = "\ref[V]")))
+
+				if (pathogens.len > 0)
+					data["pathogens"] = pathogens
+
 			else
-				dat += "Please check container contents."
-			dat += "</td></tr><tr><td><A href='?src=\ref[src];action=sample'>Eject container</a>"
-		else
-			dat = "Please insert a container."
-		dat += "</td></tr></table><br>"
+				var/datum/reagent/antibodies/A = locate(/datum/reagent/antibodies) in sample.reagents.reagent_list
+				if(A)
+					data["antibodies"] = antigens2string(A.data["antibodies"], none=null)
+				data["is_antibody_sample"] = 1
 
-		dat += "<hr>"
-
-	user << browse(dat, "window=computer;size=400x500")
-	onclose(user, "computer")
-	return
+	ui = nanomanager.try_update_ui(user, src, ui_key, ui, data, force_open)
+	if (!ui)
+		ui = new(user, src, ui_key, "isolation_centrifuge.tmpl", src.name, 400, 500)
+		ui.set_initial_data(data)
+		ui.open()
 
 /obj/machinery/computer/centrifuge/process()
 	..()
+	if (stat & (NOPOWER|BROKEN)) return
 
-	if(stat & (NOPOWER|BROKEN))
-		return
-	use_power(500)
-
-	if(curing)
+	if (curing)
 		curing -= 1
-		if(curing == 0)
-			if(sample)
-				cure()
-			update_icon()
-	if(isolating)
+		if (curing == 0)
+			cure()
+
+	if (isolating)
 		isolating -= 1
 		if(isolating == 0)
-			if(sample)
-				isolate()
-			update_icon()
-
-	src.updateUsrDialog()
-	return
+			isolate()
 
 /obj/machinery/computer/centrifuge/Topic(href, href_list)
-	if(..())
-		return
+	if (..()) return 1
 
-	if(usr) usr.set_machine(src)
+	var/mob/user = usr
+	var/datum/nanoui/ui = nanomanager.get_open_ui(user, src, "main")
+
+	src.add_fingerprint(user)
+
+	if (href_list["close"])
+		user.unset_machine()
+		ui.close()
+		return 0
+
+	if (href_list["print"])
+		print(user)
+		return 1
+
+	if(href_list["isolate"])
+		var/datum/reagent/blood/B = locate(/datum/reagent/blood) in sample.reagents.reagent_list
+		if (B)
+			var/datum/disease2/disease/virus = locate(href_list["isolate"])
+			virus2 = virus.getcopy()
+			isolating = 40
+			update_icon()
+		return 1
 
 	switch(href_list["action"])
-		if("antibody")
+		if ("antibody")
 			var/delay = 20
 			var/datum/reagent/blood/B = locate(/datum/reagent/blood) in sample.reagents.reagent_list
 			if (!B)
-				say("No antibody carrier detected.")
+				state("\The [src] buzzes, \"No antibody carrier detected.\"", "blue")
+				return 1
 
-			else if(sample.reagents.has_reagent("toxins"))
-				say("Pathogen purging speed above nominal.")
-				delay = delay/2
+			var/has_toxins = locate(/datum/reagent/toxin) in sample.reagents.reagent_list
+			var/has_radium = sample.reagents.has_reagent("radium")
+			if (has_toxins || has_radium)
+				state("\The [src] beeps, \"Pathogen purging speed above nominal.\"", "blue")
+				if (has_toxins)
+					delay = delay/2
+				if (has_radium)
+					delay = delay/2
 
-			else
-				curing = delay
-				playsound(get_turf(src), 'sound/machines/juicer.ogg', 50, 1)
-				update_icon()
-
-		if("isolate")
-			var/datum/reagent/blood/B = locate(/datum/reagent/blood) in sample.reagents.reagent_list
-			if (B)
-				var/list/virus = virus_copylist(B.data["virus2"])
-				var/choice = href_list["isolate"]
-				if (choice in virus)
-					virus2 = virus[choice]
-					isolating = 40
-					update_icon()
-				else
-					say("No such pathogen detected.")
+			curing = round(delay)
+			playsound(src.loc, 'sound/machines/juicer.ogg', 50, 1)
+			update_icon()
+			return 1
 
 		if("sample")
 			if(sample)
 				sample.loc = src.loc
 				sample = null
+			return 1
 
-	src.add_fingerprint(usr)
-	src.updateUsrDialog()
-	attack_hand(usr)
-	return
-
+	return 0
 
 /obj/machinery/computer/centrifuge/proc/cure()
+	if (!sample) return
 	var/datum/reagent/blood/B = locate(/datum/reagent/blood) in sample.reagents.reagent_list
-	if (!B)
-		return
+	if (!B) return
 
 	var/list/data = list("antibodies" = B.data["antibodies"])
 	var/amt= sample.reagents.get_reagent_amount("blood")
-	sample.reagents.remove_reagent("blood",amt)
-	sample.reagents.add_reagent("antibodies",amt,data)
+	sample.reagents.remove_reagent("blood", amt)
+	sample.reagents.add_reagent("antibodies", amt, data)
 
-	alert_noise("ping")
+	nanomanager.update_uis(src)
+	update_icon()
+	ping("\The [src] pings, \"Antibody isolated.\"")
 
 /obj/machinery/computer/centrifuge/proc/isolate()
-	var/obj/item/weapon/virusdish/dish = new/obj/item/weapon/virusdish(src.loc)
+	if (!sample) return
+	var/obj/item/weapon/virusdish/dish = new/obj/item/weapon/virusdish(loc)
 	dish.virus2 = virus2
+	virus2 = null
 
-	alert_noise("ping")
+	nanomanager.update_uis(src)
+	update_icon()
+	ping("\The [src] pings, \"Pathogen isolated.\"")
+
+/obj/machinery/computer/centrifuge/proc/print(var/mob/user)
+	var/obj/item/weapon/paper/P = new /obj/item/weapon/paper(loc)
+	P.name = "paper - Pathology Report"
+	P.info = {"
+		[virology_letterhead("Pathology Report")]
+		<large><u>Sample:</u></large> [sample.name]<br>
+"}
+
+	if (user)
+		P.info += "<u>Generated By:</u> [user.name]<br>"
+
+	P.info += "<hr>"
+
+	var/datum/reagent/blood/B = locate(/datum/reagent/blood) in sample.reagents.reagent_list
+	if (B)
+		P.info += "<u>Antibodies:</u> "
+		P.info += antigens2string(B.data["antibodies"])
+		P.info += "<br>"
+
+		var/list/virus = B.data["virus2"]
+		P.info += "<u>Pathogens:</u> <br>"
+		if (virus.len > 0)
+			for (var/ID in virus)
+				var/datum/disease2/disease/V = virus[ID]
+				P.info += "[V.name()]<br>"
+		else
+			P.info += "None<br>"
+
+	else
+		var/datum/reagent/antibodies/A = locate(/datum/reagent/antibodies) in sample.reagents.reagent_list
+		if (A)
+			P.info += "The following antibodies have been isolated from the blood sample: "
+			P.info += antigens2string(A.data["antibodies"])
+			P.info += "<br>"
+
+	P.info += {"
+	<hr>
+	<u>Additional Notes:</u> <field>
+"}
+
+	state("The nearby computer prints out a pathology report.")

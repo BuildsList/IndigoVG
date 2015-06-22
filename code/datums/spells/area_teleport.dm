@@ -47,7 +47,7 @@
 			return
 
 		if(target && target.buckled)
-			target.buckled.unbuckle()
+			target.buckled.unbuckle_mob()
 
 		var/list/tempL = L
 		var/attempt = null
@@ -78,7 +78,5 @@
 					playsound(usr.loc, pick('sound/misc/null.ogg','sound/misc/null.ogg'), 100, 1)
 			if("whisper")
 				usr.whisper("[invocation] [uppertext(chosenarea.name)]")
-
-	playsound(get_turf(src), 'sound/effects/teleport.ogg', 50, 0)
 
 	return

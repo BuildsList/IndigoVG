@@ -3,136 +3,138 @@ var/global/list/rad_collectors = list()
 
 /obj/machinery/power/rad_collector
 	name = "Radiation Collector Array"
-	desc = "A device which uses Hawking Radiation and plasma to produce power."
+	desc = "A device which uses Hawking Radiation and phoron to produce power."
 	icon = 'icons/obj/singularity.dmi'
 	icon_state = "ca"
 	anchored = 0
 	density = 1
 	req_access = list(access_engine_equip)
-	var/obj/item/weapon/tank/plasma/P = null
+//	use_power = 0
+	var/obj/item/weapon/tank/phoron/P = null
 	var/last_power = 0
+	var/last_power_new = 0
 	var/active = 0
 	var/locked = 0
-	var/drain_ratio = 3.5 //3.5 times faster than original.
-	ghost_read=0
-	ghost_write=0
-
-	machine_flags = WRENCHMOVE | FIXED2WORK
+	var/drainratio = 1
 
 /obj/machinery/power/rad_collector/New()
 	..()
 	rad_collectors += src
 
-/obj/machinery/power/rad_collector/Destroy()
+/obj/machinery/power/rad_collector/Del()
 	rad_collectors -= src
-	eject()
 	..()
 
 /obj/machinery/power/rad_collector/process()
-	if (P)
-		if (P.air_contents.toxins <= 0)
-			investigation_log(I_SINGULO,"<font color='red'>out of fuel</font>.")
-			P.air_contents.toxins = 0
+	//so that we don't zero out the meter if the SM is processed first.
+	last_power = last_power_new
+	last_power_new = 0
+
+
+	if(P)
+		if(P.air_contents.gas["phoron"] == 0)
+			investigate_log("<font color='red'>out of fuel</font>.","singulo")
 			eject()
-		else if(!active)
-			return
 		else
-			P.air_contents.toxins -= (0.001 * drain_ratio)
-			P.air_contents.update_values()
+			P.air_contents.adjust_gas("phoron", -0.001*drainratio)
+	return
+
 
 /obj/machinery/power/rad_collector/attack_hand(mob/user as mob)
 	if(anchored)
 		if(!src.locked)
 			toggle_power()
-			user.visible_message("<span class='notice'>[user] turns the [src] [active? "on":"off"].</span>", \
-			"<span class='notice'>You turn the [src] [active? "on":"off"].</span>")
-			investigation_log(I_SINGULO,"turned [active?"<font color='green'>on</font>":"<font color='red'>off</font>"] by [user.key]. [P?"Fuel: [round(P.air_contents.toxins/0.29)]%":"<font color='red'>It is empty</font>"].")
+			user.visible_message("[user.name] turns the [src.name] [active? "on":"off"].", \
+			"You turn the [src.name] [active? "on":"off"].")
+			investigate_log("turned [active?"<font color='green'>on</font>":"<font color='red'>off</font>"] by [user.key]. [P?"Fuel: [round(P.air_contents.gas["phoron"]/0.29)]%":"<font color='red'>It is empty</font>"].","singulo")
 			return
 		else
-			user << "<span class='warning'>The controls are locked!</span>"
+			user << "\red The controls are locked!"
 			return
 ..()
 
+
 /obj/machinery/power/rad_collector/attackby(obj/item/W, mob/user)
-	if(..())
-		return 1
-	else if(istype(W, /obj/item/device/analyzer) || istype(W, /obj/item/device/multitool))
-		if(active)
-			user << "<span class='notice'>\The [W] registers that [format_watts(last_power)] is being produced every cycle.</span>"
-		else
-			user << "<span class='notice'>\The [W] registers that the unit is currently not producing power.</span>"
-		return 1
-	else if(istype(W, /obj/item/weapon/tank/plasma))
+	if(istype(W, /obj/item/weapon/tank/phoron))
 		if(!src.anchored)
-			user << "<span class='warning'>\The [src] needs to be secured to the floor first.</span>"
+			user << "\red The [src] needs to be secured to the floor first."
 			return 1
 		if(src.P)
-			user << "<span class='warning'>A plasma tank is already loaded.</span>"
+			user << "\red There's already a phoron tank loaded."
 			return 1
 		user.drop_item()
 		src.P = W
 		W.loc = src
 		update_icons()
+		return 1
 	else if(istype(W, /obj/item/weapon/crowbar))
 		if(P && !src.locked)
 			eject()
 			return 1
-	else if(istype(W, /obj/item/weapon/card/id)||istype(W, /obj/item/device/pda))
-		if (src.allowed(user))
-			if(active)
-				src.locked = !src.locked
-				user << "<span class='notice'>The controls are now [src.locked ? "locked." : "unlocked."]</span>"
-			else
-				src.locked = 0 //just in case it somehow gets locked
-				user << "<span class='warning'>The controls can only be locked when \the [src] is active</span>"
-		else
-			user << "<span class='warning'>Access denied!</span>"
+	else if(istype(W, /obj/item/weapon/wrench))
+		if(P)
+			user << "\blue Remove the phoron tank first."
 			return 1
-	else
-		return
-
-/obj/machinery/power/rad_collector/wrenchAnchor(mob/user)
-	if(P)
-		user << "<span class='notice'>Remove the plasma tank first.</span>"
-		return
-	if(..() == 1)
+		playsound(src.loc, 'sound/items/Ratchet.ogg', 75, 1)
+		src.anchored = !src.anchored
+		user.visible_message("[user.name] [anchored? "secures":"unsecures"] the [src.name].", \
+			"You [anchored? "secure":"undo"] the external bolts.", \
+			"You hear a ratchet")
 		if(anchored)
 			connect_to_network()
 		else
 			disconnect_from_network()
 		return 1
-	return -1
+	else if(istype(W, /obj/item/weapon/card/id)||istype(W, /obj/item/device/pda))
+		if (src.allowed(user))
+			if(active)
+				src.locked = !src.locked
+				user << "The controls are now [src.locked ? "locked." : "unlocked."]"
+			else
+				src.locked = 0 //just in case it somehow gets locked
+				user << "\red The controls can only be locked when the [src] is active"
+		else
+			user << "\red Access denied!"
+		return 1
+	return ..()
+
+/obj/machinery/power/rad_collector/examine(mob/user)
+	if (..(user, 3))
+		user << "The meter indicates that \the [src] is collecting [last_power] W."
+		return 1
 
 /obj/machinery/power/rad_collector/ex_act(severity)
 	switch(severity)
 		if(2, 3)
 			eject()
-
 	return ..()
+
 
 /obj/machinery/power/rad_collector/proc/eject()
 	locked = 0
-
-	if (isnull(P))
+	var/obj/item/weapon/tank/phoron/Z = src.P
+	if (!Z)
 		return
-
-	P.loc = get_turf(src)
-	P.layer = initial(P.layer)
-	P = null
-
-	if (active)
+	Z.loc = get_turf(src)
+	Z.layer = initial(Z.layer)
+	src.P = null
+	if(active)
 		toggle_power()
 	else
 		update_icons()
 
-/obj/machinery/power/rad_collector/proc/receive_pulse(const/pulse_strength)
-	if (P && active)
-		var/power_produced = P.air_contents.toxins * pulse_strength * 3.5 // original was 20, nerfed to 2 now 3.5 should get you about 500kw
+/obj/machinery/power/rad_collector/proc/receive_pulse(var/pulse_strength)
+	if(P && active)
+		var/power_produced = 0
+		power_produced = P.air_contents.gas["phoron"]*pulse_strength*20
 		add_avail(power_produced)
-		last_power = power_produced
+		last_power_new = power_produced
+		return
+	return
+
 
 /obj/machinery/power/rad_collector/proc/update_icons()
-	overlays.len = 0
+	overlays.Cut()
 	if(P)
 		overlays += image('icons/obj/singularity.dmi', "ptank")
 	if(stat & (NOPOWER|BROKEN))
@@ -140,15 +142,15 @@ var/global/list/rad_collectors = list()
 	if(active)
 		overlays += image('icons/obj/singularity.dmi', "on")
 
+
 /obj/machinery/power/rad_collector/proc/toggle_power()
 	active = !active
-
-	if (active)
+	if(active)
 		icon_state = "ca_on"
 		flick("ca_active", src)
 	else
 		icon_state = "ca"
 		flick("ca_deactive", src)
-
 	update_icons()
+	return
 

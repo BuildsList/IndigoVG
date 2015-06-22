@@ -1,12 +1,12 @@
 /datum/event/disease_outbreak
-	announceWhen	= 90
+	announceWhen	= 15
 
 
 /datum/event/disease_outbreak/announce()
-	biohazard_alert()
+	command_announcement.Announce("Confirmed outbreak of level 7 viral biohazard aboard [station_name()]. All personnel must contain the outbreak.", "Biohazard Alert", new_sound = 'sound/AI/outbreak7.ogg')
 
 /datum/event/disease_outbreak/setup()
-	announceWhen = rand(30, 150) //Thanks Doc
+	announceWhen = rand(15, 30)
 
 /datum/event/disease_outbreak/start()
 	var/virus_type = pick(/datum/disease/dnaspread, /datum/disease/advance/flu, /datum/disease/advance/cold, /datum/disease/brainrot, /datum/disease/magnitis)
@@ -16,7 +16,7 @@
 		var/turf/T = get_turf(H)
 		if(!T)
 			continue
-		if(T.z != 1)
+		if(isNotStationLevel(T.z))
 			continue
 		for(var/datum/disease/D in H.viruses)
 			foundAlready = 1

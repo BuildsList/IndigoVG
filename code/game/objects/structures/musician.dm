@@ -18,7 +18,6 @@
 	var/repeat = 0
 
 /obj/structure/device/piano/New()
-	..()
 	if(prob(50))
 		name = "space minimoog"
 		desc = "This is a minimoog, like a space piano, but more spacey!"
@@ -205,7 +204,7 @@
 		if("Cn9")	soundfile = 'sound/piano/Cn9.ogg'
 		else		return
 
-//	hearers(15, src) << sound(soundfile)
+	//hearers(15, src) << sound(soundfile)
 	var/turf/source = get_turf(src)
 	for(var/mob/M in hearers(15, source))
 		M.playsound_local(source, file(soundfile), 100, falloff = 5)
@@ -229,13 +228,13 @@
 					if(!playing || !anchored)//If the piano is playing, or is loose
 						playing = 0
 						return
-					if(length(note) == 0)
+					if(lentext(note) == 0)
 						continue
 					//world << "Parse: [copytext(note,1,2)]"
 					var/cur_note = text2ascii(note) - 96
 					if(cur_note < 1 || cur_note > 7)
 						continue
-					for(var/i=2 to length(note))
+					for(var/i=2 to lentext(note))
 						var/ni = copytext(note,i,i+1)
 						if(!text2num(ni))
 							if(ni == "#" || ni == "b" || ni == "n")
@@ -264,29 +263,17 @@
 
 	if(song)
 		if(song.lines.len > 0 && !(playing))
-
-			// AUTOFIXED BY fix_string_idiocy.py
-			// C:\Users\Rob\Documents\Projects\vgstation13\code\game\objects\structures\musician.dm:262: dat += "<A href='?src=\ref[src];play=1'>Play Song</A><BR><BR>"
-			dat += {"<A href='?src=\ref[src];play=1'>Play Song</A><BR><BR>
-				<A href='?src=\ref[src];repeat=1'>Repeat Song: [repeat] times.</A><BR><BR>"}
-			// END AUTOFIX
+			dat += "<A href='?src=\ref[src];play=1'>Play Song</A><BR><BR>"
+			dat += "<A href='?src=\ref[src];repeat=1'>Repeat Song: [repeat] times.</A><BR><BR>"
 		if(playing)
-
-			// AUTOFIXED BY fix_string_idiocy.py
-			// C:\Users\Rob\Documents\Projects\vgstation13\code\game\objects\structures\musician.dm:265: dat += "<A href='?src=\ref[src];stop=1'>Stop Playing</A><BR>"
-			dat += {"<A href='?src=\ref[src];stop=1'>Stop Playing</A><BR>
-				Repeats left: [repeat].<BR><BR>"}
-			// END AUTOFIX
+			dat += "<A href='?src=\ref[src];stop=1'>Stop Playing</A><BR>"
+			dat += "Repeats left: [repeat].<BR><BR>"
 	if(!edit)
 		dat += "<A href='?src=\ref[src];edit=2'>Show Editor</A><BR><BR>"
 	else
-
-		// AUTOFIXED BY fix_string_idiocy.py
-		// C:\Users\Rob\Documents\Projects\vgstation13\code\game\objects\structures\musician.dm:270: dat += "<A href='?src=\ref[src];edit=1'>Hide Editor</A><BR>"
-		dat += {"<A href='?src=\ref[src];edit=1'>Hide Editor</A><BR>
-			<A href='?src=\ref[src];newsong=1'>Start a New Song</A><BR>
-			<A href='?src=\ref[src];import=1'>Import a Song</A><BR><BR>"}
-		// END AUTOFIX
+		dat += "<A href='?src=\ref[src];edit=1'>Hide Editor</A><BR>"
+		dat += "<A href='?src=\ref[src];newsong=1'>Start a New Song</A><BR>"
+		dat += "<A href='?src=\ref[src];import=1'>Import a Song</A><BR><BR>"
 		if(song)
 			var/calctempo = (10/song.tempo)*60
 			dat += "Tempo : <A href='?src=\ref[src];tempo=10'>-</A><A href='?src=\ref[src];tempo=1'>-</A> [calctempo] BPM <A href='?src=\ref[src];tempo=-1'>+</A><A href='?src=\ref[src];tempo=-10'>+</A><BR><BR>"
@@ -321,12 +308,11 @@
 	onclose(user, "piano")
 
 /obj/structure/device/piano/Topic(href, href_list)
-	if(..())
-		return
-	if(issilicon(usr) || !anchored || !usr.canmove)
-		return
 
-	usr.set_machine(src)
+	if(!in_range(src, usr) || issilicon(usr) || !anchored || !usr.canmove || usr.restrained())
+		usr << browse(null, "window=piano;size=700x300")
+		onclose(usr, "piano")
+		return
 
 	if(href_list["newsong"])
 		song = new()
@@ -351,12 +337,12 @@
 				spawn() playsong()
 
 		else if(href_list["newline"])
-			var/newline = rhtml_encode(input("Enter your line: ", "Piano") as text|null)
+			var/newline = html_encode(input("Enter your line: ", "Piano") as text|null)
 			if(!newline)
 				return
 			if(song.lines.len > 50)
 				return
-			if(length(newline) > 50)
+			if(lentext(newline) > 50)
 				newline = copytext(newline, 1, 50)
 			song.lines.Add(newline)
 
@@ -368,10 +354,10 @@
 
 		else if(href_list["modifyline"])
 			var/num = round(text2num(href_list["modifyline"]),1)
-			var/content = rhtml_encode(input("Enter your line: ", "Piano", song.lines[num]) as text|null)
+			var/content = html_encode(input("Enter your line: ", "Piano", song.lines[num]) as text|null)
 			if(!content)
 				return
-			if(length(content) > 50)
+			if(lentext(content) > 50)
 				content = copytext(content, 1, 50)
 			if(num > song.lines.len || num < 1)
 				return
@@ -389,15 +375,15 @@
 		else if(href_list["import"])
 			var/t = ""
 			do
-				t = rhtml_encode(input(usr, "Please paste the entire song, formatted:", text("[]", src.name), t)  as message)
+				t = html_encode(input(usr, "Please paste the entire song, formatted:", text("[]", src.name), t)  as message)
 				if (!in_range(src, usr))
 					return
 
-				if(length(t) >= 3072)
+				if(lentext(t) >= 3072)
 					var/cont = input(usr, "Your message is too long! Would you like to continue editing it?", "", "yes") in list("yes", "no")
 					if(cont == "no")
 						break
-			while(length(t) > 3072)
+			while(lentext(t) > 3072)
 
 			//split into lines
 			spawn()
@@ -411,7 +397,7 @@
 					lines.Cut(51)
 				var/linenum = 1
 				for(var/l in lines)
-					if(length(l) > 50)
+					if(lentext(l) > 50)
 						usr << "Line [linenum] too long!"
 						lines.Remove(l)
 					else
@@ -419,16 +405,16 @@
 				song = new()
 				song.lines = lines
 				song.tempo = tempo
-				src.updateUsrDialog()
+				updateUsrDialog()
 
 	add_fingerprint(usr)
-	src.updateUsrDialog()
+	updateUsrDialog()
 	return
 
 /obj/structure/device/piano/attackby(obj/item/O as obj, mob/user as mob)
 	if (istype(O, /obj/item/weapon/wrench))
 		if (anchored)
-			playsound(get_turf(src), 'sound/items/Ratchet.ogg', 50, 1)
+			playsound(src.loc, 'sound/items/Ratchet.ogg', 50, 1)
 			user << "\blue You begin to loosen \the [src]'s casters..."
 			if (do_after(user, 40))
 				user.visible_message( \
@@ -437,7 +423,7 @@
 					"You hear ratchet.")
 				src.anchored = 0
 		else
-			playsound(get_turf(src), 'sound/items/Ratchet.ogg', 50, 1)
+			playsound(src.loc, 'sound/items/Ratchet.ogg', 50, 1)
 			user << "\blue You begin to tighten \the [src] to the floor..."
 			if (do_after(user, 20))
 				user.visible_message( \

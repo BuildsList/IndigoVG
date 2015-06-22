@@ -5,15 +5,15 @@
 	desc = "A wall-mounted flashbulb device."
 	icon = 'icons/obj/stationobjs.dmi'
 	icon_state = "mflash1"
-	var/id_tag = null
+	var/id = null
 	var/range = 2 //this is roughly the size of brig cell
 	var/disable = 0
 	var/last_flash = 0 //Don't want it getting spammed like regular flashes
 	var/strength = 10 //How weakened targets are when flashed.
 	var/base_state = "mflash"
 	anchored = 1
-	ghost_read=0
-	ghost_write=0
+	use_power = 1
+	idle_power_usage = 2
 
 /obj/machinery/flasher/portable //Portable version of the flasher. Only flashes when anchored
 	name = "portable flasher"
@@ -30,12 +30,11 @@
 	src.sd_SetLuminosity(2)
 */
 /obj/machinery/flasher/power_change()
-	if ( powered() )
-		stat &= ~NOPOWER
+	..()
+	if ( !(stat & NOPOWER) )
 		icon_state = "[base_state]1"
 //		src.sd_SetLuminosity(2)
 	else
-		stat |= ~NOPOWER
 		icon_state = "[base_state]1-p"
 //		src.sd_SetLuminosity(0)
 
@@ -63,13 +62,12 @@
 	if ((src.disable) || (src.last_flash && world.time < src.last_flash + 150))
 		return
 
-	playsound(get_turf(src), 'sound/weapons/flash.ogg', 100, 1)
+	playsound(src.loc, 'sound/weapons/flash.ogg', 100, 1)
 	flick("[base_state]_flash", src)
 	src.last_flash = world.time
-	use_power(1000)
+	use_power(1500)
 
 	for (var/mob/O in viewers(src, null))
-		if(isobserver(O)) continue
 		if (get_dist(src, O) > src.range)
 			continue
 
@@ -117,27 +115,19 @@
 
 		if (!src.anchored)
 			user.show_message(text("\red [src] can now be moved."))
-			src.overlays.len = 0
+			src.overlays.Cut()
 
 		else if (src.anchored)
 			user.show_message(text("\red [src] is now secured."))
 			src.overlays += "[base_state]-s"
 
-/obj/machinery/flasher_button/attack_ai(mob/user as mob)
-	src.add_hiddenprint(user)
-	return src.attack_hand(user)
+/obj/machinery/button/flasher
+	name = "flasher button"
+	desc = "A remote control switch for a mounted flasher."
 
-/obj/machinery/flasher_button/attack_paw(mob/user as mob)
-	return src.attack_hand(user)
+/obj/machinery/button/flasher/attack_hand(mob/user as mob)
 
-/obj/machinery/flasher_button/attackby(obj/item/weapon/W, mob/user as mob)
-	return src.attack_hand(user)
-
-/obj/machinery/flasher_button/attack_hand(mob/user as mob)
-
-	if(stat & (NOPOWER|BROKEN))
-		return
-	if(active)
+	if(..())
 		return
 
 	use_power(5)
@@ -145,8 +135,8 @@
 	active = 1
 	icon_state = "launcheract"
 
-	for(var/obj/machinery/flasher/M in world)
-		if(M.id_tag == src.id_tag)
+	for(var/obj/machinery/flasher/M in machines)
+		if(M.id == src.id)
 			spawn()
 				M.flash()
 

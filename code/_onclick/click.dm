@@ -3,6 +3,9 @@
 	~Sayu
 */
 
+// 1 decisecond click delay (above and beyond mob/next_move)
+/mob/var/next_click	= 0
+
 /*
 	Before anything else, defer these calls to a per-mobtype handler.  This allows us to
 	remove istype() spaghetti code, but requires the addition of other handler procs to simplify it.
@@ -13,9 +16,11 @@
 	Note that this proc can be overridden, and is in the case of screen objects.
 */
 /atom/Click(location,control,params)
-	usr.ClickOn(src, params)
+	if(src)
+		usr.ClickOn(src, params)
 /atom/DblClick(location,control,params)
-	usr.DblClickOn(src,params)
+	if(src)
+		usr.DblClickOn(src,params)
 
 /*
 	Standard mob ClickOn()
@@ -31,9 +36,9 @@
 	* mob/RangedAttack(atom,params) - used only ranged, only used for tk and laser eyes but could be changed
 */
 /mob/proc/ClickOn( var/atom/A, var/params )
-	if(click_delayer.blocked())
+	if(world.time <= next_click)
 		return
-	click_delayer.setDelay(1)
+	next_click = world.time + 1
 
 	if(client.buildmode)
 		build_click(src, client.buildmode, params, A)
@@ -53,17 +58,14 @@
 		CtrlClickOn(A)
 		return
 
-	if(lying && istype(A, /turf/) && !istype(A, /turf/space/))
-		scramble(A)
-
 	if(stat || paralysis || stunned || weakened)
 		return
 
 	face_atom(A) // change direction to face what you clicked on
 
-	if(attack_delayer.blocked()) // This was next_move.  next_attack makes more sense.
+	if(next_move > world.time) // in the year 2000...
 		return
-	//world << "next_attack is [next_attack] and world.time is [world.time]"
+
 	if(istype(loc,/obj/mecha))
 		if(!locate(/turf) in list(A,A.loc)) // Prevents inventory from being drilled
 			return
@@ -78,12 +80,15 @@
 		throw_item(A)
 		return
 
+	if(!istype(A,/obj/item/weapon/gun) && !isturf(A) && !istype(A,/obj/screen))
+		last_target_click = world.time
+
 	var/obj/item/W = get_active_hand()
 
 	if(W == A)
-		/*next_move = world.time + 6
+		next_move = world.time + 6
 		if(W.flags&USEDELAY)
-			next_move += 5*/
+			next_move += 5
 		W.attack_self(src)
 		if(hand)
 			update_inv_l_hand(0)
@@ -92,76 +97,62 @@
 
 		return
 
-	// operate two levels deep here (item in backpack in src; NOT item in box in backpack in src)
-	if(A == loc || (A in loc) || (A in contents) || (A.loc in contents))
+	// operate two STORAGE levels deep here (item in backpack in src; NOT item in box in backpack in src)
+	var/sdepth = A.storage_depth(src)
+	if(A == loc || (A in loc) || (sdepth != -1 && sdepth <= 1))
 
-		/*/ faster access to objects already on you
+		// faster access to objects already on you
 		if(A in contents)
 			next_move = world.time + 6 // on your person
 		else
 			next_move = world.time + 8 // in a box/bag or in your square
-		*/
+
 		// No adjacency needed
 		if(W)
-			/*
 			if(W.flags&USEDELAY)
 				next_move += 5
-			*/
-			var/resolved = W.preattack(A, src, 1, params)
-			if(!resolved)
-				resolved = A.attackby(W,src)
-				if(ismob(A) || istype(A, /obj/mecha) || istype(W, /obj/item/weapon/grab))
-					delayNextAttack(10)
-				if(!resolved && A && W)
-					W.afterattack(A,src,1,params) // 1 indicates adjacency
-				else
-					delayNextAttack(10)
+
+			var/resolved = A.attackby(W,src)
+			if(!resolved && A && W)
+				W.afterattack(A,src,1,params) // 1 indicates adjacency
 		else
-			if(ismob(A) || istype(W, /obj/item/weapon/grab))
-				delayNextAttack(10)
-			UnarmedAttack(A)
+			UnarmedAttack(A, 1)
 		return
 
 	if(!isturf(loc)) // This is going to stop you from telekinesing from inside a closet, but I don't shed many tears for that
 		return
 
 	// Allows you to click on a box's contents, if that box is on the ground, but no deeper than that
-	if(isturf(A) || isturf(A.loc) || (A.loc && isturf(A.loc.loc)))
-		//next_move = world.time + 10
+	sdepth = A.storage_depth_turf()
+	if(isturf(A) || isturf(A.loc) || (sdepth != -1 && sdepth <= 1))
+		next_move = world.time + 10
+
 		if(A.Adjacent(src)) // see adjacent.dm
 			if(W)
+				if(W.flags&USEDELAY)
+					next_move += 5
 
-				var/resolved = W.preattack(A, src, 1, params)
-				if(!resolved)
-					resolved = A.attackby(W,src)
-					if(ismob(A) || istype(A, /obj/mecha) || istype(W, /obj/item/weapon/grab))
-						delayNextAttack(10)
-					if(!resolved && A && W)
-						W.afterattack(A,src,1,params) // 1 indicates adjacency
-					else
-						delayNextAttack(10)
+				// Return 1 in attackby() to prevent afterattack() effects (when safely moving items for example)
+				var/resolved = A.attackby(W,src)
+				if(!resolved && A && W)
+					W.afterattack(A,src,1,params) // 1: clicking something Adjacent
 			else
-				if(ismob(A) || istype(W, /obj/item/weapon/grab))
-					delayNextAttack(10)
 				UnarmedAttack(A, 1)
 			return
 		else // non-adjacent click
 			if(W)
-				if(ismob(A))
-					delayNextAttack(10)
 				W.afterattack(A,src,0,params) // 0: not Adjacent
 			else
-				if(ismob(A))
-					delayNextAttack(10)
 				RangedAttack(A, params)
 
 	return
 
+/mob/proc/changeNext_move(num)
+	next_move = world.time + num
+
 // Default behavior: ignore double clicks, consider them normal clicks instead
 /mob/proc/DblClickOn(var/atom/A, var/params)
-	//ClickOn(A,params)
-	return
-
+	ClickOn(A,params)
 
 /*
 	Translates into attack_hand, etc.
@@ -174,9 +165,22 @@
 	in human click code to allow glove touches only at melee range.
 */
 /mob/proc/UnarmedAttack(var/atom/A, var/proximity_flag)
-	if(ismob(A))
-		delayNextAttack(10)
 	return
+
+/mob/living/UnarmedAttack(var/atom/A, var/proximity_flag)
+
+	if(!ticker)
+		src << "You cannot attack people before the game has started."
+		return 0
+
+	if (istype(get_area(src), /area/start))
+		src << "No attacking people at spawn, you jackass."
+		return 0
+
+	if(stat)
+		return 0
+
+	return 1
 
 /*
 	Ranged unarmed attack:
@@ -187,11 +191,11 @@
 	animals lunging, etc.
 */
 /mob/proc/RangedAttack(var/atom/A, var/params)
-	if(!mutations || !mutations.len) return
-	if((M_LASER in mutations) && a_intent == "hurt")
+	if(!mutations.len) return
+	if((LASER in mutations) && a_intent == "harm")
 		LaserEyes(A) // moved into a proc below
-	else if(M_TK in mutations)
-		/*switch(get_dist(src,A))
+	else if(TK in mutations)
+		switch(get_dist(src,A))
 			if(0)
 				;
 			if(1 to 5) // not adjacent may mean blocked by window
@@ -202,7 +206,6 @@
 				next_move += 10
 			else
 				return
-		*/
 		A.attack_tk(src)
 /*
 	Restrained ClickOn
@@ -219,7 +222,20 @@
 */
 /mob/proc/MiddleClickOn(var/atom/A)
 	return
+
 /mob/living/carbon/MiddleClickOn(var/atom/A)
+	swap_hand()
+
+/mob/living/carbon/human/MiddleClickOn(var/atom/A)
+
+	if(back)
+		var/obj/item/weapon/rig/rig = back
+		if(istype(rig) && rig.selected_module)
+			if(world.time <= next_move) return
+			next_move = world.time + 8
+			rig.selected_module.engage(A)
+			return
+
 	swap_hand()
 
 // In case of use break glass
@@ -238,7 +254,7 @@
 	return
 /atom/proc/ShiftClick(var/mob/user)
 	if(user.client && user.client.eye == user)
-		user.examination(src)
+		user.examinate(src)
 	return
 
 /*
@@ -264,17 +280,17 @@
 	return
 
 /atom/proc/AltClick(var/mob/user)
-	if(ishuman(src) && user.Adjacent(src))
-		src:give_item(user)
-		return
 	var/turf/T = get_turf(src)
-	if(T && T.Adjacent(user))
+	if(T && user.TurfAdjacent(T))
 		if(user.listed_turf == T)
 			user.listed_turf = null
 		else
 			user.listed_turf = T
 			user.client.statpanel = T.name
 	return
+
+/mob/proc/TurfAdjacent(var/turf/T)
+	return T.AdjacentQuick(src)
 
 /*
 	Misc helpers
@@ -286,12 +302,11 @@
 	return
 
 /mob/living/LaserEyes(atom/A)
-	//next_move = world.time + 6
-	delayNextAttack(4)
+	next_move = world.time + 6
 	var/turf/T = get_turf(src)
 	var/turf/U = get_turf(A)
 
-	var/obj/item/projectile/beam/LE = getFromPool(/obj/item/projectile/beam, loc)
+	var/obj/item/projectile/beam/LE = new /obj/item/projectile/beam( loc )
 	LE.icon = 'icons/effects/genetics.dmi'
 	LE.icon_state = "eyelasers"
 	playsound(usr.loc, 'sound/weapons/taser2.ogg', 75, 1)
@@ -315,61 +330,17 @@
 
 // Simple helper to face what you clicked on, in case it should be needed in more than one place
 /mob/proc/face_atom(var/atom/A)
-	if(stat != CONSCIOUS || buckled || !A || !x || !y || !A.x || !A.y )
-		return
-
-	var/dx = A.x - x
-	var/dy = A.y - y
-
-	if(!dx && !dy) // Wall items are graphically shifted but on the floor
-		if(A.pixel_y > 16)
-			dir = NORTH
-		else if(A.pixel_y < -16)
-			dir = SOUTH
-		else if(A.pixel_x > 16)
-			dir = EAST
-		else if(A.pixel_x < -16)
-			dir = WEST
-
-		return
-
-	if(abs(dx) < abs(dy))
-		if(dy > 0)
-			dir = NORTH
-		else
-			dir = SOUTH
-	else
-		if(dx > 0)
-			dir = EAST
-		else
-			dir = WEST
-
-/mob/proc/scramble(var/atom/A) // Thx Guap ^^
-	var/direction
-	if(stat || buckled || paralysis || stunned || sleeping || (status_flags & FAKEDEATH) || restrained() || (weakened > 5))
-		return
-	if(!istype(src.loc, /turf/))
-		return
 	if(!A || !x || !y || !A.x || !A.y) return
-	if(scrambling)
-		return
-	if(!has_limbs)
-		src << "\red You can't even move yourself - you have no limbs!"
 	var/dx = A.x - x
 	var/dy = A.y - y
 	if(!dx && !dy) return
 
+	var/direction
 	if(abs(dx) < abs(dy))
 		if(dy > 0)	direction = NORTH
 		else		direction = SOUTH
 	else
 		if(dx > 0)	direction = EAST
 		else		direction = WEST
-	if(direction)
-		scrambling = 1
-		sleep(2)
-		src.visible_message("\red <b>[src]</b> scrambles!")
-		sleep(11)
-		Move(get_step(src,direction))
-		scrambling = 0
-		dir = 2
+	if(direction != dir)
+		facedir(direction)

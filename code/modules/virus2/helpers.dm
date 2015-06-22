@@ -1,98 +1,125 @@
-//Returns 1 if mob can be infected, 0 otherwise. Checks his clothing.
-proc/get_infection_chance(var/mob/living/carbon/M, var/vector = "Airborne")
-	var/score = 0
+//Returns 1 if mob can be infected, 0 otherwise.
+proc/infection_check(var/mob/living/carbon/M, var/vector = "Airborne")
 	if (!istype(M))
 		return 0
 
-	if(istype(M, /mob/living/carbon/human))
+	var/protection = M.getarmor(null, "bio")	//gets the full body bio armour value, weighted by body part coverage.
+	var/score = round(0.06*protection) 			//scales 100% protection to 6.
 
-		if (vector == "Airborne")
-			if(M.internal)	//not breathing infected air helps greatly
-				score = 30
-			if(M.wear_mask)
-				score += 5
-				if(istype(M:wear_mask, /obj/item/clothing/mask/surgical) && !M.internal)
-					score += 10
-			if(istype(M:wear_suit, /obj/item/clothing/suit/space) && istype(M:head, /obj/item/clothing/head/helmet/space)) score += 15
-			if(istype(M:wear_suit, /obj/item/clothing/suit/bio_suit) && istype(M:head, /obj/item/clothing/head/bio_hood)) score += 15
+	switch(vector)
+		if("Airborne")
+			if(M.internal)
+				score = 6	//not breathing infected air helps greatly
+				var/obj/item/I = M.wear_mask
 
+				//masks provide a small bonus and can replace overall bio protection
+				if(I)
+					score = max(score, round(0.06*I.armor["bio"]))
+					if (istype(I, /obj/item/clothing/mask))
+						score += 1 //this should be added after
 
-		if (vector == "Contact")
-			if(M:gloves) score += 15
-			if(istype(M:wear_suit, /obj/item/clothing/suit/space)) score += 10
-			if(istype(M:wear_suit, /obj/item/clothing/suit/bio_suit)) score += 10
+		if("Contact")
+			if(istype(M, /mob/living/carbon/human))
+				var/mob/living/carbon/human/H = M
 
-//	log_debug("[M]'s resistance to [vector] viruses: [score]")
+				//gloves provide a larger bonus
+				if (istype(H.gloves, /obj/item/clothing/gloves))
+					score += 2
 
-	if(score >= 30)
+	if(score >= 6)
 		return 0
-	else if(score == 25 && prob(99))
+	else if(score >= 5 && prob(99))
 		return 0
-	else if(score == 20 && prob(95))
+	else if(score >= 4 && prob(95))
 		return 0
-	else if(score == 15 && prob(75))
+	else if(score >= 3 && prob(75))
 		return 0
-	else if(score == 10 && prob(55))
+	else if(score >= 2 && prob(55))
 		return 0
-	else if(score == 5 && prob(35))
+	else if(score >= 1 && prob(35))
 		return 0
-//	log_debug("Infection got through")
 	return 1
 
+//Similar to infection check, but used for when M is spreading the virus.
+/proc/infection_spreading_check(var/mob/living/carbon/M, var/vector = "Airborne")
+	if (!istype(M))
+		return 0
+
+	var/protection = M.getarmor(null, "bio")	//gets the full body bio armour value, weighted by body part coverage.
+
+	if (vector == "Airborne")
+		var/obj/item/I = M.wear_mask
+		if (istype(I))
+			protection = max(protection, round(0.06*I.armor["bio"]))
+
+	return prob(protection)
+
 //Checks if table-passing table can reach target (5 tile radius)
-proc/airborne_can_reach(turf/source, turf/target, var/radius=5)
+proc/airborne_can_reach(turf/source, turf/target)
 	var/obj/dummy = new(source)
-	dummy.flags = FPRINT
 	dummy.pass_flags = PASSTABLE
 
-	for(var/i=0, i<radius, i++) if(!step_towards(dummy, target)) break
+	for(var/i=0, i<5, i++) if(!step_towards(dummy, target)) break
 
-	var/rval = (dummy.loc in range(1,target))
+	var/rval = dummy.Adjacent(target)
 	dummy.loc = null
 	dummy = null
 	return rval
 
-//Attemptes to infect mob M with virus. Set forced to 1 to ignore protective clothing.  Returns 1 if successful.
-/proc/infect_virus2(var/mob/living/carbon/M,var/datum/disease2/disease/disease,var/forced = 0, var/notes="")
+//Attemptes to infect mob M with virus. Set forced to 1 to ignore protective clothnig
+/proc/infect_virus2(var/mob/living/carbon/M,var/datum/disease2/disease/disease,var/forced = 0)
 	if(!istype(disease))
 //		log_debug("Bad virus")
-		return 0
+		return
 	if(!istype(M))
 //		log_debug("Bad mob")
-		return 0
+		return
 	if ("[disease.uniqueID]" in M.virus2)
-		return 0
+		return
 	// if one of the antibodies in the mob's body matches one of the disease's antigens, don't infect
-	if(M.antibodies & disease.antigen != 0)
-		return 0
+	var/list/antibodies_in_common = M.antibodies & disease.antigen
+	if(antibodies_in_common.len)
+		return
+	if(M.reagents.has_reagent("spaceacillin"))
+		return
+
+	if(!disease.affected_species.len)
+		return
+
+	if (!(M.species.name in disease.affected_species))
+		if (forced)
+			disease.affected_species[1] = M.species.name
+		else
+			return //not compatible with this species
 
 //	log_debug("Infecting [M]")
 
-	if(prob(disease.infectionchance) || forced)
-		// certain clothes can prevent an infection
-		if(!forced && !get_infection_chance(M, disease.spreadtype))
-			return
-
+	if(forced || (infection_check(M, disease.spreadtype) && prob(disease.infectionchance)))
 		var/datum/disease2/disease/D = disease.getcopy()
 		D.minormutate()
 //		log_debug("Adding virus")
-		D.log += "<br />[timestamp()] Infected [key_name(M)] [notes]"
 		M.virus2["[D.uniqueID]"] = D
-		return 1
-	return 0
+		BITSET(M.hud_updateflag, STATUS_HUD)
+
+
+//Infects mob M with disease D
+/proc/infect_mob(var/mob/living/carbon/M, var/datum/disease2/disease/D)
+	infect_virus2(M,D,1)
+	M.hud_updateflag |= 1 << STATUS_HUD
 
 //Infects mob M with random lesser disease, if he doesn't have one
 /proc/infect_mob_random_lesser(var/mob/living/carbon/M)
-	var/datum/disease2/disease/D = new /datum/disease2/disease("infect_mob_random_lesser")
-	D.makerandom()
-	D.infectionchance = 1
-	M.virus2["[D.uniqueID]"] = D
+	var/datum/disease2/disease/D = new /datum/disease2/disease
+	
+	D.makerandom(1)
+	infect_mob(M, D)
 
 //Infects mob M with random greated disease, if he doesn't have one
 /proc/infect_mob_random_greater(var/mob/living/carbon/M)
-	var/datum/disease2/disease/D = new /datum/disease2/disease("infect_mob_random_greater")
-	D.makerandom(1)
-	M.virus2["[D.uniqueID]"] = D
+	var/datum/disease2/disease/D = new /datum/disease2/disease
+	
+	D.makerandom(2)
+	infect_mob(M, D)
 
 //Fancy prob() function.
 /proc/dprob(var/p)
@@ -105,21 +132,24 @@ proc/airborne_can_reach(turf/source, turf/target, var/radius=5)
 //	log_debug("Spreading [vector] diseases from [src] to [victim]")
 	if (virus2.len > 0)
 		for (var/ID in virus2)
-			log_debug("Attempting virus [ID]")
+//			log_debug("Attempting virus [ID]")
 			var/datum/disease2/disease/V = virus2[ID]
 			if(V.spreadtype != vector) continue
+
+			//It's hard to get other people sick if you're in an airtight suit.
+			if(!infection_spreading_check(src, V.spreadtype)) continue
 
 			if (vector == "Airborne")
 				if(airborne_can_reach(get_turf(src), get_turf(victim)))
 //					log_debug("In range, infecting")
-					infect_virus2(victim,V, notes="(Airborne, from [key_name(src)])")
-				else
+					infect_virus2(victim,V)
+//				else
 //					log_debug("Could not reach target")
 
 			if (vector == "Contact")
 				if (in_range(src, victim))
 //					log_debug("In range, infecting")
-					infect_virus2(victim,V, notes="(Contact with [key_name(src)])")
+					infect_virus2(victim,V)
 
 	//contact goes both ways
 	if (victim.virus2.len > 0 && vector == "Contact")
@@ -130,7 +160,7 @@ proc/airborne_can_reach(turf/source, turf/target, var/radius=5)
 			var/mob/living/carbon/human/H = victim
 			var/datum/organ/external/select_area = H.get_organ(src.zone_sel.selecting)
 			var/list/clothes = list(H.head, H.wear_mask, H.wear_suit, H.w_uniform, H.gloves, H.shoes)
-			for(var/obj/item/clothing/C in clothes )
+			for(var/obj/item/clothing/C in clothes)
 				if(C && istype(C))
 					if(C.body_parts_covered & select_area.body_part)
 						nudity = 0
@@ -138,4 +168,5 @@ proc/airborne_can_reach(turf/source, turf/target, var/radius=5)
 			for (var/ID in victim.virus2)
 				var/datum/disease2/disease/V = victim.virus2[ID]
 				if(V && V.spreadtype != vector) continue
-				infect_virus2(src,V, notes="(Contact with [key_name(victim)])")
+				if(!infection_spreading_check(victim, V.spreadtype)) continue
+				infect_virus2(src,V)

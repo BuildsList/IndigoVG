@@ -6,7 +6,6 @@
 
 /obj/structure/closet/athletic_mixed/New()
 	..()
-	sleep(2)
 	new /obj/item/clothing/under/shorts/grey(src)
 	new /obj/item/clothing/under/shorts/black(src)
 	new /obj/item/clothing/under/shorts/red(src)
@@ -17,6 +16,11 @@
 	new /obj/item/clothing/under/swimsuit/blue(src)
 	new /obj/item/clothing/under/swimsuit/green(src)
 	new /obj/item/clothing/under/swimsuit/purple(src)
+	new /obj/item/clothing/mask/snorkel(src)
+	new /obj/item/clothing/mask/snorkel(src)
+	new /obj/item/clothing/shoes/swimmingfins(src)
+	new /obj/item/clothing/shoes/swimmingfins(src)
+
 
 
 /obj/structure/closet/boxinggloves
@@ -25,7 +29,6 @@
 
 /obj/structure/closet/boxinggloves/New()
 	..()
-	sleep(2)
 	new /obj/item/clothing/gloves/boxing/blue(src)
 	new /obj/item/clothing/gloves/boxing/green(src)
 	new /obj/item/clothing/gloves/boxing/yellow(src)
@@ -38,7 +41,6 @@
 
 /obj/structure/closet/masks/New()
 	..()
-	sleep(2)
 	new /obj/item/clothing/mask/luchador(src)
 	new /obj/item/clothing/mask/luchador/rudos(src)
 	new /obj/item/clothing/mask/luchador/tecnicos(src)
@@ -52,17 +54,8 @@
 
 /obj/structure/closet/lasertag/red/New()
 	..()
-	sleep(2)
-	new /obj/item/weapon/gun/energy/laser/redtag(src)
-	new /obj/item/weapon/gun/energy/laser/redtag(src)
-	new /obj/item/weapon/gun/energy/laser/redtag(src)
-	new /obj/item/weapon/gun/energy/laser/redtag(src)
-	new /obj/item/weapon/gun/energy/laser/redtag(src)
-	new /obj/item/weapon/gun/energy/laser/redtag(src)
-	new /obj/item/clothing/suit/redtag(src)
-	new /obj/item/clothing/suit/redtag(src)
-	new /obj/item/clothing/suit/redtag(src)
-	new /obj/item/clothing/suit/redtag(src)
+	new /obj/item/weapon/gun/energy/lasertag/red(src)
+	new /obj/item/weapon/gun/energy/lasertag/red(src)
 	new /obj/item/clothing/suit/redtag(src)
 	new /obj/item/clothing/suit/redtag(src)
 
@@ -75,16 +68,7 @@
 
 /obj/structure/closet/lasertag/blue/New()
 	..()
-	sleep(2)
-	new /obj/item/weapon/gun/energy/laser/bluetag(src)
-	new /obj/item/weapon/gun/energy/laser/bluetag(src)
-	new /obj/item/weapon/gun/energy/laser/bluetag(src)
-	new /obj/item/weapon/gun/energy/laser/bluetag(src)
-	new /obj/item/weapon/gun/energy/laser/bluetag(src)
-	new /obj/item/weapon/gun/energy/laser/bluetag(src)
-	new /obj/item/clothing/suit/bluetag(src)
-	new /obj/item/clothing/suit/bluetag(src)
-	new /obj/item/clothing/suit/bluetag(src)
-	new /obj/item/clothing/suit/bluetag(src)
+	new /obj/item/weapon/gun/energy/lasertag/blue(src)
+	new /obj/item/weapon/gun/energy/lasertag/blue(src)
 	new /obj/item/clothing/suit/bluetag(src)
 	new /obj/item/clothing/suit/bluetag(src)

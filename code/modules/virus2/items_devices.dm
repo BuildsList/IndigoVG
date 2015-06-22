@@ -1,44 +1,57 @@
 ///////////////ANTIBODY SCANNER///////////////
 
 /obj/item/device/antibody_scanner
-	name = "Antibody Scanner"
-	desc = "Used to scan living beings for antibodies in their blood."
-	icon_state = "antibody"
+	name = "antibody scanner"
+	desc = "Scans living beings for antibodies in their blood."
+	icon_state = "health"
 	w_class = 2.0
 	item_state = "electronic"
-	flags = FPRINT
-	siemens_coefficient = 1
+	flags = CONDUCT
 
-
-/obj/item/device/antibody_scanner/attack(mob/living/carbon/M as mob, mob/user as mob)
-	if(!istype(M))
-		user << "<span class='notice'>Incompatible object, scan aborted.</span>"
+/obj/item/device/antibody_scanner/attack(mob/M as mob, mob/user as mob)
+	if(!istype(M,/mob/living/carbon/))
+		report("Scan aborted: Incompatible target.", user)
 		return
+
 	var/mob/living/carbon/C = M
-	if(!C.antibodies)
-		user << "<span class='notice'>Unable to detect antibodies.</span>"
+	if (istype(C,/mob/living/carbon/human/))
+		var/mob/living/carbon/human/H = C
+		if(H.species && H.species.flags & NO_BLOOD)
+			report("Scan aborted: The target does not have blood.", user)
+			return
+
+	if(!C.antibodies.len)
+		report("Scan Complete: No antibodies detected.", user)
 		return
-	var/code = antigens2string(M.antibodies)
-	user << "<span class='notice'>[src] The antibody scanner displays a cryptic set of data: [code]</span>"
+
+	if (CLUMSY in user.mutations && prob(50))
+		// I was tempted to be really evil and rot13 the output.
+		report("Antibodies detected: [reverse_text(antigens2string(C.antibodies))]", user)
+	else
+		report("Antibodies detected: [antigens2string(C.antibodies)]", user)
+
+/obj/item/device/antibody_scanner/proc/report(var/text, mob/user as mob)
+	user << "\blue \icon[src] \The [src] beeps, \"[text]\""
 
 ///////////////VIRUS DISH///////////////
 
 /obj/item/weapon/virusdish
-	name = "Virus containment/growth dish"
+	name = "virus dish"
 	icon = 'icons/obj/items.dmi'
 	icon_state = "implantcase-b"
 	var/datum/disease2/disease/virus2 = null
 	var/growth = 0
+	var/basic_info = null
 	var/info = 0
 	var/analysed = 0
 
 /obj/item/weapon/virusdish/random
-	name = "Virus Sample"
+	name = "virus sample"
 
-/obj/item/weapon/virusdish/random/New(loc)
-	..(loc)
-	virus2 = new /datum/disease2/disease
-	virus2.makerandom()
+/obj/item/weapon/virusdish/random/New()
+	..()
+	src.virus2 = new /datum/disease2/disease
+	src.virus2.makerandom()
 	growth = rand(5, 50)
 
 /obj/item/weapon/virusdish/attackby(var/obj/item/weapon/W as obj,var/mob/living/carbon/user as mob)
@@ -46,31 +59,54 @@
 		return
 	..()
 	if(prob(50))
-		user << "The dish shatters"
+		user << "<span class='danger'>\The [src] shatters!</span>"
 		if(virus2.infectionchance > 0)
 			for(var/mob/living/carbon/target in view(1, get_turf(src)))
 				if(airborne_can_reach(get_turf(src), get_turf(target)))
-					if(get_infection_chance(target))
-						infect_virus2(target,src.virus2, notes="([src] attacked by [key_name(user)])")
+					infect_virus2(target, src.virus2)
 		del src
 
 /obj/item/weapon/virusdish/examine(mob/user)
 	..()
-	if(src.info)
-		user << "<span class='info'>It has the following information about its contents</span>"
-		user << src.info
+	if(basic_info)
+		user << "[basic_info] : <a href='?src=\ref[src];info=1'>More Information</a>"
+
+/obj/item/weapon/virusdish/Topic(href, href_list)
+	. = ..()
+	if(.) return 1
+
+	if(href_list["info"])
+		usr << browse(info, "window=info_\ref[src]")
+		return 1
+
+/obj/item/weapon/ruinedvirusdish
+	name = "ruined virus sample"
+	icon = 'icons/obj/items.dmi'
+	icon_state = "implantcase-b"
+	desc = "The bacteria in the dish are completely dead."
+
+/obj/item/weapon/ruinedvirusdish/attackby(var/obj/item/weapon/W as obj,var/mob/living/carbon/user as mob)
+	if(istype(W,/obj/item/weapon/hand_labeler) || istype(W,/obj/item/weapon/reagent_containers/syringe))
+		return ..()
+
+	if(prob(50))
+		user << "\The [src] shatters!"
+		del src
 
 ///////////////GNA DISK///////////////
 
 /obj/item/weapon/diseasedisk
-	name = "Blank GNA disk"
+	name = "blank GNA disk"
 	icon = 'icons/obj/cloning.dmi'
 	icon_state = "datadisk0"
+	w_class = 1
 	var/datum/disease2/effectholder/effect = null
+	var/list/species = null
 	var/stage = 1
+	var/analysed = 1
 
 /obj/item/weapon/diseasedisk/premade/New()
-	name = "Blank GNA disk (stage: [5-stage])"
+	name = "blank GNA disk (stage: [stage])"
 	effect = new /datum/disease2/effectholder
 	effect.effect = new /datum/disease2/effect/invisible
 	effect.stage = stage

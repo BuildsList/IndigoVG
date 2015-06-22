@@ -1,9 +1,9 @@
 //This file was auto-corrected by findeclaration.exe on 25.5.2012 20:42:32
 
 /obj/item/weapon/implant/freedom
-	name = "freedom"
+	name = "freedom implant"
 	desc = "Use this to escape from those evil Red Shirts."
-	_color = "r"
+	item_color = "r"
 	var/activation_emote = "chuckle"
 	var/uses = 1.0
 
@@ -23,6 +23,8 @@
 			if (source.handcuffed)
 				var/obj/item/weapon/W = source.handcuffed
 				source.handcuffed = null
+				if(source.buckled && source.buckled.buckle_require_restraints)
+					source.buckled.unbuckle_mob()
 				source.update_inv_handcuffed()
 				if (source.client)
 					source.client.screen -= W
@@ -67,5 +69,3 @@ mechanisms<BR>
 life can drive down to only 1 use.<HR>
 No Implant Specifics"}
 		return dat
-
-

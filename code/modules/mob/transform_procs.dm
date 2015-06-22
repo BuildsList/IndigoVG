@@ -6,13 +6,11 @@
 			continue
 		drop_from_inventory(W)
 	regenerate_icons()
-
 	monkeyizing = 1
 	canmove = 0
 	stunned = 1
 	icon = null
 	invisibility = 101
-
 	for(var/t in organs)
 		del(t)
 	var/atom/movable/overlay/animation = new /atom/movable/overlay( loc )
@@ -36,7 +34,8 @@
 	O.dna.SetSEValueRange(MONKEYBLOCK,0xDAC, 0xFFF)
 	O.loc = loc
 	O.viruses = viruses
-	viruses = list()
+	O.a_intent = "hurt"
+
 	for(var/datum/disease/D in O.viruses)
 		D.affected_mob = O
 
@@ -53,47 +52,17 @@
 
 	return O
 
-/mob/living/carbon/human/proc/Cluwneize()
-	if (monkeyizing)
-		return
-	for(var/obj/item/W in src)
-		drop_from_inventory(W)
-	regenerate_icons()
-	monkeyizing = 1
-	canmove = 0
-	icon = null
-	invisibility = 101
-	for(var/t in organs)	//this really should not be necessary
-		del(t)
-
-	var/mob/living/simple_animal/hostile/retaliate/cluwne/new_mob = new (src.loc)
-	new_mob.gender=src.gender
-	new_mob.name = pick(clown_names)
-	new_mob.real_name = new_mob.name
-	new_mob.mutations += M_CLUMSY
-	new_mob.mutations += M_FAT
-	new_mob.setBrainLoss(100)
-	new_mob.a_intent = "hurt"
-	new_mob.key = key
-
-	new_mob << "<span class='sinister'>Instantly, what was your clothes fall off, and are replaced with a mockery of all that is clowning; Disgusting-looking garb that the foulest of creatures would be afraid of wearing. Your very face begins to shape, mold, into something truely disgusting. A mask made of flesh. Your body is feeling the worst pain it has ever felt. As you think it cannot get any worse, one of your arms turns into a horrific meld of flesh and plastic, making a limb made entirely of bike horns.</span>"
-	new_mob << "<span class='sinister'>Your very soul is being torn apart. What was organs, blood, flesh, is now darkness. And inside the infernal void that was once a living being, something sinister takes root. As what you were goes away, you try to let out a frantic plea of 'Help me! Please god help me!' but your god has abandoned you, and all that leaves your horrible mouth is a strangled 'HONK!'.</span>"
-	new_mob.say("HONK!")
-	spawn(0)//To prevent the proc from returning null.
-		del(src)
-	return
-
 /mob/new_player/AIize()
 	spawning = 1
 	return ..()
 
-/mob/living/carbon/human/AIize()
+/mob/living/carbon/human/AIize(move=1) // 'move' argument needs defining here too because BYOND is dumb
 	if (monkeyizing)
 		return
 	for(var/t in organs)
 		del(t)
 
-	return ..()
+	return ..(move)
 
 /mob/living/carbon/AIize()
 	if (monkeyizing)
@@ -106,7 +75,7 @@
 	invisibility = 101
 	return ..()
 
-/mob/proc/AIize()
+/mob/proc/AIize(move=1)
 	if(client)
 		src << sound(null, repeat = 0, wait = 0, volume = 85, channel = 1) // stop the jams for AIs
 	var/mob/living/silicon/ai/O = new (loc, base_law_type,,1)//No MMI but safety is in effect.
@@ -119,103 +88,41 @@
 	else
 		O.key = key
 
-	var/obj/loc_landmark
-	for(var/obj/effect/landmark/start/sloc in landmarks_list)
-		if (sloc.name != "AI")
-			continue
-		if (locate(/mob/living) in sloc.loc)
-			continue
-		loc_landmark = sloc
-	if (!loc_landmark)
-		for(var/obj/effect/landmark/tripai in landmarks_list)
-			if (tripai.name == "tripai")
-				if(locate(/mob/living) in tripai.loc)
-					continue
-				loc_landmark = tripai
-	if (!loc_landmark)
-		O << "Oh god sorry we can't find an unoccupied AI spawn location, so we're spawning you on top of someone."
+	if(move)
+		var/obj/loc_landmark
 		for(var/obj/effect/landmark/start/sloc in landmarks_list)
-			if (sloc.name == "AI")
-				loc_landmark = sloc
+			if (sloc.name != "AI")
+				continue
+			if ((locate(/mob/living) in sloc.loc) || (locate(/obj/structure/AIcore) in sloc.loc))
+				continue
+			loc_landmark = sloc
+		if (!loc_landmark)
+			for(var/obj/effect/landmark/tripai in landmarks_list)
+				if (tripai.name == "tripai")
+					if((locate(/mob/living) in tripai.loc) || (locate(/obj/structure/AIcore) in tripai.loc))
+						continue
+					loc_landmark = tripai
+		if (!loc_landmark)
+			O << "Oh god sorry we can't find an unoccupied AI spawn location, so we're spawning you on top of someone."
+			for(var/obj/effect/landmark/start/sloc in landmarks_list)
+				if (sloc.name == "AI")
+					loc_landmark = sloc
 
-	O.loc = loc_landmark.loc
-	for (var/obj/item/device/radio/intercom/comm in O.loc)
-		comm.ai += O
+		O.loc = loc_landmark.loc
+		for (var/obj/item/device/radio/intercom/comm in O.loc)
+			comm.ai += O
 
-	O << "<B>You are playing the station's AI. The AI cannot move, but can interact with many objects while viewing them (through cameras).</B>"
-	O << "<B>To look at other parts of the station, click on yourself to get a camera menu.</B>"
-	O << "<B>While observing through a camera, you can use most (networked) devices which you can see, such as computers, APCs, intercoms, doors, etc.</B>"
-	O << "To use something, simply click on it."
-	O << {"Use say ":b to speak to your cyborgs through binary."}
-	if (!(ticker && ticker.mode && (O.mind in ticker.mode.malf_ai)))
-		O.show_laws()
-		O << "<b>These laws may be changed by other players, or by you being the traitor.</b>"
+	O.on_mob_init()
 
-	//O.verbs += /mob/living/silicon/ai/proc/ai_call_shuttle
-	O.verbs += /mob/living/silicon/ai/proc/show_laws_verb
-	//O.verbs += /mob/living/silicon/ai/proc/ai_camera_track
-	//O.verbs += /mob/living/silicon/ai/proc/ai_alerts
-	//O.verbs += /mob/living/silicon/ai/proc/ai_camera_list
-	O.verbs += /mob/living/silicon/ai/proc/ai_statuschange
-	//O.verbs += /mob/living/silicon/ai/proc/ai_roster
-
-	O.job = "AI"
+	O.add_ai_verbs()
 
 	O.rename_self("ai",1)
-	. = O
-	del(src)
-
-
-//human -> robot
-/mob/living/carbon/human/proc/Robotize(var/delete_items = 0)
-	if (monkeyizing)
-		return
-	for(var/obj/item/W in src)
-		if(delete_items)
-			del(W)
-		else
-			drop_from_inventory(W)
-	regenerate_icons()
-	monkeyizing = 1
-	canmove = 0
-	icon = null
-	invisibility = 101
-	for(var/t in organs)
-		del(t)
-
-	var/mob/living/silicon/robot/O = new /mob/living/silicon/robot(get_turf(src))
-
-	// cyborgs produced by Robotize get an automatic power cell
-	O.cell = new(O)
-	O.cell.maxcharge = 7500
-	O.cell.charge = 7500
-
-	O.gender = gender
-	O.invisibility = 0
-
-	if(mind)		//TODO
-		mind.transfer_to(O)
-		if(O.mind.assigned_role == "Cyborg")
-			O.mind.original = O
-		else if(mind&&mind.special_role)
-			O.mind.store_memory("In case you look at this after being borged, the objectives are only here until I find a way to make them not show up for you, as I can't simply delete them without screwing up round-end reporting. --NeoFite")
-	else
-		O.key = key
-
-	O.loc = loc
-	O.job = "Cyborg"
-
-	O.mmi = new /obj/item/device/mmi(O)
-	O.mmi.transfer_identity(src)//Does not transfer key/client.
-
-	O.Namepick()
-
-	spawn(0)//To prevent the proc from returning null.
+	spawn(0)
 		del(src)
 	return O
 
-//human -> mommi
-/mob/living/carbon/human/proc/MoMMIfy(round_start = 0)
+//human -> robot
+/mob/living/carbon/human/proc/Robotize()
 	if (monkeyizing)
 		return
 	for(var/obj/item/W in src)
@@ -228,17 +135,16 @@
 	for(var/t in organs)
 		del(t)
 
-	var/mob/living/silicon/robot/mommi/O = new /mob/living/silicon/robot/mommi( loc )
+	var/mob/living/silicon/robot/O = new /mob/living/silicon/robot( loc )
 
-	// MoMMIs produced by Robotize get an automatic power cell
+	// cyborgs produced by Robotize get an automatic power cell
 	O.cell = new(O)
-	O.cell.maxcharge = (round_start ? 10000 : 15000)
-	O.cell.charge = (round_start ? 10000 : 15000)
+	O.cell.maxcharge = 7500
+	O.cell.charge = 7500
 
 
 	O.gender = gender
 	O.invisibility = 0
-
 
 	if(mind)		//TODO
 		mind.transfer_to(O)
@@ -251,12 +157,18 @@
 
 	O.loc = loc
 	O.job = "Cyborg"
+	if(O.mind.assigned_role == "Cyborg")
+		if(O.mind.role_alt_title == "Android")
+			O.mmi = new /obj/item/device/mmi/digital/posibrain(O)
+		else if(O.mind.role_alt_title == "Robot")
+			O.mmi = new /obj/item/device/mmi/digital/robot(O)
+		else
+			O.mmi = new /obj/item/device/mmi(O)
 
-	O.mmi = new /obj/item/device/mmi(O)
-	O.mmi.transfer_identity(src)//Does not transfer key/client.
+		O.mmi.transfer_identity(src)
 
+	callHook("borgify", list(O))
 	O.Namepick()
-
 
 	spawn(0)//To prevent the proc from returning null.
 		del(src)
@@ -277,14 +189,7 @@
 		del(t)
 
 	var/alien_caste = pick("Hunter","Sentinel","Drone")
-	var/mob/living/carbon/alien/humanoid/new_xeno
-	switch(alien_caste)
-		if("Hunter")
-			new_xeno = new /mob/living/carbon/alien/humanoid/hunter(loc)
-		if("Sentinel")
-			new_xeno = new /mob/living/carbon/alien/humanoid/sentinel(loc)
-		if("Drone")
-			new_xeno = new /mob/living/carbon/alien/humanoid/drone(loc)
+	var/mob/living/carbon/human/new_xeno = create_new_xenomorph(alien_caste,loc)
 
 	new_xeno.a_intent = "hurt"
 	new_xeno.key = key
@@ -318,11 +223,10 @@
 			babies += M
 		new_slime = pick(babies)
 	else
+		new_slime = new /mob/living/carbon/slime(loc)
 		if(adult)
-			new_slime = new /mob/living/carbon/slime/adult(loc)
+			new_slime.is_adult = 1
 		else
-			new_slime = new /mob/living/carbon/slime(loc)
-	new_slime.a_intent = "hurt"
 	new_slime.key = key
 
 	new_slime << "<B>You are now a slime. Skreee!</B>"
@@ -438,7 +342,7 @@
 		return 1
 	if(ispath(MP, /mob/living/simple_animal/hostile/carp))
 		return 1
-	if(ispath(MP, /mob/living/simple_animal/hostile/mushroom))
+	if(ispath(MP, /mob/living/simple_animal/mushroom))
 		return 1
 	if(ispath(MP, /mob/living/simple_animal/shade))
 		return 1

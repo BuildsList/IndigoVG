@@ -8,7 +8,7 @@ var/list/obj/machinery/requests_console/allConsoles = list()
 
 /obj/machinery/requests_console
 	name = "Requests Console"
-	desc = "A console intended to send requests to diferent departments on the station."
+	desc = "A console intended to send requests to different departments on the station."
 	anchored = 1
 	icon = 'icons/obj/terminals.dmi'
 	icon_state = "req_comp0"
@@ -55,6 +55,7 @@ var/list/obj/machinery/requests_console/allConsoles = list()
 	var/dpt = ""; //the department which will be receiving the message
 	var/priority = -1 ; //Priority of the message being sent
 	luminosity = 0
+	var/datum/announcement/announcement = new
 
 /obj/machinery/requests_console/power_change()
 	..()
@@ -69,8 +70,13 @@ var/list/obj/machinery/requests_console/allConsoles = list()
 			icon_state = "req_comp0"
 
 /obj/machinery/requests_console/New()
+	..()
+
+	announcement.title = "[department] announcement"
+	announcement.newscast = 1
+
 	name = "[department] Requests Console"
-	allConsoles.Add(src)
+	allConsoles += src
 	//req_console_departments += department
 	switch(departmentType)
 		if(1)
@@ -105,7 +111,6 @@ var/list/obj/machinery/requests_console/allConsoles = list()
 			if(!("[department]" in req_console_information))
 				req_console_information += department
 
-	return ..()
 
 /obj/machinery/requests_console/attack_hand(user as mob)
 	if(..(user))
@@ -189,7 +194,7 @@ var/list/obj/machinery/requests_console/allConsoles = list()
 
 			else	//main menu
 				screen = 0
-				announceAuth = 0
+				reset_announce()
 				if (newmessagepriority == 1)
 					dat += text("<FONT COLOR='RED'>There are new messages</FONT><BR>")
 				if (newmessagepriority == 2)
@@ -240,17 +245,13 @@ var/list/obj/machinery/requests_console/allConsoles = list()
 				if("2")	priority = 2
 				else	priority = -1
 		else
-			message = ""
-			announceAuth = 0
+			reset_announce()
 			screen = 0
 
 	if(href_list["sendAnnouncement"])
 		if(!announcementConsole)	return
-		for(var/mob/M in player_list)
-			if(!istype(M,/mob/new_player))
-				M << "<b><font size = 3><font color = red>[department] announcement:</font color> [message]</font size></b>"
-		announceAuth = 0
-		message = ""
+		announcement.Announce(message)
+		reset_announce()
 		screen = 0
 
 	if( href_list["department"] && message )
@@ -283,7 +284,8 @@ var/list/obj/machinery/requests_console/allConsoles = list()
 									Console.icon_state = "req_comp2"
 								if(!Console.silent)
 									playsound(Console.loc, 'sound/machines/twobeep.ogg', 50, 1)
-									say(text("\icon[Console] *The Requests Console beeps: 'PRIORITY Alert in [department]'"))
+									for (var/mob/O in hearers(5, Console.loc))
+										O.show_message(text("\icon[Console] *The Requests Console beeps: 'PRIORITY Alert in [department]'"))
 								Console.messages += "<B><FONT color='red'>High Priority message from <A href='?src=\ref[Console];write=[ckey(department)]'>[department]</A></FONT></B><BR>[sending]"
 
 		//					if("3")		//Not implemanted, but will be 		//Removed as it doesn't look like anybody intends on implimenting it ~Carn
@@ -302,14 +304,16 @@ var/list/obj/machinery/requests_console/allConsoles = list()
 									Console.icon_state = "req_comp1"
 								if(!Console.silent)
 									playsound(Console.loc, 'sound/machines/twobeep.ogg', 50, 1)
-									say(text("\icon[Console] *The Requests Console beeps: 'Message from [department]'"))
+									for (var/mob/O in hearers(4, Console.loc))
+										O.show_message(text("\icon[Console] *The Requests Console beeps: 'Message from [department]'"))
 								Console.messages += "<B>Message from <A href='?src=\ref[Console];write=[ckey(department)]'>[department]</A></FONT></B><BR>[message]"
 
 						screen = 6
 						Console.luminosity = 2
 				messages += "<B>Message sent to [dpt]</B><BR>[message]"
 			else
-				say(text("\icon[src] *The Requests Console beeps: 'NOTICE: No server detected!'"))
+				for (var/mob/O in hearers(4, src.loc))
+					O.show_message(text("\icon[src] *The Requests Console beeps: 'NOTICE: No server detected!'"))
 
 
 	//Handle screen switching
@@ -353,13 +357,6 @@ var/list/obj/machinery/requests_console/allConsoles = list()
 	updateUsrDialog()
 	return
 
-/obj/machinery/say_quote(var/text)
-	var/ending = copytext(text, length(text) - 2)
-	if(ending == "!!!")
-		return "blares, \"[text]\""
-
-	return "beeps, \"[text]\""
-
 					//err... hacking code, which has no reason for existing... but anyway... it's supposed to unlock priority 3 messanging on that console (EXTREME priority...) the code for that actually exists.
 /obj/machinery/requests_console/attackby(var/obj/item/weapon/O as obj, var/mob/user as mob)
 	/*
@@ -384,17 +381,18 @@ var/list/obj/machinery/requests_console/allConsoles = list()
 		else
 			user << "You can't do much with that."*/
 
-	if (istype(O, /obj/item/weapon/card/id) || istype(O, /obj/item/device/pda))
+	if (istype(O, /obj/item/weapon/card/id))
 		if(screen == 9)
-			var/obj/item/weapon/card/id/ID = O.GetID()
-			msgVerified = "<font color='green'><b>Verified by [ID.registered_name] ([ID.assignment])</b></font>"
+			var/obj/item/weapon/card/id/T = O
+			msgVerified = text("<font color='green'><b>Verified by [T.registered_name] ([T.assignment])</b></font>")
 			updateUsrDialog()
 		if(screen == 10)
-			var/obj/item/weapon/card/id/ID = O.GetID()
-			if (access_RC_announce in ID.access)
+			var/obj/item/weapon/card/id/ID = O
+			if (access_RC_announce in ID.GetAccess())
 				announceAuth = 1
+				announcement.announcer = ID.assignment ? "[ID.assignment] [ID.registered_name]" : ID.registered_name
 			else
-				announceAuth = 0
+				reset_announce()
 				user << "\red You are not authorized to send announcements."
 			updateUsrDialog()
 	if (istype(O, /obj/item/weapon/stamp))
@@ -403,3 +401,8 @@ var/list/obj/machinery/requests_console/allConsoles = list()
 			msgStamped = text("<font color='blue'><b>Stamped with the [T.name]</b></font>")
 			updateUsrDialog()
 	return
+
+/obj/machinery/requests_console/proc/reset_announce()
+	announceAuth = 0
+	message = ""
+	announcement.announcer = ""

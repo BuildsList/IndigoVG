@@ -1,9 +1,8 @@
 //This file was auto-corrected by findeclaration.exe on 25.5.2012 20:42:31
 
-
 /obj/machinery/computer/robotics
-	name = "Robotics Control"
-	desc = "Used to remotely lockdown or detonate linked Cyborgs."
+	name = "robotics control console"
+	desc = "Used to remotely lockdown or detonate linked cyborgs."
 	icon = 'icons/obj/computer.dmi'
 	icon_state = "robot"
 	req_access = list(access_robotics)
@@ -16,17 +15,9 @@
 	var/stop = 0.0
 	var/screen = 0 // 0 - Main Menu, 1 - Cyborg Status, 2 - Kill 'em All! -- In text
 
-	l_color = "#CD00CD"
-
 
 /obj/machinery/computer/robotics/attack_ai(var/mob/user as mob)
-	src.add_hiddenprint(user)
 	return src.attack_hand(user)
-
-/obj/machinery/computer/robotics/attack_paw(var/mob/user as mob)
-
-	return src.attack_hand(user)
-	return
 
 /obj/machinery/computer/robotics/attack_hand(var/mob/user as mob)
 	if(..())
@@ -40,15 +31,13 @@
 		dat = "<TT>[src.temp]</TT><BR><BR><A href='?src=\ref[src];temp=1'>Clear Screen</A>"
 	else
 		if(screen == 0)
-
-			// AUTOFIXED BY fix_string_idiocy.py
-			// C:\Users\Rob\Documents\Projects\vgstation13\code\game\machinery\computer\robot.dm:41: dat += "<h3>Cyborg Control Console</h3><BR>"
-			dat += {"<h3>Cyborg Control Console</h3><BR>
-				<A href='?src=\ref[src];screen=1'>1. Cyborg Status</A><BR>
-				<A href='?src=\ref[src];screen=2'>2. Emergency Full Destruct</A><BR>"}
-			// END AUTOFIX
+			dat += "<h3>Cyborg Control Console</h3><BR>"
+			dat += "<A href='?src=\ref[src];screen=1'>1. Cyborg Status</A><BR>"
+			dat += "<A href='?src=\ref[src];screen=2'>2. Emergency Full Destruct</A><BR>"
 		if(screen == 1)
 			for(var/mob/living/silicon/robot/R in mob_list)
+				if(istype(R, /mob/living/silicon/robot/drone))
+					continue //There's a specific console for drones.
 				if(istype(user, /mob/living/silicon/ai))
 					if (R.connected_ai != user)
 						continue
@@ -81,13 +70,9 @@
 				if (istype(user, /mob/living/silicon))
 					if((user.mind.special_role && user.mind.original == user) && !R.emagged)
 						dat += "<A href='?src=\ref[src];magbot=\ref[R]'>(<font color=blue><i>Hack</i></font>)</A> "
-
-				// AUTOFIXED BY fix_string_idiocy.py
-				// C:\Users\Rob\Documents\Projects\vgstation13\code\game\machinery\computer\robot.dm:78: dat += "<A href='?src=\ref[src];stopbot=\ref[R]'>(<font color=green><i>[R.canmove ? "Lockdown" : "Release"]</i></font>)</A> "
-				dat += {"<A href='?src=\ref[src];stopbot=\ref[R]'>(<font color=green><i>[R.canmove ? "Lockdown" : "Release"]</i></font>)</A>
-					<A href='?src=\ref[src];killbot=\ref[R]'>(<font color=red><i>Destroy</i></font>)</A>
-					<BR>"}
-				// END AUTOFIX
+				dat += "<A href='?src=\ref[src];stopbot=\ref[R]'>(<font color=green><i>[R.canmove ? "Lockdown" : "Release"]</i></font>)</A> "
+				dat += "<A href='?src=\ref[src];killbot=\ref[R]'>(<font color=red><i>Destroy</i></font>)</A>"
+				dat += "<BR>"
 			dat += "<A href='?src=\ref[src];screen=0'>(Return to Main Menu)</A><BR>"
 		if(screen == 2)
 			if(!src.status)
@@ -113,7 +98,7 @@
 
 /obj/machinery/computer/robotics/Topic(href, href_list)
 	if(..())
-		return
+		return 1
 	if ((usr.contents.Find(src) || (in_range(src, usr) && istype(src.loc, /turf))) || (istype(usr, /mob/living/silicon)))
 		usr.set_machine(src)
 
@@ -208,13 +193,14 @@
 				var/mob/living/silicon/robot/R = locate(href_list["magbot"])
 
 				// whatever weirdness this is supposed to be, but that is how the href gets added, so here it is again
-				if(istype(R) && istype(usr, /mob/living/silicon) && usr.mind.special_role && (usr.mind.original == usr) && R.emagged != 1)
+				if(istype(R) && istype(usr, /mob/living/silicon) && usr.mind.special_role && (usr.mind.original == usr) && !R.emagged)
+
 					var/choice = input("Are you certain you wish to hack [R.name]?") in list("Confirm", "Abort")
 					if(choice == "Confirm")
 						if(R && istype(R))
 //							message_admins("\blue [key_name_admin(usr)] emagged [R.name] using robotic console!")
 							log_game("[key_name(usr)] emagged [R.name] using robotic console!")
-							R.SetEmagged(2)
+							R.emagged = 1
 							if(R.mind.special_role)
 								R.verbs += /mob/living/silicon/robot/proc/ResetSecurityCodes
 
@@ -233,7 +219,7 @@
 	while(src.timeleft)
 
 	for(var/mob/living/silicon/robot/R in mob_list)
-		if(!R.scrambledcodes)
+		if(!R.scrambledcodes && !istype(R, /mob/living/silicon/robot/drone))
 			R.self_destruct()
 
 	return

@@ -1,26 +1,7 @@
 
 // reference: /client/proc/modify_variables(var/atom/O, var/param_var_name = null, var/autodetect_class = 0)
+
 client
-	proc/debug_reagents(datum/D in world)
-		set category = "Debug"
-		set name = "Add Reagent"
-
-		if(!usr.client || !usr.client.holder)
-			usr << "<span class='warning'>You need to be an administrator to access this.</span>"
-			return
-
-		if(!D) return
-		if(istype(D, /atom))
-			var/atom/A = D
-			var/reagentDatum = input(usr,"Reagent","Insert Reagent","") as text|null
-			if(reagentDatum)
-				var/reagentAmount = input(usr, "Amount", "Insert Amount", "") as num
-				if(A.reagents.add_reagent(reagentDatum, reagentAmount))
-					usr << "<span class='warning'>[reagentDatum] doesn't exist.</span>"
-					return
-				log_admin("[key_name(usr)] added [reagentDatum] with [reagentAmount] units to [A] ")
-				message_admins("[key_name(usr)] added [reagentDatum] with [reagentAmount] units to [A] ")
-
 	proc/debug_variables(datum/D in world)
 		set category = "Debug"
 		set name = "View Variables"
@@ -178,12 +159,10 @@ client
 					}
 				</script> "}
 
+		body += "<body onload='selectTextField(); updateSearch()' onkeyup='updateSearch()'>"
 
-		// AUTOFIXED BY fix_string_idiocy.py
-		// C:\Users\Rob\Documents\Projects\vgstation13\code\datums\datumvars.dm:162: body += "<body onload='selectTextField(); updateSearch()' onkeyup='updateSearch()'>"
-		body += {"<body onload='selectTextField(); updateSearch()' onkeyup='updateSearch()'>
-			<div align='center'><table width='100%'><tr><td width='50%'>"}
-		// END AUTOFIX
+		body += "<div align='center'><table width='100%'><tr><td width='50%'>"
+
 		if(sprite)
 			body += "<table align='center' width='100%'><tr><td><img src='view_vars_sprite.png'></td><td>"
 		else
@@ -218,12 +197,10 @@ client
 		else
 			body += "<b>[D]</b>"
 
+		body += "</div>"
 
-		// AUTOFIXED BY fix_string_idiocy.py
-		// C:\Users\Rob\Documents\Projects\vgstation13\code\datums\datumvars.dm:200: body += "</div>"
-		body += {"</div>
-			</tr></td></table>"}
-		// END AUTOFIX
+		body += "</tr></td></table>"
+
 		var/formatted_type = text("[D.type]")
 		if(length(formatted_type) > 25)
 			var/middle_point = length(formatted_type) / 2
@@ -238,13 +215,12 @@ client
 		if(src.holder && src.holder.marked_datum && src.holder.marked_datum == D)
 			body += "<br><font size='1' color='red'><b>Marked Object</b></font>"
 
+		body += "</div>"
 
-		// AUTOFIXED BY fix_string_idiocy.py
-		// C:\Users\Rob\Documents\Projects\vgstation13\code\datums\datumvars.dm:218: body += "</div>"
-		body += {"</div>
-			</div></td>
-			<td width='50%'><div align='center'><a href='?_src_=vars;datumrefresh=\ref[D]'>Refresh</a>"}
-		// END AUTOFIX
+		body += "</div></td>"
+
+		body += "<td width='50%'><div align='center'><a href='?_src_=vars;datumrefresh=\ref[D]'>Refresh</a>"
+
 		//if(ismob(D))
 		//	body += "<br><a href='?_src_=vars;mob_player_panel=\ref[D]'>Show player panel</a></div></td></tr></table></div><hr>"
 
@@ -268,61 +244,56 @@ client
 		body += "<option value>---</option>"
 
 		if(ismob(D))
+			body += "<option value='?_src_=vars;give_spell=\ref[D]'>Give Spell</option>"
+			body += "<option value='?_src_=vars;give_disease2=\ref[D]'>Give Disease</option>"
+			body += "<option value='?_src_=vars;give_disease=\ref[D]'>Give TG-style Disease</option>"
+			body += "<option value='?_src_=vars;godmode=\ref[D]'>Toggle Godmode</option>"
+			body += "<option value='?_src_=vars;build_mode=\ref[D]'>Toggle Build Mode</option>"
 
-			// AUTOFIXED BY fix_string_idiocy.py
-			// C:\Users\Rob\Documents\Projects\vgstation13\code\datums\datumvars.dm:247: body += "<option value='?_src_=vars;give_spell=\ref[D]'>Give Spell</option>"
-			body += {"<option value='?_src_=vars;give_spell=\ref[D]'>Give Spell</option>
-				<option value='?_src_=vars;give_disease=\ref[D]'>Give Disease</option>
-				<option value='?_src_=vars;godmode=\ref[D]'>Toggle Godmode</option>
-				<option value='?_src_=vars;build_mode=\ref[D]'>Toggle Build Mode</option>
-				<option value='?_src_=vars;ninja=\ref[D]'>Make Space Ninja</option>
-				<option value='?_src_=vars;make_skeleton=\ref[D]'>Make 2spooky</option>
-				<option value='?_src_=vars;direct_control=\ref[D]'>Assume Direct Control</option>
-				<option value='?_src_=vars;drop_everything=\ref[D]'>Drop Everything</option>
-				<option value='?_src_=vars;regenerateicons=\ref[D]'>Regenerate Icons</option>
-				<option value='?_src_=vars;addlanguage=\ref[D]'>Add Language</option>
-				<option value='?_src_=vars;remlanguage=\ref[D]'>Remove Language</option>"}
-			// END AUTOFIX
+			body += "<option value='?_src_=vars;ninja=\ref[D]'>Make Space Ninja</option>"
+			body += "<option value='?_src_=vars;make_skeleton=\ref[D]'>Make 2spooky</option>"
+
+			body += "<option value='?_src_=vars;direct_control=\ref[D]'>Assume Direct Control</option>"
+			body += "<option value='?_src_=vars;drop_everything=\ref[D]'>Drop Everything</option>"
+
+			body += "<option value='?_src_=vars;regenerateicons=\ref[D]'>Regenerate Icons</option>"
+			body += "<option value='?_src_=vars;addlanguage=\ref[D]'>Add Language</option>"
+			body += "<option value='?_src_=vars;remlanguage=\ref[D]'>Remove Language</option>"
+			body += "<option value='?_src_=vars;addorgan=\ref[D]'>Add Organ</option>"
+			body += "<option value='?_src_=vars;remorgan=\ref[D]'>Remove Organ</option>"
+
+			body += "<option value='?_src_=vars;fix_nano=\ref[D]'>Fix NanoUI</option>"
+
+			body += "<option value='?_src_=vars;addverb=\ref[D]'>Add Verb</option>"
+			body += "<option value='?_src_=vars;remverb=\ref[D]'>Remove Verb</option>"
 			if(ishuman(D))
-
-				// AUTOFIXED BY fix_string_idiocy.py
-				// C:\Users\Rob\Documents\Projects\vgstation13\code\datums\datumvars.dm:262: body += "<option value>---</option>"
-				body += {"<option value>---</option>
-					<option value='?_src_=vars;setmutantrace=\ref[D]'>Set Mutantrace</option>
-					<option value='?_src_=vars;setspecies=\ref[D]'>Set Species</option>
-					<option value='?_src_=vars;makeai=\ref[D]'>Make AI</option>
-					<option value='?_src_=vars;makerobot=\ref[D]'>Make cyborg</option>
-					<option value='?_src_=vars;makemonkey=\ref[D]'>Make monkey</option>
-					<option value='?_src_=vars;makealien=\ref[D]'>Make alien</option>
-					<option value='?_src_=vars;makeslime=\ref[D]'>Make slime</option>
-					<option value='?_src_=vars;makecluwne=\ref[D]'>Make cluwne</option>"}
-			// END AUTOFIX
-
-			// AUTOFIXED BY fix_string_idiocy.py
-			// C:\Users\Rob\Documents\Projects\vgstation13\code\datums\datumvars.dm:270: body += "<option value>---</option>"
-			body += {"<option value>---</option>
-				<option value='?_src_=vars;gib=\ref[D]'>Gib</option>"}
-			// END AUTOFIX
+				body += "<option value>---</option>"
+				body += "<option value='?_src_=vars;setspecies=\ref[D]'>Set Species</option>"
+				body += "<option value='?_src_=vars;makeai=\ref[D]'>Make AI</option>"
+				body += "<option value='?_src_=vars;makerobot=\ref[D]'>Make cyborg</option>"
+				body += "<option value='?_src_=vars;makemonkey=\ref[D]'>Make monkey</option>"
+				body += "<option value='?_src_=vars;makealien=\ref[D]'>Make alien</option>"
+				body += "<option value='?_src_=vars;makeslime=\ref[D]'>Make slime</option>"
+			body += "<option value>---</option>"
+			body += "<option value='?_src_=vars;gib=\ref[D]'>Gib</option>"
 		if(isobj(D))
 			body += "<option value='?_src_=vars;delall=\ref[D]'>Delete all of type</option>"
 		if(isobj(D) || ismob(D) || isturf(D))
+			body += "<option value='?_src_=vars;explode=\ref[D]'>Trigger explosion</option>"
+			body += "<option value='?_src_=vars;emp=\ref[D]'>Trigger EM pulse</option>"
 
-			// AUTOFIXED BY fix_string_idiocy.py
-			// C:\Users\Rob\Documents\Projects\vgstation13\code\datums\datumvars.dm:275: body += "<option value='?_src_=vars;explode=\ref[D]'>Trigger explosion</option>"
-			body += {"<option value='?_src_=vars;explode=\ref[D]'>Trigger explosion</option>
-				<option value='?_src_=vars;emp=\ref[D]'>Trigger EM pulse</option>"}
-			// END AUTOFIX
+		body += "</select></form>"
 
-		// AUTOFIXED BY fix_string_idiocy.py
-		// C:\Users\Rob\Documents\Projects\vgstation13\code\datums\datumvars.dm:278: body += "</select></form>"
-		body += {"</select></form>
-			</div></td></tr></table></div><hr>
-			<font size='1'><b>E</b> - Edit, tries to determine the variable type by itself.<br>
-			<b>C</b> - Change, asks you for the var type first.<br>
-			<b>M</b> - Mass modify: changes this variable for all objects of this type.</font><br>
-			<hr><table width='100%'><tr><td width='20%'><div align='center'><b>Search:</b></div></td><td width='80%'><input type='text' id='filter' name='filter_text' value='' style='width:100%;'></td></tr></table><hr>
-			<ol id='vars'>"}
-		// END AUTOFIX
+		body += "</div></td></tr></table></div><hr>"
+
+		body += "<font size='1'><b>E</b> - Edit, tries to determine the variable type by itself.<br>"
+		body += "<b>C</b> - Change, asks you for the var type first.<br>"
+		body += "<b>M</b> - Mass modify: changes this variable for all objects of this type.</font><br>"
+
+		body += "<hr><table width='100%'><tr><td width='20%'><div align='center'><b>Search:</b></div></td><td width='80%'><input type='text' id='filter' name='filter_text' value='' style='width:100%;'></td></tr></table><hr>"
+
+		body += "<ol id='vars'>"
+
 		var/list/names = list()
 		for (var/V in D.vars)
 			names += V
@@ -419,12 +390,8 @@ client
 			if (L.len > 0 && !(name == "underlays" || name == "overlays" || name == "vars" || L.len > 500))
 				// not sure if this is completely right...
 				if(0)   //(L.vars.len > 0)
-
-					// AUTOFIXED BY fix_string_idiocy.py
-					// C:\Users\Rob\Documents\Projects\vgstation13\code\datums\datumvars.dm:386: html += "<ol>"
-					html += {"<ol>
-						</ol>"}
-					// END AUTOFIX
+					html += "<ol>"
+					html += "</ol>"
 				else
 					html += "<ul>"
 					var/index = 1
@@ -439,23 +406,7 @@ client
 
 		else
 			html += "[name] = <span class='value'>[value]</span>"
-			/*
-			// Bitfield stuff
-			if(round(value)==value) // Require integers.
-				var/idx=0
-				var/bit=0
-				var/bv=0
-				html += "<div class='value binary'>"
-				for(var/block=0;block<8;block++)
-					html += " <span class='block'>"
-					for(var/i=0;i<4;i++)
-						idx=(block*4)+i
-						bit=1 << idx
-						bv=value & bit
-						html += "<a href='?_src_=vars;togbit=[idx];var=[name];subject=\ref[DA]' title='bit [idx] ([bit])'>[bv?1:0]</a>"
-					html += "</span>"
-				html += "</div>"
-			*/
+
 		html += "</li>"
 
 		return html
@@ -476,7 +427,7 @@ client
 			usr << "This can only be used on instances of type /mob"
 			return
 
-		var/new_name = copytext(sanitize(input(usr,"What would you like to name this mob?","Input a name",M.real_name) as text|null),1,MAX_NAME_LEN)
+		var/new_name = sanitize(copytext(input(usr,"What would you like to name this mob?","Input a name",M.real_name) as text|null,1,MAX_NAME_LEN))
 		if( !new_name || !M )	return
 
 		message_admins("Admin [key_name_admin(usr)] renamed [key_name_admin(M)] to [new_name].")
@@ -492,20 +443,6 @@ client
 			return
 
 		modify_variables(D, href_list["varnameedit"], 1)
-
-	else if(href_list["togbit"])
-		if(!check_rights(R_VAREDIT))	return
-
-		var/atom/D = locate(href_list["subject"])
-		if(!istype(D,/datum) && !istype(D,/client))
-			usr << "This can only be used on instances of types /client or /datum"
-			return
-		if(!(href_list["var"] in D.vars))
-			usr << "Unable to find variable specified."
-			return
-		var/value = D.vars[href_list["var"]]
-		value ^= 1 << text2num(href_list["togbit"])
-		D.vars[href_list["var"]] = value
 
 	else if(href_list["varnamechange"] && href_list["datumchange"])
 		if(!check_rights(R_VAREDIT))	return
@@ -558,6 +495,17 @@ client
 			return
 
 		src.give_disease(M)
+		href_list["datumrefresh"] = href_list["give_spell"]
+
+	else if(href_list["give_disease2"])
+		if(!check_rights(R_ADMIN|R_FUN))	return
+
+		var/mob/M = locate(href_list["give_disease2"])
+		if(!istype(M))
+			usr << "This can only be used on instances of type /mob"
+			return
+
+		src.give_disease2(M)
 		href_list["datumrefresh"] = href_list["give_spell"]
 
 	else if(href_list["ninja"])
@@ -633,7 +581,7 @@ client
 			usr << "This can only be used on instances of type /mob/living/carbon/human"
 			return
 
-		H.makeSkeleton()
+		H.ChangeToSkeleton()
 		href_list["datumrefresh"] = href_list["make_skeleton"]
 
 	else if(href_list["delall"])
@@ -661,7 +609,7 @@ client
 				for(var/obj/Obj in world)
 					if(Obj.type == O_type)
 						i++
-						qdel(Obj)
+						del(Obj)
 				if(!i)
 					usr << "No objects of this type exist"
 					return
@@ -672,7 +620,7 @@ client
 				for(var/obj/Obj in world)
 					if(istype(Obj,O_type))
 						i++
-						qdel(Obj)
+						del(Obj)
 				if(!i)
 					usr << "No objects of this type exist"
 					return
@@ -721,8 +669,8 @@ client
 			return
 
 		switch(href_list["rotatedir"])
-			if("right")	A.dir = turn(A.dir, -45)
-			if("left")	A.dir = turn(A.dir, 45)
+			if("right")	A.set_dir(turn(A.dir, -45))
+			if("left")	A.set_dir(turn(A.dir, 45))
 		href_list["datumrefresh"] = href_list["rotatedatum"]
 
 	else if(href_list["makemonkey"])
@@ -795,27 +743,6 @@ client
 			return
 		holder.Topic(href, list("makeai"=href_list["makeai"]))
 
-	else if(href_list["setmutantrace"])
-		if(!check_rights(R_SPAWN))	return
-
-		var/mob/living/carbon/human/H = locate(href_list["setmutantrace"])
-		if(!istype(H))
-			usr << "This can only be done to instances of type /mob/living/carbon/human"
-			return
-
-		var/new_mutantrace = input("Please choose a new mutantrace","Mutantrace",null) as null|anything in list("NONE","golem","lizard","slime","plant","shadow","tajaran","skrell","vox")
-		switch(new_mutantrace)
-			if(null)
-				return
-			if("NONE")
-				new_mutantrace = ""
-		if(!H)
-			usr << "Mob doesn't exist anymore"
-			return
-		if(H.dna)
-			H.dna.mutantrace = new_mutantrace
-			H.update_mutantrace()
-
 	else if(href_list["setspecies"])
 		if(!check_rights(R_SPAWN))	return
 
@@ -832,11 +759,10 @@ client
 
 		if(H.set_species(new_species))
 			usr << "Set species of [H] to [H.species]."
-			H.regenerate_icons()
 		else
 			usr << "Failed! Something went wrong."
 
-	/*else if(href_list["addlanguage"])
+	else if(href_list["addlanguage"])
 		if(!check_rights(R_SPAWN))	return
 
 		var/mob/H = locate(href_list["addlanguage"])
@@ -845,6 +771,9 @@ client
 			return
 
 		var/new_language = input("Please choose a language to add.","Language",null) as null|anything in all_languages
+
+		if(!new_language)
+			return
 
 		if(!H)
 			usr << "Mob doesn't exist anymore"
@@ -869,15 +798,152 @@ client
 
 		var/datum/language/rem_language = input("Please choose a language to remove.","Language",null) as null|anything in H.languages
 
+		if(!rem_language)
+			return
+
 		if(!H)
 			usr << "Mob doesn't exist anymore"
 			return
 
-		//if(H.remove_language(rem_language.name))
-		//	usr << "Removed [rem_language] from [H]."
+		if(H.remove_language(rem_language.name))
+			usr << "Removed [rem_language] from [H]."
 		else
 			usr << "Mob doesn't know that language."
-	*/
+
+	else if(href_list["addverb"])
+		if(!check_rights(R_DEBUG))      return
+
+		var/mob/living/H = locate(href_list["addverb"])
+
+		if(!istype(H))
+			usr << "This can only be done to instances of type /mob/living"
+			return
+		var/list/possibleverbs = list()
+		possibleverbs += "Cancel" 								// One for the top...
+		possibleverbs += typesof(/mob/proc,/mob/verb,/mob/living/proc,/mob/living/verb)
+		switch(H.type)
+			if(/mob/living/carbon/human)
+				possibleverbs += typesof(/mob/living/carbon/proc,/mob/living/carbon/verb,/mob/living/carbon/human/verb,/mob/living/carbon/human/proc)
+			if(/mob/living/silicon/robot)
+				possibleverbs += typesof(/mob/living/silicon/proc,/mob/living/silicon/robot/proc,/mob/living/silicon/robot/verb)
+			if(/mob/living/silicon/ai)
+				possibleverbs += typesof(/mob/living/silicon/proc,/mob/living/silicon/ai/proc,/mob/living/silicon/ai/verb)
+		possibleverbs -= H.verbs
+		possibleverbs += "Cancel" 								// ...And one for the bottom
+
+		var/verb = input("Select a verb!", "Verbs",null) as anything in possibleverbs
+		if(!H)
+			usr << "Mob doesn't exist anymore"
+			return
+		if(!verb || verb == "Cancel")
+			return
+		else
+			H.verbs += verb
+
+	else if(href_list["remverb"])
+		if(!check_rights(R_DEBUG))      return
+
+		var/mob/H = locate(href_list["remverb"])
+
+		if(!istype(H))
+			usr << "This can only be done to instances of type /mob"
+			return
+		var/verb = input("Please choose a verb to remove.","Verbs",null) as null|anything in H.verbs
+		if(!H)
+			usr << "Mob doesn't exist anymore"
+			return
+		if(!verb)
+			return
+		else
+			H.verbs -= verb
+
+	else if(href_list["addorgan"])
+		if(!check_rights(R_SPAWN))	return
+
+		var/mob/living/carbon/M = locate(href_list["addorgan"])
+		if(!istype(M))
+			usr << "This can only be done to instances of type /mob/living/carbon"
+			return
+
+		var/new_organ = input("Please choose an organ to add.","Organ",null) as null|anything in typesof(/datum/organ/internal)-/datum/organ/internal
+		if(!new_organ) return
+
+		if(!M)
+			usr << "Mob doesn't exist anymore"
+			return
+
+		if(locate(new_organ) in M.internal_organs)
+			usr << "Mob already has that organ."
+			return
+
+		if(istype(M,/mob/living/carbon/human))
+			var/mob/living/carbon/human/H = M
+			var/datum/organ/internal/I = new new_organ(H)
+
+			var/organ_slot = input(usr, "Which slot do you want the organ to go in ('default' for default)?")  as text|null
+
+			if(!organ_slot)
+				return
+
+			if(organ_slot != "default")
+				organ_slot = sanitize(copytext(organ_slot,1,MAX_MESSAGE_LEN))
+			else
+				if(I.removed_type)
+					var/obj/item/organ/O = new I.removed_type()
+					organ_slot = O.organ_tag
+					del(O)
+				else
+					organ_slot = "unknown organ"
+
+			if(H.internal_organs_by_name[organ_slot])
+				usr << "[H] already has an organ in that slot."
+				del(I)
+				return
+
+			H.internal_organs |= I
+			H.internal_organs_by_name[organ_slot] = I
+			usr << "Added new [new_organ] to [H] as slot [organ_slot]."
+		else
+			new new_organ(M)
+			usr << "Added new [new_organ] to [M]."
+
+	else if(href_list["remorgan"])
+		if(!check_rights(R_SPAWN))	return
+
+		var/mob/living/carbon/M = locate(href_list["remorgan"])
+		if(!istype(M))
+			usr << "This can only be done to instances of type /mob/living/carbon"
+			return
+
+		var/rem_organ = input("Please choose an organ to remove.","Organ",null) as null|anything in M.internal_organs
+
+		if(!M)
+			usr << "Mob doesn't exist anymore"
+			return
+
+		if(!(locate(rem_organ) in M.internal_organs))
+			usr << "Mob does not have that organ."
+			return
+
+		usr << "Removed [rem_organ] from [M]."
+		del(rem_organ)
+
+	else if(href_list["fix_nano"])
+		if(!check_rights(R_DEBUG)) return
+
+		var/mob/H = locate(href_list["fix_nano"])
+
+		if(!istype(H) || !H.client)
+			usr << "This can only be done on mobs with clients"
+			return
+
+		nanomanager.send_resources(H.client)
+
+		usr << "Resource files sent"
+		H << "Your NanoUI Resource files have been refreshed"
+
+		log_admin("[key_name(usr)] resent the NanoUI resource files to [key_name(H)] ")
+
 	else if(href_list["regenerateicons"])
 		if(!check_rights(0))	return
 
@@ -924,3 +990,4 @@ client
 		src.debug_variables(DAT)
 
 	return
+

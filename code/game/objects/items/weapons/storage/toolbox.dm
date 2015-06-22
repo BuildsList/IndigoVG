@@ -4,23 +4,14 @@
 	icon = 'icons/obj/storage.dmi'
 	icon_state = "red"
 	item_state = "toolbox_red"
-	flags = FPRINT
-	siemens_coefficient = 1
+	flags = CONDUCT
 	force = 5.0
 	throwforce = 10.0
 	throw_speed = 1
 	throw_range = 7
-	m_amt = 5000
-	w_type = RECYK_METAL
 	w_class = 4.0
-	melt_temperature = MELTPOINT_STEEL
 	origin_tech = "combat=1"
 	attack_verb = list("robusted")
-
-	suicide_act(mob/user)
-		viewers(user) << "\red <b>[user] is [pick("stoving","robusting")] \his head in with the [src.name]! It looks like \he's  trying to commit suicide!</b>"
-		return (BRUTELOSS)
-
 
 	New()
 		..()
@@ -37,11 +28,10 @@
 		..()
 		new /obj/item/weapon/crowbar/red(src)
 		new /obj/item/weapon/extinguisher/mini(src)
-		var/lighting = pick( //emergency lighting yay
-			20;/obj/item/device/flashlight,
-			30;/obj/item/weapon/storage/fancy/flares,
-			50;/obj/item/device/flashlight/flare)
-		new lighting(src)
+		if(prob(50))
+			new /obj/item/device/flashlight(src)
+		else
+			new /obj/item/device/flashlight/flare(src)
 		new /obj/item/device/radio(src)
 
 /obj/item/weapon/storage/toolbox/mechanical
@@ -70,12 +60,12 @@
 		new /obj/item/weapon/wirecutters(src)
 		new /obj/item/device/t_scanner(src)
 		new /obj/item/weapon/crowbar(src)
-		new /obj/item/weapon/cable_coil(src,30,color)
-		new /obj/item/weapon/cable_coil(src,30,color)
+		new /obj/item/stack/cable_coil(src,30,color)
+		new /obj/item/stack/cable_coil(src,30,color)
 		if(prob(5))
 			new /obj/item/clothing/gloves/yellow(src)
 		else
-			new /obj/item/weapon/cable_coil(src,30,color)
+			new /obj/item/stack/cable_coil(src,30,color)
 
 /obj/item/weapon/storage/toolbox/syndicate
 	name = "suspicious looking toolbox"
@@ -91,6 +81,6 @@
 		new /obj/item/weapon/wrench(src)
 		new /obj/item/weapon/weldingtool(src)
 		new /obj/item/weapon/crowbar(src)
-		new /obj/item/weapon/cable_coil(src,30,color)
+		new /obj/item/stack/cable_coil(src,30,color)
 		new /obj/item/weapon/wirecutters(src)
 		new /obj/item/device/multitool(src)

@@ -7,6 +7,7 @@
 	icon = 'icons/obj/xenoarchaeology.dmi'
 	icon_state = "bone"
 	desc = "It's a fossil."
+	var/animal = 1
 
 /obj/item/weapon/fossil/base/New()
 	var/list/l = list("/obj/item/weapon/fossil/bone"=9,"/obj/item/weapon/fossil/skull"=3,
@@ -14,7 +15,7 @@
 	var/t = pickweight(l)
 	var/obj/item/weapon/W = new t(src.loc)
 	var/turf/T = get_turf(src)
-	if(istype(T, /turf/unsimulated/mineral))
+	if(istype(T, /turf/simulated/mineral))
 		T:last_find = W
 	del src
 
@@ -97,6 +98,7 @@
 	name = "Fossilised plant"
 	icon_state = "plant1"
 	desc = "It's fossilised plant remains."
+	animal = 0
 
 /obj/item/weapon/fossil/plant/New()
 	icon_state = "plant[rand(1,4)]"

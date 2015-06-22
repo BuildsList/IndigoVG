@@ -113,8 +113,7 @@ Des: Removes all infection images from aliens and places an infection image on a
 			if (alien.client)
 				for(var/image/I in alien.client.images)
 					if(dd_hasprefix_case(I.icon_state, "infected"))
-						//del(I)
-						alien.client.images -= I
+						del(I)
 
 		for (var/mob/living/carbon/alien/alien in player_list)
 			if (alien.client)
@@ -150,6 +149,5 @@ Des: Removes the alien infection image from all aliens in the world located in p
 				for(var/image/I in alien.client.images)
 					if(I.loc == C)
 						if(dd_hasprefix_case(I.icon_state, "infected"))
-							//del(I)
-							alien.client.images -= I
+							del(I)
 	return

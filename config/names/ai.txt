@@ -13,7 +13,6 @@ Alpha 7
 AmigoBot
 Android
 Aniel
-AOL
 Asimov
 Astor
 B-4
@@ -36,7 +35,6 @@ Cutie
 Data
 Dee Model
 Deep Thought
-Dial Up
 Dor-15
 Dorfl
 Dot Matrix
@@ -130,10 +128,6 @@ Voltes V
 W1k1
 Wikipedia
 Windows 3.1
-Windows 7
-Windows 8
-Windows XP
-Windows Vista
 X-5
 XERXES
 XR
@@ -151,8 +145,3 @@ Optimus
 Megatron
 Soundwave
 Ironhide
-Donald Trump
-Everything
-Hivebot Overmind
-Коллективная Мастер Компьютер
-

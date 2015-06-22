@@ -13,20 +13,8 @@
 	var/brute_dam_coeff = 1.0
 	var/open = 0//Maint panel
 	var/locked = 1
-	var/bot_type
-	var/declare_message = "" //What the bot will display to the HUD user.
-	#define SEC_BOT 1 // Secutritrons (Beepsky) and ED-209s
-	#define MULE_BOT 2 // MULEbots
-	#define FLOOR_BOT 3 // Floorbots
-	#define CLEAN_BOT 4 // Cleanbots
-	#define MED_BOT 5 // Medibots
 	//var/emagged = 0 //Urist: Moving that var to the general /bot tree as it's used by most bots
 
-/obj/machinery/bot/New()
-	for(var/datum/event/ionstorm/I in events)
-		if(istype(I) && I.active)
-			I.bots += src
-	..()
 
 /obj/machinery/bot/proc/turn_on()
 	if(stat)	return 0
@@ -39,7 +27,7 @@
 	SetLuminosity(0)
 
 /obj/machinery/bot/proc/explode()
-	qdel(src)
+	del(src)
 
 /obj/machinery/bot/proc/healthcheck()
 	if (src.health <= 0)
@@ -49,57 +37,22 @@
 	if(locked)
 		locked = 0
 		emagged = 1
-		user << "<span class='warning'>You bypass [src]'s controls.</span>"
+		user << "<span class='warning'>You short out [src]'s maintenance hatch lock.</span>"
+		log_and_message_admins("emagged [src]'s maintenance hatch lock")
 	if(!locked && open)
 		emagged = 2
+		log_and_message_admins("emagged [src]'s inner circuits")
 
 /obj/machinery/bot/examine(mob/user)
-	..()
+	..(user)
 	if (src.health < maxhealth)
 		if (src.health > maxhealth/3)
 			user << "<span class='warning'>[src]'s parts look loose.</span>"
 		else
 			user << "<span class='danger'>[src]'s parts look very loose!</span>"
-
-/obj/machinery/bot/attack_alien(var/mob/living/carbon/alien/user as mob)
-	if(flags & INVULNERABLE)
-		return
-	src.health -= rand(15,30)*brute_dam_coeff
-	src.visible_message("<span class='danger'>[user] has slashed [src]!</span>")
-	playsound(get_turf(src), 'sound/weapons/slice.ogg', 25, 1, -1)
-	if(prob(10))
-		new /obj/effect/decal/cleanable/blood/oil(src.loc)
-	healthcheck()
-
-
-/obj/machinery/bot/attack_animal(var/mob/living/simple_animal/M as mob)
-	if(flags & INVULNERABLE)
-		return
-	if(M.melee_damage_upper == 0)	return
-	src.health -= M.melee_damage_upper
-	src.visible_message("<span class='danger'>[M] has [M.attacktext] [src]!</span>")
-	add_logs(M, src, "attacked", admin=0)
-	if(prob(10))
-		new /obj/effect/decal/cleanable/blood/oil(src.loc)
-	healthcheck()
-
-/obj/machinery/bot/proc/declare() //Signals a medical or security HUD user to a relevant bot's activity.
-	var/hud_user_list = list() //Determines which userlist to use.
-	switch(bot_type) //Made into a switch so more HUDs can be added easily.
-		if(SEC_BOT) //Securitrons and ED-209
-			hud_user_list = sec_hud_users
-		if(MED_BOT) //Medibots
-			hud_user_list = med_hud_users
-	var/area/myturf = get_turf(src)
-	for(var/mob/huduser in hud_user_list)
-		var/turf/mobturf = get_turf(huduser)
-		if(mobturf.z == myturf.z)
-			huduser.show_message(declare_message,1)
-
+	return
 
 /obj/machinery/bot/attackby(obj/item/weapon/W as obj, mob/user as mob)
-	if(flags & INVULNERABLE)
-		return
 	if(istype(W, /obj/item/weapon/screwdriver))
 		if(!locked)
 			open = !open
@@ -108,7 +61,7 @@
 		if(health < maxhealth)
 			if(open)
 				health = min(maxhealth, health+10)
-				user.visible_message("<span class='danger'>[user] repairs [src]!</span>","<span class='notice'>You repair [src]!</span>")
+				user.visible_message("\red [user] repairs [src]!","\blue You repair [src]!")
 			else
 				user << "<span class='notice'>Unable to repair with the maintenance panel closed.</span>"
 		else
@@ -128,28 +81,22 @@
 			..()
 
 /obj/machinery/bot/bullet_act(var/obj/item/projectile/Proj)
-	if(flags & INVULNERABLE)
+	if(!(Proj.damage_type == BRUTE || Proj.damage_type == BURN))
 		return
 	health -= Proj.damage
 	..()
 	healthcheck()
 
 /obj/machinery/bot/meteorhit()
-	if(flags & INVULNERABLE)
-		return
 	src.explode()
 	return
 
 /obj/machinery/bot/blob_act()
-	if(flags & INVULNERABLE)
-		return
 	src.health -= rand(20,40)*fire_dam_coeff
 	healthcheck()
 	return
 
 /obj/machinery/bot/ex_act(severity)
-	if(flags & INVULNERABLE)
-		return
 	switch(severity)
 		if(1.0)
 			src.explode()
@@ -168,8 +115,6 @@
 	return
 
 /obj/machinery/bot/emp_act(severity)
-	if(flags & INVULNERABLE)
-		return
 	var/was_on = on
 	stat |= EMPED
 	var/obj/effect/overlay/pulse2 = new/obj/effect/overlay ( src.loc )
@@ -177,10 +122,10 @@
 	pulse2.icon_state = "empdisable"
 	pulse2.name = "emp sparks"
 	pulse2.anchored = 1
-	pulse2.dir = pick(cardinal)
+	pulse2.set_dir(pick(cardinal))
 
 	spawn(10)
-		qdel(pulse2)
+		pulse2.delete()
 	if (on)
 		turn_off()
 	spawn(severity*300)
@@ -190,8 +135,20 @@
 
 
 /obj/machinery/bot/attack_ai(mob/user as mob)
-	src.add_hiddenprint(user)
 	src.attack_hand(user)
+
+/obj/machinery/bot/attack_hand(var/mob/living/carbon/human/user)
+
+	if(!istype(user))
+		return ..()
+
+	if(user.species.can_shred(user))
+		src.health -= rand(15,30)*brute_dam_coeff
+		src.visible_message("\red <B>[user] has slashed [src]!</B>")
+		playsound(src.loc, 'sound/weapons/slice.ogg', 25, 1, -1)
+		if(prob(10))
+			new /obj/effect/decal/cleanable/blood/oil(src.loc)
+		healthcheck()
 
 /******************************************************************/
 // Navigation procs
@@ -247,7 +204,7 @@
 /proc/DirBlockedWithAccess(turf/loc,var/dir,var/obj/item/weapon/card/id/ID)
 	for(var/obj/structure/window/D in loc)
 		if(!D.density)			continue
-		if(D.is_fulltile())	return 1
+		if(D.dir == SOUTHWEST)	return 1
 		if(D.dir == dir)		return 1
 
 	for(var/obj/machinery/door/D in loc)
@@ -259,10 +216,3 @@
 			//if((dir & EAST ) && (D.dir & (NORTH|SOUTH)))	return !D.check_access(ID)
 		else return !D.check_access(ID)	// it's a real, air blocking door
 	return 0
-
-
-/obj/machinery/bot/cultify()
-	if(src.flags & INVULNERABLE)
-		return
-	else
-		qdel(src)

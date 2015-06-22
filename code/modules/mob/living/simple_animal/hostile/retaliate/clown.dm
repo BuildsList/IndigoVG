@@ -1,5 +1,5 @@
 /mob/living/simple_animal/hostile/retaliate/clown
-	name = "Clown"
+	name = "clown"
 	desc = "A denizen of clown planet"
 	icon_state = "clown"
 	icon_living = "clown"
@@ -13,7 +13,7 @@
 	speak = list("HONK", "Honk!", "Welcome to clown planet!")
 	emote_see = list("honks")
 	speak_chance = 1
-	a_intent = "hurt"
+	a_intent = "harm"
 	stop_automated_movement_when_pulled = 0
 	maxHealth = 75
 	health = 75
@@ -21,7 +21,7 @@
 	harm_intent_damage = 8
 	melee_damage_lower = 10
 	melee_damage_upper = 10
-	attacktext = "attacks"
+	attacktext = "attacked"
 	attack_sound = 'sound/items/bikehorn.ogg'
 
 	min_oxy = 5

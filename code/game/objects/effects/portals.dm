@@ -9,7 +9,6 @@
 	var/obj/item/target = null
 	var/creator = null
 	anchored = 1.0
-	w_type=NOT_RECYCLABLE
 
 /obj/effect/portal/Bumped(mob/M as mob|obj)
 	spawn(0)
@@ -23,10 +22,15 @@
 		return
 	return
 
+/obj/effect/portal/attack_hand(mob/user as mob)
+	spawn(0)
+		src.teleport(user)
+		return
+	return
+
 /obj/effect/portal/New()
-	..()
 	spawn(300)
-		qdel(src)
+		del(src)
 		return
 	return
 
@@ -41,14 +45,9 @@
 		del(src)
 		return
 	if (istype(M, /atom/movable))
-		var/area/A = get_area(target)
-		if(A && A.anti_ethereal)
-			visible_message("<span class='sinister'>A dark form vaguely ressembling a hand reaches through the portal and tears it apart before anything can go through.</span>")
-			del(src)
+		if(prob(failchance)) //oh dear a problem, put em in deep space
+			src.icon_state = "portal1"
+			do_teleport(M, locate(rand(5, world.maxx - 5), rand(5, world.maxy -5), 3), 0)
 		else
-			if(prob(failchance)) //oh dear a problem, put em in deep space
-				src.icon_state = "portal1"
-				do_teleport(M, locate(rand(5, world.maxx - 5), rand(5, world.maxy -5), 3), 0)
-			else
-				do_teleport(M, target, 1) ///You will appear adjacent to the beacon
+			do_teleport(M, target, 1) ///You will appear adjacent to the beacon
 

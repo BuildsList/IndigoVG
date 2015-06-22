@@ -23,16 +23,16 @@
 
 			if(dy || dx)
 				if(abs(dx) < abs(dy))
-					if(dy > 0)	usr.dir = NORTH
-					else		usr.dir = SOUTH
+					if(dy > 0)	usr.set_dir(NORTH)
+					else		usr.set_dir(SOUTH)
 				else
-					if(dx > 0)	usr.dir = EAST
-					else		usr.dir = WEST
+					if(dx > 0)	usr.set_dir(EAST)
+					else		usr.set_dir(WEST)
 			else
-				if(pixel_y > 16)		usr.dir = NORTH
-				else if(pixel_y < -16)	usr.dir = SOUTH
-				else if(pixel_x > 16)	usr.dir = EAST
-				else if(pixel_x < -16)	usr.dir = WEST
+				if(pixel_y > 16)		usr.set_dir(NORTH)
+				else if(pixel_y < -16)	usr.set_dir(SOUTH)
+				else if(pixel_x > 16)	usr.set_dir(EAST)
+				else if(pixel_x < -16)	usr.set_dir(WEST)
 
 
 
@@ -347,8 +347,8 @@
 					src.hand_al(usr, usr.hand)
 		else
 			// ------- YOU ARE CLICKING ON AN OBJECT THAT'S INACCESSIBLE TO YOU AND IS NOT YOUR HUD -------
-			if((M_LASER in usr:mutations) && usr:a_intent == "harm" && world.time >= usr.next_move)
-				// ------- YOU HAVE THE M_LASER MUTATION, YOUR INTENT SET TO HURT AND IT'S BEEN MORE THAN A DECISECOND SINCE YOU LAS TATTACKED -------
+			if((LASER in usr:mutations) && usr:a_intent == "harm" && world.time >= usr.next_move)
+				// ------- YOU HAVE THE LASER MUTATION, YOUR INTENT SET TO HURT AND IT'S BEEN MORE THAN A DECISECOND SINCE YOU LAS TATTACKED -------
 
 				var/turf/T = get_turf(usr)
 				var/turf/U = get_turf(src)

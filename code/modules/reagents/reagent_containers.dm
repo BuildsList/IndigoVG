@@ -3,7 +3,7 @@
 	desc = "..."
 	icon = 'icons/obj/chemical.dmi'
 	icon_state = null
-	w_class = 1
+	w_class = 2
 	var/amount_per_transfer_from_this = 5
 	var/possible_transfer_amounts = list(5,10,15,25,30)
 	var/volume = 30
@@ -18,16 +18,19 @@
 
 /obj/item/weapon/reagent_containers/New()
 	..()
-	create_reagents(volume)
-
 	if (!possible_transfer_amounts)
 		src.verbs -= /obj/item/weapon/reagent_containers/verb/set_APTFT
+	var/datum/reagents/R = new/datum/reagents(volume)
+	reagents = R
+	R.my_atom = src
 
 /obj/item/weapon/reagent_containers/attack_self(mob/user as mob)
 	return
 
 /obj/item/weapon/reagent_containers/attack(mob/M as mob, mob/user as mob, def_zone)
-	return
+	if(can_operate(M))        //Checks if mob is lying down on table for surgery
+		if(do_surgery(M,user,src))
+			return
 
 // this prevented pills, food, and other things from being picked up by bags.
 // possibly intentional, but removing it allows us to not duplicate functionality.

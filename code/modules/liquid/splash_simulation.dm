@@ -29,7 +29,6 @@ datum/puddle/Del()
 	..()
 
 client/proc/splash()
-	set category = "Debug"
 	var/volume = input("Volume?","Volume?", 0 ) as num
 	if(!isnum(volume)) return
 	if(volume <= LIQUID_TRANSFER_THRESHOLD) return
@@ -74,7 +73,7 @@ obj/effect/liquid/proc/spread()
 
 	//world << "DEBUG: liquid spread!"
 	var/surrounding_volume = 0
-	var/list/spread_directions = cardinal
+	var/list/spread_directions = list(1,2,4,8)
 	var/turf/loc_turf = loc
 	for(var/direction in spread_directions)
 		var/turf/T = get_step(src,direction)
@@ -132,7 +131,7 @@ obj/effect/liquid/proc/apply_calculated_effect()
 obj/effect/liquid/Move()
 	return 0
 
-obj/effect/liquid/Destroy()
+obj/effect/liquid/Del()
 	src.controller.liquid_objects.Remove(src)
 	..()
 
@@ -169,7 +168,7 @@ turf/space/can_leave_liquid(from_direction)
 
 turf/simulated/floor/can_accept_liquid(from_direction)
 	for(var/obj/structure/window/W in src)
-		if(W.is_fulltile())
+		if(W.dir in list(5,6,9,10))
 			return 0
 		if(W.dir & from_direction)
 			return 0
@@ -180,7 +179,7 @@ turf/simulated/floor/can_accept_liquid(from_direction)
 
 turf/simulated/floor/can_leave_liquid(to_direction)
 	for(var/obj/structure/window/W in src)
-		if(W.is_fulltile())
+		if(W.dir in list(5,6,9,10))
 			return 0
 		if(W.dir & to_direction)
 			return 0

@@ -46,8 +46,8 @@
 
 	if(fresh && prob(40))
 		fresh--
-		var/datum/reagent/blood = reagents.reagent_list["blood"]
-		blood_splatter(src,blood,1)
+		var/datum/reagent/blood/B = locate(/datum/reagent/blood) in reagents.reagent_list
+		blood_splatter(src,B,1)
 
 	health -= rand(1,3)
 	if(health <= 0)
@@ -75,11 +75,8 @@
 
 /obj/item/organ/proc/update()
 
-	if(!organ_tag || !organ_type)
-		return
-
 	if(!organ_data)
-		organ_data = new organ_type
+		organ_data = new organ_type()
 
 	if(robotic)
 		organ_data.robotic = robotic
@@ -101,6 +98,7 @@
 /obj/item/organ/lungs
 	name = "lungs"
 	icon_state = "lungs"
+	gender = PLURAL
 	prosthetic_name = "gas exchange system"
 	prosthetic_icon = "lungs-prosthetic"
 	organ_tag = "lungs"
@@ -109,6 +107,7 @@
 /obj/item/organ/kidneys
 	name = "kidneys"
 	icon_state = "kidneys"
+	gender = PLURAL
 	prosthetic_name = "prosthetic kidneys"
 	prosthetic_icon = "kidneys-prosthetic"
 	organ_tag = "kidneys"
@@ -117,11 +116,11 @@
 /obj/item/organ/eyes
 	name = "eyeballs"
 	icon_state = "eyes"
+	gender = PLURAL
 	prosthetic_name = "visual prosthesis"
 	prosthetic_icon = "eyes-prosthetic"
 	organ_tag = "eyes"
 	organ_type = /datum/organ/internal/eyes
-
 	var/eye_colour
 
 /obj/item/organ/liver
@@ -136,6 +135,7 @@
 	name = "appendix"
 	icon_state = "appendix"
 	organ_tag = "appendix"
+	organ_type = /datum/organ/internal/appendix
 
 //These are here so they can be printed out via the fabricator.
 /obj/item/organ/heart/prosthetic
@@ -156,12 +156,25 @@
 /obj/item/organ/appendix
 	name = "appendix"
 
-/obj/item/organ/proc/removed(var/mob/living/target,var/mob/living/user)
+/obj/item/organ/proc/removed(var/mob/living/carbon/human/target,var/mob/living/user)
 
-	if(!target || !user)
+	if(!istype(target) || !organ_data)
 		return
 
-	if(organ_data.vital)
+	target.internal_organs_by_name[organ_tag] = null
+	target.internal_organs_by_name -= organ_tag
+	target.internal_organs -= organ_data
+
+	var/datum/organ/external/affected = target.get_organ(organ_data.parent_organ)
+	affected.internal_organs -= organ_data
+
+	loc = target.loc
+	organ_data.rejecting = null
+	var/datum/reagent/blood/organ_blood = locate(/datum/reagent/blood) in reagents.reagent_list
+	if(!organ_blood || !organ_blood.data["blood_DNA"])
+		target.vessel.trans_to(src, 5, 1, 1)
+
+	if(target && user && organ_data.vital)
 		user.attack_log += "\[[time_stamp()]\]<font color='red'> removed a vital organ ([src]) from [target.name] ([target.ckey]) (INTENT: [uppertext(user.a_intent)])</font>"
 		target.attack_log += "\[[time_stamp()]\]<font color='orange'> had a vital organ ([src]) removed by [user.name] ([user.ckey]) (INTENT: [uppertext(user.a_intent)])</font>"
 		msg_admin_attack("[user.name] ([user.ckey]) removed a vital organ ([src]) from [target.name] ([target.ckey]) (INTENT: [uppertext(user.a_intent)]) (<A HREF='?_src_=holder;adminplayerobservecoodjump=1;X=[user.x];Y=[user.y];Z=[user.z]'>JMP</a>)")
@@ -201,18 +214,40 @@
 		H.b_eyes = 0
 		H.update_body()
 
-/obj/item/organ/proc/replaced(var/mob/living/target)
-	return
+/obj/item/organ/proc/replaced(var/mob/living/carbon/human/target,var/datum/organ/external/affected)
 
-/obj/item/organ/eyes/replaced(var/mob/living/target)
+	if(!istype(target)) return
+
+	var/datum/reagent/blood/transplant_blood = locate(/datum/reagent/blood) in reagents.reagent_list
+	if(!transplant_blood)
+		organ_data.transplant_data = list()
+		organ_data.transplant_data["species"] =    target.species.name
+		organ_data.transplant_data["blood_type"] = target.dna.b_type
+		organ_data.transplant_data["blood_DNA"] =  target.dna.unique_enzymes
+	else
+		organ_data.transplant_data = list()
+		organ_data.transplant_data["species"] =    transplant_blood.data["species"]
+		organ_data.transplant_data["blood_type"] = transplant_blood.data["blood_type"]
+		organ_data.transplant_data["blood_DNA"] =  transplant_blood.data["blood_DNA"]
+
+	organ_data.organ_holder = null
+	organ_data.owner = target
+	target.internal_organs |= organ_data
+	affected.internal_organs |= organ_data
+	target.internal_organs_by_name[organ_tag] = organ_data
+	organ_data.status |= ORGAN_CUT_AWAY
+
+	del(src)
+
+/obj/item/organ/eyes/replaced(var/mob/living/carbon/human/target)
 
 	// Apply our eye colour to the target.
-	var/mob/living/carbon/human/H = target
-	if(istype(H) && eye_colour)
-		H.r_eyes = eye_colour[1]
-		H.g_eyes = eye_colour[2]
-		H.b_eyes = eye_colour[3]
-		H.update_body()
+	if(istype(target) && eye_colour)
+		target.r_eyes = eye_colour[1]
+		target.g_eyes = eye_colour[2]
+		target.b_eyes = eye_colour[3]
+		target.update_body()
+	..()
 
 /obj/item/organ/proc/bitten(mob/user)
 
@@ -220,8 +255,8 @@
 		return
 
 	user << "\blue You take an experimental bite out of \the [src]."
-	var/datum/reagent/blood = reagents.reagent_list["blood"]
-	blood_splatter(src,blood,1)
+	var/datum/reagent/blood/B = locate(/datum/reagent/blood) in reagents.reagent_list
+	blood_splatter(src,B,1)
 
 
 	user.drop_from_inventory(src)

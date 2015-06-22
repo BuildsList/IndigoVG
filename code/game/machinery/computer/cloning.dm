@@ -1,5 +1,5 @@
 /obj/machinery/computer/cloning
-	name = "Cloning console"
+	name = "cloning control console"
 	icon = 'icons/obj/computer.dmi'
 	icon_state = "dna"
 	circuit = "/obj/item/weapon/circuitboard/cloning"
@@ -13,8 +13,6 @@
 	var/datum/dna2/record/active_record = null
 	var/obj/item/weapon/disk/data/diskette = null //Mostly so the geneticist can steal everything.
 	var/loading = 0 // Nice loading text
-
-	l_color = "#0000FF"
 
 /obj/machinery/computer/cloning/New()
 	..()
@@ -49,7 +47,7 @@
 /obj/machinery/computer/cloning/proc/findcloner()
 	var/obj/machinery/clonepod/podf = null
 
-	for(dir in cardinal)
+	for(dir in list(NORTH,EAST,SOUTH,WEST))
 
 		podf = locate(/obj/machinery/clonepod, get_step(src, dir))
 
@@ -71,11 +69,7 @@
 		..()
 	return
 
-/obj/machinery/computer/cloning/attack_paw(mob/user as mob)
-	return attack_hand(user)
-
 /obj/machinery/computer/cloning/attack_ai(mob/user as mob)
-	src.add_hiddenprint(user)
 	return attack_hand(user)
 
 /obj/machinery/computer/cloning/attack_hand(mob/user as mob)
@@ -88,12 +82,10 @@
 	updatemodules()
 
 	var/dat = "<h3>Cloning System Control</h3>"
+	dat += "<font size=-1><a href='byond://?src=\ref[src];refresh=1'>Refresh</a></font>"
 
-	// AUTOFIXED BY fix_string_idiocy.py
-	// C:\Users\Rob\Documents\Projects\vgstation13\code\game\machinery\computer\cloning.dm:168: dat += "<font size=-1><a href='byond://?src=\ref[src];refresh=1'>Refresh</a></font>"
-	dat += {"<font size=-1><a href='byond://?src=\ref[src];refresh=1'>Refresh</a></font>
-		<br><tt>[temp]</tt><br>"}
-	// END AUTOFIX
+	dat += "<br><tt>[temp]</tt><br>"
+
 	switch(src.menu)
 		if(1)
 			// Modules
@@ -132,41 +124,27 @@
 				dat += "Biomass: <i>[src.pod1.biomass]</i><br>"
 
 			// Database
-
-			// AUTOFIXED BY fix_string_idiocy.py
-			// C:\Users\Rob\Documents\Projects\vgstation13\code\game\machinery\computer\cloning.dm:210: dat += "<h4>Database Functions</h4>"
-			dat += {"<h4>Database Functions</h4>
-				<a href='byond://?src=\ref[src];menu=2'>View Records</a><br>"}
-			// END AUTOFIX
+			dat += "<h4>Database Functions</h4>"
+			dat += "<a href='byond://?src=\ref[src];menu=2'>View Records</a><br>"
 			if (src.diskette)
 				dat += "<a href='byond://?src=\ref[src];disk=eject'>Eject Disk</a>"
 
 
 		if(2)
-
-			// AUTOFIXED BY fix_string_idiocy.py
-			// C:\Users\Rob\Documents\Projects\vgstation13\code\game\machinery\computer\cloning.dm:217: dat += "<h4>Current records</h4>"
-			dat += {"<h4>Current records</h4>
-				<a href='byond://?src=\ref[src];menu=1'>Back</a><br><ul>"}
-			// END AUTOFIX
+			dat += "<h4>Current records</h4>"
+			dat += "<a href='byond://?src=\ref[src];menu=1'>Back</a><br><br>"
 			for(var/datum/dna2/record/R in src.records)
-				dat += "<li><a href='byond://?src=\ref[src];view_rec=\ref[R]'>[R.dna.real_name && R.dna.real_name != "" ? R.dna.real_name : "Unknown"]</a><li>"
+				dat += "<li><a href='byond://?src=\ref[src];view_rec=\ref[R]'>[R.dna.real_name]</a></li>"
 
 		if(3)
+			dat += "<h4>Selected Record</h4>"
+			dat += "<a href='byond://?src=\ref[src];menu=2'>Back</a><br>"
 
-			// AUTOFIXED BY fix_string_idiocy.py
-			// C:\Users\Rob\Documents\Projects\vgstation13\code\game\machinery\computer\cloning.dm:223: dat += "<h4>Selected Record</h4>"
-			dat += {"<h4>Selected Record</h4>
-				<a href='byond://?src=\ref[src];menu=2'>Back</a><br>"}
-			// END AUTOFIX
 			if (!src.active_record)
 				dat += "<font color=red>ERROR: Record not found.</font>"
 			else
-				// AUTOFIXED BY fix_string_idiocy.py
-				// C:\Users\Rob\Documents\Projects\vgstation13\code\game\machinery\computer\cloning.dm:229: dat += "<br><font size=1><a href='byond://?src=\ref[src];del_rec=1'>Delete Record</a></font><br>"
 				dat += {"<br><font size=1><a href='byond://?src=\ref[src];del_rec=1'>Delete Record</a></font><br>
-					<b>Name:</b> [src.active_record.dna.real_name && src.active_record.dna.real_name != "" ? src.active_record.dna.real_name : "Unknown"]<br>"}
-				// END AUTOFIX
+					<b>Name:</b> [src.active_record.dna.real_name]<br>"}
 				var/obj/item/weapon/implant/health/H = null
 				if(src.active_record.implant)
 					H=locate(src.active_record.implant)
@@ -177,15 +155,12 @@
 					dat += "<font color=red>Unable to locate implant.</font><br>"
 
 				if (!isnull(src.diskette))
+					dat += "<a href='byond://?src=\ref[src];disk=load'>Load from disk.</a>"
 
-					// AUTOFIXED BY fix_string_idiocy.py
-					// C:\Users\Rob\Documents\Projects\vgstation13\code\game\machinery\computer\cloning.dm:240: dat += "<a href='byond://?src=\ref[src];disk=load'>Load from disk.</a>"
-					dat += {"<a href='byond://?src=\ref[src];disk=load'>Load from disk.</a>
-						| Save: <a href='byond://?src=\ref[src];save_disk=ue'>UI + UE</a>
-						| Save: <a href='byond://?src=\ref[src];save_disk=ui'>UI</a>
-						| Save: <a href='byond://?src=\ref[src];save_disk=se'>SE</a>
-						<br>"}
-					// END AUTOFIX
+					dat += " | Save: <a href='byond://?src=\ref[src];save_disk=ue'>UI + UE</a>"
+					dat += " | Save: <a href='byond://?src=\ref[src];save_disk=ui'>UI</a>"
+					dat += " | Save: <a href='byond://?src=\ref[src];save_disk=se'>SE</a>"
+					dat += "<br>"
 				else
 					dat += "<br>" //Keeping a line empty for appearances I guess.
 
@@ -200,21 +175,20 @@
 		if(4)
 			if (!src.active_record)
 				src.menu = 2
+			dat = "[src.temp]<br>"
+			dat += "<h4>Confirm Record Deletion</h4>"
 
-			// AUTOFIXED BY fix_string_idiocy.py
-			// C:\Users\Rob\Documents\Projects\vgstation13\code\game\machinery\computer\cloning.dm:258: dat = "[src.temp]<br>"
-			dat = {"[src.temp]<br>
-				<h4>Confirm Record Deletion</h4>
-				<b><a href='byond://?src=\ref[src];del_rec=1'>Scan card to confirm.</a></b><br>
-				<b><a href='byond://?src=\ref[src];menu=3'>No</a></b>"}
-			// END AUTOFIX
+			dat += "<b><a href='byond://?src=\ref[src];del_rec=1'>Scan card to confirm.</a></b><br>"
+			dat += "<b><a href='byond://?src=\ref[src];menu=3'>No</a></b>"
+
+
 	user << browse(dat, "window=cloning")
 	onclose(user, "cloning")
 	return
 
 /obj/machinery/computer/cloning/Topic(href, href_list)
 	if(..())
-		return
+		return 1
 
 	if(loading)
 		return
@@ -306,7 +280,7 @@
 				src.diskette.buf.types=DNA2_BUF_UI|DNA2_BUF_UE
 			if("se")
 				src.diskette.buf.types=DNA2_BUF_SE
-		src.diskette.name = "data disk - '[src.active_record.dna.real_name && src.active_record.dna.real_name != "" ? src.active_record.dna.real_name : "Unknown"]'"
+		src.diskette.name = "data disk - '[src.active_record.dna.real_name]'"
 		src.temp = "Save \[[href_list["save_disk"]]\] successful."
 
 	else if (href_list["refresh"])
@@ -357,11 +331,16 @@
 	return
 
 /obj/machinery/computer/cloning/proc/scan_mob(mob/living/carbon/human/subject as mob)
-	if ((isnull(subject)) || (!(ishuman(subject))) || (!subject.dna) || (istype(subject, /mob/living/carbon/human/manifested)))
+	if ((isnull(subject)) || (!(ishuman(subject))) || (!subject.dna))
 		scantemp = "Error: Unable to locate valid genetic data."
 		return
 	if (!subject.has_brain())
-		scantemp = "Error: No signs of intelligence detected."
+		if(istype(subject, /mob/living/carbon/human))
+			var/mob/living/carbon/human/H = subject
+			if(H.species.has_organ["brain"])
+				scantemp = "Error: No signs of intelligence detected."
+		else
+			scantemp = "Error: No signs of intelligence detected."
 		return
 	if (subject.suiciding == 1)
 		scantemp = "Error: Subject's brain is not responding to scanning stimuli."
@@ -369,7 +348,10 @@
 	if ((!subject.ckey) || (!subject.client))
 		scantemp = "Error: Mental interface failure."
 		return
-	if (M_NOCLONE in subject.mutations)
+	if (NOCLONE in subject.mutations)
+		scantemp = "Error: Mental interface failure."
+		return
+	if (subject.species && subject.species.flags & NO_SCAN)
 		scantemp = "Error: Mental interface failure."
 		return
 	if (!isnull(find_record(subject.ckey)))
@@ -378,18 +360,14 @@
 
 	subject.dna.check_integrity()
 
-	// Borer sanity checks.
-	var/mob/living/simple_animal/borer/B=subject.has_brain_worms()
-	if(B && B.controlling)
-		// This shouldn't happen, but lolsanity.
-		subject.do_release_control(1)
-
 	var/datum/dna2/record/R = new /datum/dna2/record()
 	R.dna=subject.dna
 	R.ckey = subject.ckey
 	R.id= copytext(md5(subject.real_name), 2, 6)
 	R.name=R.dna.real_name
 	R.types=DNA2_BUF_UI|DNA2_BUF_UE|DNA2_BUF_SE
+	R.languages=subject.languages
+	R.flavor=subject.flavor_texts.Copy()
 
 	//Add an implant if needed
 	var/obj/item/weapon/implant/health/imp = locate(/obj/item/weapon/implant/health, subject)
@@ -417,12 +395,13 @@
 	return selected_record
 
 /obj/machinery/computer/cloning/update_icon()
+
 	if(stat & BROKEN)
-		icon_state = "broken"
-	else if(powered())
-		icon_state = initial(icon_state)
-		stat &= ~NOPOWER
+		icon_state = "commb"
 	else
-		spawn(rand(0, 15))
+		if(stat & NOPOWER)
 			src.icon_state = "c_unpowered"
 			stat |= NOPOWER
+		else
+			icon_state = initial(icon_state)
+			stat &= ~NOPOWER
