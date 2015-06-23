@@ -10,6 +10,7 @@
 	invocation = "KN'A FTAGHU, PUCK 'BTHNK!"
 	invocation_type = "shout"
 	range = 7
+	cooldown_min = 30 //30 deciseconds reduction per rank
 	selection_type = "range"
 	var/list/compatible_mobs = list(/mob/living/carbon/human, /mob/living/carbon/monkey)
 
@@ -28,23 +29,13 @@
 		user << "<span class='notice'>They are too far away!</span>"
 		return
 
-	var/obj/item/clothing/mask/horsehead/magic/magichead = new /obj/item/clothing/mask/horsehead/magic
+	var/obj/item/clothing/mask/horsehead/magichead = new /obj/item/clothing/mask/horsehead
+	magichead.canremove = 0		//curses!
+	magichead.flags_inv = null	//so you can still see their face
+	magichead.voicechange = 1	//NEEEEIIGHH
 	target.visible_message(	"<span class='danger'>[target]'s face  lights up in fire, and after the event a horse's head takes its place!</span>", \
 							"<span class='danger'>Your face burns up, and shortly after the fire you realise you have the face of a horse!</span>")
-	target.equip_to_slot(magichead, slot_wear_mask)
+	target.drop_from_inventory(target.wear_mask)
+	target.equip_to_slot_if_possible(magichead, slot_wear_mask, 1, 1)
 
 	flick("e_flash", target.flash)
-
-//item used by the horsehead spell
-/obj/item/clothing/mask/horsehead/magic
-	//flags_inv = null	//so you can still see their face... no. How can you recognize someone when their face is completely different?
-	voicechange = 1		//NEEEEIIGHH
-
-	dropped(mob/user as mob)
-		canremove = 1
-		..()
-	
-	equipped(var/mob/user, var/slot)
-		if (slot == slot_wear_mask)
-			canremove = 0		//curses!
-		..()

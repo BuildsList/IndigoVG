@@ -1,0 +1,15 @@
+# Whitelist one ckey for one species:
+ckey - diona
+
+# Whitelist one ckey for multiple species ("All" also works)
+thesarkazmus - All
+
+# Whitelist one species for everyone:
+* - vox
+* - skrell
+* - tajaran
+* - unathi
+* - hylotl
+
+# Whitelist unathi for everyone IF they're a janitor:
+job=janitor - unathi

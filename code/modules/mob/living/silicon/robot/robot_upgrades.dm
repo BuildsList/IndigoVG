@@ -34,8 +34,6 @@
 	R.base_icon = "robot"
 	R.icon_state = "robot"
 	R.updateicon()
-	R.languages = list()
-	R.speech_synthesizer_langs = list()
 
 	return 1
 
@@ -108,7 +106,7 @@
 		usr << "There's no mounting point for the module!"
 		return 0
 
-	var/obj/item/weapon/gun/energy/taser/mounted/cyborg/T = locate() in R.module
+	var/obj/item/weapon/gun/energy/taser/cyborg/T = locate() in R.module
 	if(!T)
 		T = locate() in R.module.contents
 	if(!T)
@@ -130,7 +128,7 @@
 /obj/item/borg/upgrade/jetpack/
 	name = "Mining Borg Jetpack"
 	desc = "A carbon dioxide jetpack suitable for low-gravity mining operations"
-	construction_cost = list("metal"=10000,"phoron"=15000,"uranium" = 20000)
+	construction_cost = list("metal"=10000,"plasma"=15000,"uranium" = 20000)
 	icon_state = "cyborg_upgrade3"
 	require_module = 1
 
@@ -140,7 +138,7 @@
 		usr << "There's no mounting point for the module!"
 		return 0
 	else
-		R.module.modules += new/obj/item/weapon/tank/jetpack/carbondioxide
+		R.module.modules += new/obj/item/weapon/tank/jetpack/carbondioxide(R.module)
 		for(var/obj/item/weapon/tank/jetpack/carbondioxide in R.module.modules)
 			R.internals = src
 		R.icon_state="Miner+j"

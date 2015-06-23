@@ -2,33 +2,29 @@
 //
 // The datum containing all the chunks.
 
+var/const/CHUNK_SIZE = 16 // Only chunk sizes that are to the power of 2. E.g: 2, 4, 8, 16, etc..
+
 var/datum/cameranet/cameranet = new()
 
 /datum/cameranet
-	// The cameras on the map, no matter if they work or not. Updated in obj/machinery/camera.dm by New() and Del().
+	// The cameras on the map, no matter if they work or not. Updated in obj/machinery/camera.dm by New() and Destroy().
 	var/list/cameras = list()
-	var/cameras_unsorted = 1
 	// The chunks of the map, mapping the areas that the cameras can see.
 	var/list/chunks = list()
 	var/ready = 0
 
-/datum/cameranet/proc/process_sort()
-	if(cameras_unsorted)
-		cameras = dd_sortedObjectList(cameras)
-		cameras_unsorted = 0
-
 // Checks if a chunk has been Generated in x, y, z.
 /datum/cameranet/proc/chunkGenerated(x, y, z)
-	x &= ~0xf
-	y &= ~0xf
+	x &= ~(CHUNK_SIZE - 1)
+	y &= ~(CHUNK_SIZE - 1)
 	var/key = "[x],[y],[z]"
 	return (chunks[key])
 
 // Returns the chunk in the x, y, z.
 // If there is no chunk, it creates a new chunk and returns that.
 /datum/cameranet/proc/getCameraChunk(x, y, z)
-	x &= ~0xf
-	y &= ~0xf
+	x &= ~(CHUNK_SIZE - 1)
+	y &= ~(CHUNK_SIZE - 1)
 	var/key = "[x],[y],[z]"
 	if(!chunks[key])
 		chunks[key] = new /datum/camerachunk(null, x, y, z)
@@ -37,18 +33,18 @@ var/datum/cameranet/cameranet = new()
 
 // Updates what the aiEye can see. It is recommended you use this when the aiEye moves or it's location is set.
 
-/datum/cameranet/proc/visibility(mob/aiEye/ai)
+/datum/cameranet/proc/visibility(mob/camera/aiEye/ai)
 	// 0xf = 15
-	var/x1 = max(0, ai.x - 16) & ~0xf
-	var/y1 = max(0, ai.y - 16) & ~0xf
-	var/x2 = min(world.maxx, ai.x + 16) & ~0xf
-	var/y2 = min(world.maxy, ai.y + 16) & ~0xf
+	var/x1 = max(0, ai.x - 16) & ~(CHUNK_SIZE - 1)
+	var/y1 = max(0, ai.y - 16) & ~(CHUNK_SIZE - 1)
+	var/x2 = min(world.maxx, ai.x + 16) & ~(CHUNK_SIZE - 1)
+	var/y2 = min(world.maxy, ai.y + 16) & ~(CHUNK_SIZE - 1)
 
 	var/list/visibleChunks = list()
 
-	for(var/x = x1; x <= x2; x += 16)
-		for(var/y = y1; y <= y2; y += 16)
-			visibleChunks += getCameraChunk(x, y, ai.z)
+	for(var/x = x1; x <= x2; x += CHUNK_SIZE)
+		for(var/y = y1; y <= y2; y += CHUNK_SIZE)
+			visibleChunks |= getCameraChunk(x, y, ai.z)
 
 	var/list/remove = ai.visibleCameraChunks - visibleChunks
 	var/list/add = visibleChunks - ai.visibleCameraChunks
@@ -109,25 +105,23 @@ var/datum/cameranet/cameranet = new()
 
 	var/turf/T = get_turf(c)
 	if(T)
-		var/x1 = max(0, T.x - 8) & ~0xf
-		var/y1 = max(0, T.y - 8) & ~0xf
-		var/x2 = min(world.maxx, T.x + 8) & ~0xf
-		var/y2 = min(world.maxy, T.y + 8) & ~0xf
+		var/x1 = max(0, T.x - (CHUNK_SIZE / 2)) & ~(CHUNK_SIZE - 1)
+		var/y1 = max(0, T.y - (CHUNK_SIZE / 2)) & ~(CHUNK_SIZE - 1)
+		var/x2 = min(world.maxx, T.x + (CHUNK_SIZE / 2)) & ~(CHUNK_SIZE - 1)
+		var/y2 = min(world.maxy, T.y + (CHUNK_SIZE / 2)) & ~(CHUNK_SIZE - 1)
 
 		//world << "X1: [x1] - Y1: [y1] - X2: [x2] - Y2: [y2]"
 
-		for(var/x = x1; x <= x2; x += 16)
-			for(var/y = y1; y <= y2; y += 16)
+		for(var/x = x1; x <= x2; x += CHUNK_SIZE)
+			for(var/y = y1; y <= y2; y += CHUNK_SIZE)
 				if(chunkGenerated(x, y, T.z))
 					var/datum/camerachunk/chunk = getCameraChunk(x, y, T.z)
-					// Only add actual cameras to the list of cameras
-					if(istype(c, /obj/machinery/camera))
-						if(choice == 0)
-							// Remove the camera.
-							chunk.cameras -= c
-						else if(choice == 1)
-							// You can't have the same camera in the list twice.
-							chunk.cameras |= c
+					if(choice == 0)
+						// Remove the camera.
+						chunk.cameras -= c
+					else if(choice == 1)
+						// You can't have the same camera in the list twice.
+						chunk.cameras |= c
 					chunk.hasChanged()
 
 // Will check if a mob is on a viewable turf. Returns 1 if it is, otherwise returns 0.
@@ -138,6 +132,7 @@ var/datum/cameranet/cameranet = new()
 	var/turf/position = get_turf(target)
 	return checkTurfVis(position)
 
+
 /datum/cameranet/proc/checkTurfVis(var/turf/position)
 	var/datum/camerachunk/chunk = getCameraChunk(position.x, position.y, position.z)
 	if(chunk)
@@ -146,6 +141,7 @@ var/datum/cameranet/cameranet = new()
 		if(chunk.visibleTurfs[position])
 			return 1
 	return 0
+
 
 // Debug verb for VVing the chunk that the turf is in.
 /*

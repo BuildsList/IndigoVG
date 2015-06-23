@@ -10,15 +10,16 @@
 	var/machinedir = SOUTHEAST
 
 /obj/machinery/mineral/stacking_unit_console/New()
-
 	..()
-
 	spawn(7)
 		src.machine = locate(/obj/machinery/mineral/stacking_machine, get_step(src, machinedir))
 		if (machine)
-			machine.console = src
+			machine.CONSOLE = src
 		else
 			del(src)
+
+/obj/machinery/mineral/stacking_unit_console/process()
+	updateDialog()
 
 /obj/machinery/mineral/stacking_unit_console/attack_hand(mob/user)
 	add_fingerprint(user)
@@ -29,38 +30,39 @@
 
 	var/dat
 
-	dat += text("<h1>Stacking unit console</h1><hr><table>")
+	dat += text("<b>Stacking unit console</b><br><br>")
 
-	for(var/stacktype in machine.stack_storage)
-		if(machine.stack_storage[stacktype] > 0)
-			dat += "<tr><td width = 150><b>[capitalize(stacktype)]:</b></td><td width = 30>[machine.stack_storage[stacktype]]</td><td width = 50><A href='?src=\ref[src];release_stack=[stacktype]'>\[release\]</a></td></tr>"
-	dat += "</table><hr>"
-	dat += text("<br>Stacking: [machine.stack_amt] <A href='?src=\ref[src];change_stack=1'>\[change\]</a><br><br>")
+	for(var/typepath in machine.stacks)
+		var/obj/item/stack/stack=machine.stacks[typepath]
+		if(stack.amount)
+			dat += "[stack.name]: [stack.amount] <A href='?src=\ref[src];release=[typepath] '>Release</A><br>"
+
+	dat += text("<br>Stacking: [machine.stack_amt]<br><br>")
 
 	user << browse("[dat]", "window=console_stacking_machine")
 	onclose(user, "console_stacking_machine")
 
-
 /obj/machinery/mineral/stacking_unit_console/Topic(href, href_list)
 	if(..())
-		return 1
-
-	if(href_list["change_stack"])
-		var/choice = input("What would you like to set the stack amount to?") as null|anything in list(1,5,10,20,50)
-		if(!choice) return
-		machine.stack_amt = choice
-
-	if(href_list["release_stack"])
-		if(machine.stack_storage[href_list["release_stack"]] > 0)
-			var/stacktype = machine.stack_paths[href_list["release_stack"]]
-			var/obj/item/stack/sheet/S = new stacktype (get_turf(machine.output))
-			S.amount = machine.stack_storage[href_list["release_stack"]]
-			machine.stack_storage[href_list["release_stack"]] = 0
-
+		return
+	usr.set_machine(src)
 	src.add_fingerprint(usr)
+	if(href_list["release"])
+		var/typepath = href_list["release"]
+		if(typepath in machine.stacks)
+			var/obj/item/stack/stack=machine.stacks[typepath]
+			if (stack.amount > 0)
+				var/obj/item/stack/stacked=new typepath
+				stacked.amount=stack.amount
+				stacked.loc=machine.output.loc
+				stack.amount = 0
+				if(stack.amount==0)
+					machine.stacks.Remove(typepath)
+				else
+					machine.stacks[typepath]=stack
 	src.updateUsrDialog()
-
 	return
+
 
 /**********************Mineral stacking unit**************************/
 
@@ -71,29 +73,18 @@
 	icon_state = "stacker"
 	density = 1
 	anchored = 1.0
-	var/obj/machinery/mineral/stacking_unit_console/console
+	var/obj/machinery/mineral/stacking_unit_console/CONSOLE
+	var/stk_types = list()
+	var/stk_amt   = list()
 	var/obj/machinery/mineral/input = null
 	var/obj/machinery/mineral/output = null
-	var/list/stack_storage[0]
-	var/list/stack_paths[0]
-	var/stack_amt = 50; // Amount to stack before releassing
+
+	var/list/stacks=list()
+
+	var/stack_amt = 50 //amount to stack before releassing
 
 /obj/machinery/mineral/stacking_machine/New()
 	..()
-
-	for(var/stacktype in typesof(/obj/item/stack/sheet/mineral)-/obj/item/stack/sheet/mineral)
-		var/obj/item/stack/S = new stacktype(src)
-		stack_storage[S.name] = 0
-		stack_paths[S.name] = stacktype
-		del(S)
-
-	stack_storage["glass"] = 0
-	stack_paths["glass"] = /obj/item/stack/sheet/glass
-	stack_storage["metal"] = 0
-	stack_paths["metal"] = /obj/item/stack/sheet/metal
-	stack_storage["plasteel"] = 0
-	stack_paths["plasteel"] = /obj/item/stack/sheet/plasteel
-
 	spawn( 5 )
 		for (var/dir in cardinal)
 			src.input = locate(/obj/machinery/mineral/input, get_step(src, dir))
@@ -106,26 +97,36 @@
 
 /obj/machinery/mineral/stacking_machine/process()
 	if (src.output && src.input)
-		var/turf/T = get_turf(input)
-		for(var/obj/item/O in T.contents)
-			if(!O) return
-			if(istype(O,/obj/item/stack))
-				if(!isnull(stack_storage[O.name]))
-					stack_storage[O.name]++
-					O.loc = null
+		var/obj/item/O
+		var/obj/item/stack/stack
+		var/limit=10
+		while (locate(/obj/item, input.loc) && limit > 0)
+			O = locate(/obj/item, input.loc)
+			limit--
+			if (istype(O,/obj/item/stack))
+				if(!("[O.type]" in stacks))
+					stack=new O.type
+					stack.amount=O:amount
 				else
-					O.loc = output.loc
-			else
-				O.loc = output.loc
-
-	//Output amounts that are past stack_amt.
-	for(var/sheet in stack_storage)
-		if(stack_storage[sheet] >= stack_amt)
-			var/stacktype = stack_paths[sheet]
-			var/obj/item/stack/sheet/S = new stacktype (get_turf(output))
-			S.amount = stack_amt
-			stack_storage[sheet] -= stack_amt
-
-	console.updateUsrDialog()
+					stack=stacks["[O.type]"]
+					stack.amount += O:amount
+				stacks["[O.type]"]=stack
+				qdel(O)
+				continue
+			//if (istype(O,/obj/item/weapon/ore/slag))
+			//	qdel(O)
+			//	continue
+			O.loc = src.output.loc
+		for(var/typepath in stacks)
+			stack=stacks[typepath]
+			if(stack.amount >= stack_amt)
+				var/obj/item/stack/stacked=new stack.type
+				stacked.amount=stack_amt
+				stacked.loc=output.loc
+				stack.amount -= stack_amt
+				if(stack.amount==0)
+					stacks.Remove(typepath)
+				else
+					stacks[typepath]=stack
+				return
 	return
-

@@ -39,13 +39,13 @@ var/const/tk_maxrange = 15
 
 /obj/item/attack_tk(mob/user)
 	if(user.stat || !isturf(loc)) return
-	if((TK in user.mutations) && !user.get_active_hand()) // both should already be true to get here
+	if((M_TK in user.mutations) && !user.get_active_hand()) // both should already be true to get here
 		var/obj/item/tk_grab/O = new(src)
 		user.put_in_active_hand(O)
 		O.host = user
 		O.focus_object(src)
 	else
-		warning("Strange attack_tk(): TK([TK in user.mutations]) empty hand([!user.get_active_hand()])")
+		warning("Strange attack_tk(): TK([M_TK in user.mutations]) empty hand([!user.get_active_hand()])")
 	return
 
 
@@ -96,20 +96,23 @@ var/const/tk_maxrange = 15
 			focus.attack_self_tk(user)
 
 	afterattack(atom/target as mob|obj|turf|area, mob/living/user as mob|obj, proximity)//TODO: go over this
+		if(user)
+			user.delayNextAttack(8)
 		if(!target || !user)	return
 		if(last_throw+3 > world.time)	return
 		if(!host || host != user)
 			del(src)
 			return
-		if(!(TK in host.mutations))
+		if(!(M_TK in host.mutations))
 			del(src)
 			return
 		if(isobj(target) && !isturf(target.loc))
 			return
 
 		var/d = get_dist(user, target)
-		if(focus) d = max(d,get_dist(user,focus)) // whichever is further
-		switch(d)
+		if(focus)
+			d = max(d,get_dist(user,focus)) // whichever is further
+		/*switch(d)
 			if(0)
 				;
 			if(1 to 5) // not adjacent may mean blocked by window
@@ -121,7 +124,10 @@ var/const/tk_maxrange = 15
 				user.next_move += 10
 			else
 				user << "\blue Your mind won't reach that far."
-				return
+				return*/
+		if(d > tk_maxrange)
+			user << "<span class='warning'>Your mind won't reach that far.</span>"
+			return
 
 		if(!focus)
 			focus_object(target, user)
@@ -141,7 +147,7 @@ var/const/tk_maxrange = 15
 
 		else
 			apply_focus_overlay()
-			focus.throw_at(target, 10, 1, user)
+			focus.throw_at(target, 10, 1)
 			last_throw = world.time
 		return
 
@@ -167,17 +173,17 @@ var/const/tk_maxrange = 15
 		O.anchored = 1
 		O.density = 0
 		O.layer = FLY_LAYER
-		O.set_dir(pick(cardinal))
+		O.dir = pick(cardinal)
 		O.icon = 'icons/effects/effects.dmi'
 		O.icon_state = "nothing"
 		flick("empdisable",O)
 		spawn(5)
-			O.delete()
+			qdel(O)
 		return
 
 
 	update_icon()
-		overlays.Cut()
+		overlays.len = 0
 		if(focus && focus.icon && focus.icon_state)
 			overlays += icon(focus.icon,focus.icon_state)
 		return
@@ -198,7 +204,7 @@ var/const/tk_maxrange = 15
 //equip_to_slot_or_del(obj/item/W, slot, del_on_fail = 1)
 /*
 		if(istype(user, /mob/living/carbon))
-			if(user:mutations & TK && get_dist(source, user) <= 7)
+			if(user:mutations & M_TK && get_dist(source, user) <= 7)
 				if(user:get_active_hand())	return 0
 				var/X = source:x
 				var/Y = source:y

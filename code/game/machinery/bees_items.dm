@@ -1,4 +1,3 @@
-
 /obj/item/queen_bee
 	name = "queen bee packet"
 	desc = "Place her into an apiary so she can get busy."
@@ -25,7 +24,7 @@
 		else
 			user.visible_message("\red [user] swings at some bees, they don't seem to like it.","\red You swing at some bees, they don't seem to like it.")
 			B.feral = 5
-			B.target_mob = user
+			B.target = user
 
 /obj/item/weapon/bee_net/verb/empty_bees()
 	set src in usr
@@ -40,7 +39,7 @@
 		while(caught_bees > 5)
 			var/mob/living/simple_animal/bee/B = new(src.loc)
 			B.feral = 5
-			B.target_mob = M
+			B.target = M
 			B.strength = 6
 			B.icon_state = "bees_swarm"
 			caught_bees -= 6
@@ -50,7 +49,7 @@
 		B.strength = caught_bees
 		B.icon_state = "bees[B.strength]"
 		B.feral = 5
-		B.target_mob = M
+		B.target = M
 
 		caught_bees = 0
 
@@ -65,20 +64,20 @@
 	name = "bottle of BeezEez"
 	icon = 'icons/obj/chemical.dmi'
 	icon_state = "bottle17"
-	New()
-		src.pixel_x = rand(-5.0, 5)
-		src.pixel_y = rand(-5.0, 5)
+	flags = FPRINT
+
+/obj/item/beezeez/New()
+	. = ..()
+	pixel_x = rand(-5.0, 5)
+	pixel_y = rand(-5.0, 5)
 
 /obj/item/weapon/reagent_containers/food/snacks/honeycomb
 	name = "honeycomb"
 	icon_state = "honeycomb"
 	desc = "Dripping with sugary sweetness."
 
-	New()
-		..()
-
 /obj/item/weapon/reagent_containers/food/snacks/honeycomb/New()
-	..()
+	. = ..()
 	reagents.add_reagent("honey",10)
 	reagents.add_reagent("nutriment", 0.5)
 	reagents.add_reagent("sugar", 2)
@@ -101,22 +100,21 @@
 				h1 {font-size: 18px; margin: 15px 0px 5px;}
 				h2 {font-size: 15px; margin: 15px 0px 5px;}
 				li {margin: 2px 0px 2px 15px;}
-				ul {margin: 5px; padding: 0px;}
+				ul {list-style: none; margin: 5px; padding: 0px;}
 				ol {margin: 5px; padding: 0px 15px;}
-				body {font-size: 13px; font-family: Verdana;}
 				</style>
 				</head>
 				<body>
-				<h1>Raising Bees</h1>
+				<h3>Raising Bees</h3>
 
 				Bees are loving but fickle creatures. Don't mess with their hive and stay away from any clusters of them, and you'll avoid their ire.
 				Sometimes, you'll need to dig around in there for those delicious sweeties though - in that case make sure you wear sealed protection gear
 				and carry an extinguisher or smoker with you - any bees chasing you, once calmed down, can thusly be netted and returned safely to the hive.<br.
 				<br>
-				BeezEez is a cure-all panacea for them, but use it too much and the hive may grow to apocalyptic proportions. Other than that, bees are excellent pets
+				Beezeez is a cure-all panacea for them, but use it too much and the hive may grow to apocalyptic proportions. Other than that, bees are excellent pets
 				for all the family and are excellent caretakers of one's garden: having a hive or two around will aid in the longevity and growth rate of plants,
 				and aid them in fighting off poisons and disease.
 
 				</body>
-			</html>
-			"}
+				</html>
+				"}

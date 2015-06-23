@@ -23,16 +23,17 @@
 // Strange rocks
 
 //have all strange rocks be cleared away using welders for now
-/obj/item/weapon/ore/strangerock
+/obj/item/weapon/strangerock
 	name = "Strange rock"
 	desc = "Seems to have some unusal strata evident throughout it."
 	icon = 'icons/obj/xenoarchaeology.dmi'
 	icon_state = "strange"
 	var/obj/item/weapon/inside
 	var/method = 0// 0 = fire, 1 = brush, 2 = pick
+	var/datum/geosample/geologic_data
 	origin_tech = "materials=5"
 
-/obj/item/weapon/ore/strangerock/New(loc, var/inside_item_type = 0)
+/obj/item/weapon/strangerock/New(loc, var/inside_item_type = 0)
 	..(loc)
 
 	//method = rand(0,2)
@@ -41,11 +42,11 @@
 		if(!inside)
 			inside = locate() in contents
 
-/*/obj/item/weapon/ore/strangerock/ex_act(var/severity)
+/*/obj/item/weapon/strangerock/ex_act(var/severity)
 	if(severity && prob(30))
 		src.visible_message("The [src] crumbles away, leaving some dust and gravel behind.")*/
 
-/obj/item/weapon/ore/strangerock/attackby(obj/item/weapon/W as obj, mob/user as mob)
+/obj/item/weapon/strangerock/attackby(obj/item/weapon/W as obj, mob/user as mob)
 	if(istype(W,/obj/item/weapon/weldingtool/))
 		var/obj/item/weapon/weldingtool/w = W
 		if(w.isOn())
@@ -85,6 +86,7 @@
 	var/find_type = 0
 
 /obj/item/weapon/archaeological_find/New(loc, var/new_item_type)
+	AddToProfiler()
 	if(new_item_type)
 		find_type = new_item_type
 	else
@@ -113,10 +115,7 @@
 	switch(find_type)
 		if(1)
 			item_type = "bowl"
-			if(prob(33))
-				new_item = new /obj/item/weapon/reagent_containers/glass/replenishing(src.loc)
-			else
-				new_item = new /obj/item/weapon/reagent_containers/glass/beaker(src.loc)
+			new_item = new /obj/item/weapon/reagent_containers/glass(src.loc)
 			new_item.icon = 'icons/obj/xenoarchaeology.dmi'
 			new_item.icon_state = "bowl"
 			apply_image_decorations = 1
@@ -124,10 +123,7 @@
 				additional_desc = "There appear to be [pick("dark","faintly glowing","pungent","bright")] [pick("red","purple","green","blue")] stains inside."
 		if(2)
 			item_type = "urn"
-			if(prob(33))
-				new_item = new /obj/item/weapon/reagent_containers/glass/replenishing(src.loc)
-			else
-				new_item = new /obj/item/weapon/reagent_containers/glass/beaker(src.loc)
+			new_item = new /obj/item/weapon/reagent_containers/glass(src.loc)
 			new_item.icon = 'icons/obj/xenoarchaeology.dmi'
 			new_item.icon_state = "urn"
 			apply_image_decorations = 1
@@ -145,18 +141,12 @@
 			"It's a mystery how anyone is supposed to eat with this",\
 			"You wonder what the creator's mouth was shaped like")]."
 		if(4)
-			name = "statuette"
-			icon = 'icons/obj/xenoarchaeology.dmi'
 			item_type = "statuette"
 			icon_state = "statuette"
 			additional_desc = "It depicts a [pick("small","ferocious","wild","pleasing","hulking")] \
 			[pick("alien figure","rodent-like creature","reptilian alien","primate","unidentifiable object")] \
 			[pick("performing unspeakable acts","posing heroically","in a fetal position","cheering","sobbing","making a plaintive gesture","making a rude gesture")]."
-			if(prob(25))
-				new_item = new /obj/item/weapon/vampiric(src.loc)
 		if(5)
-			name = "instrument"
-			icon = 'icons/obj/xenoarchaeology.dmi'
 			item_type = "instrument"
 			icon_state = "instrument"
 			if(prob(30))
@@ -197,7 +187,7 @@
 			"There appear to be [pick("dark red","dark purple","dark green","dark blue")] stains along part of it")]."
 		if(10)
 			item_type = "[pick("cylinder","tank","chamber")]"
-			new_item = new /obj/item/weapon/flame/lighter(src.loc)
+			new_item = new /obj/item/weapon/lighter(src.loc)
 			additional_desc = "There is a tiny device attached."
 			if(prob(30))
 				apply_image_decorations = 1
@@ -206,9 +196,6 @@
 			new_item = new /obj/item/weapon/storage/box(src.loc)
 			new_item.icon = 'icons/obj/xenoarchaeology.dmi'
 			new_item.icon_state = "box"
-			var/obj/item/weapon/storage/box/new_box = new_item
-			new_box.max_w_class = pick(1,2,2,3,3,3,4,4)
-			new_box.max_combined_w_class = rand(new_box.max_w_class, new_box.max_w_class * 10)
 			if(prob(30))
 				apply_image_decorations = 1
 		if(12)
@@ -218,8 +205,8 @@
 			else if(prob(50))
 				new_item = new /obj/item/weapon/tank/anesthetic(src.loc)
 			else
-				new_item = new /obj/item/weapon/tank/phoron(src.loc)
-			icon_state = pick("oxygen","oxygen_fr","oxygen_f","phoron","anesthetic")
+				new_item = new /obj/item/weapon/tank/plasma(src.loc)
+			icon_state = pick("oxygen","oxygen_fr","oxygen_f","plasma","anesthetic")
 			additional_desc = "It [pick("gloops","sloshes")] slightly when you shake it."
 		if(13)
 			item_type = "tool"
@@ -237,9 +224,10 @@
 			var/list/possible_spawns = list()
 			possible_spawns += /obj/item/stack/sheet/metal
 			possible_spawns += /obj/item/stack/sheet/plasteel
-			possible_spawns += /obj/item/stack/sheet/glass
-			possible_spawns += /obj/item/stack/sheet/glass/reinforced
-			possible_spawns += /obj/item/stack/sheet/mineral/phoron
+			possible_spawns += /obj/item/stack/sheet/glass/glass
+			possible_spawns += /obj/item/stack/sheet/glass/rglass
+			possible_spawns += /obj/item/stack/sheet/mineral/plasma
+			possible_spawns += /obj/item/stack/sheet/mineral/mythril
 			possible_spawns += /obj/item/stack/sheet/mineral/gold
 			possible_spawns += /obj/item/stack/sheet/mineral/silver
 			possible_spawns += /obj/item/stack/sheet/mineral/enruranium
@@ -247,7 +235,7 @@
 			possible_spawns += /obj/item/stack/sheet/mineral/silver
 
 			var/new_type = pick(possible_spawns)
-			new_item = new new_type(src.loc)
+			new_item = new new_type(get_turf(src))
 			new_item:amount = rand(5,45)
 		if(15)
 			if(prob(75))
@@ -259,26 +247,22 @@
 		if(16)
 			apply_prefix = 0
 			if(prob(25))
-				icon = 'icons/obj/xenoarchaeology.dmi'
 				item_type = "smooth green crystal"
 				icon_state = "Green lump"
 			else if(prob(33))
-				icon = 'icons/obj/xenoarchaeology.dmi'
 				item_type = "irregular purple crystal"
 				icon_state = "Phazon"
-			else
-				icon = 'icons/obj/xenoarchaeology.dmi'
+			else if(prob(50))
 				item_type = "rough red crystal"
 				icon_state = "changerock"
+			else
+				item_type = "smooth red crystal"
+				icon_state = "ore"
 			additional_desc = pick("It shines faintly as it catches the light.","It appears to have a faint inner glow.","It seems to draw you inward as you look it at.","Something twinkles faintly as you look at it.","It's mesmerizing to behold.")
 
 			apply_material_decorations = 0
 			if(prob(10))
 				apply_image_decorations = 1
-			if(prob(25))
-				new_item = new /obj/item/device/soulstone(src.loc)
-				new_item.icon = 'icons/obj/xenoarchaeology.dmi'
-				new_item.icon_state = icon_state
 		if(17)
 			//cultblade
 			apply_prefix = 0
@@ -288,8 +272,8 @@
 		if(18)
 			new_item = new /obj/item/device/radio/beacon(src.loc)
 			talkative = 0
-			new_item.icon = 'icons/obj/xenoarchaeology.dmi'
 			new_item.icon_state = "unknown[rand(1,4)]"
+			new_item.icon = 'icons/obj/xenoarchaeology.dmi'
 			new_item.desc = ""
 		if(19)
 			apply_prefix = 0
@@ -314,9 +298,10 @@
 			apply_material_decorations = 0
 		if(22)
 			if(prob(50))
-				new_item = new /obj/item/weapon/shard(src.loc)
+				new_item = getFromPool(/obj/item/weapon/shard, loc)
 			else
-				new_item = new /obj/item/weapon/shard/phoron(src.loc)
+				new_item = getFromPool(/obj/item/weapon/shard/plasma, loc)
+
 			apply_prefix = 0
 			apply_image_decorations = 0
 			apply_material_decorations = 0
@@ -342,15 +327,17 @@
 		if(26)
 			//energy gun
 			var/spawn_type = pick(\
-			/obj/item/weapon/gun/energy/laser/practice/xenoarch,\
-			/obj/item/weapon/gun/energy/laser/xenoarch,\
-			/obj/item/weapon/gun/energy/xray/xenoarch,\
-			/obj/item/weapon/gun/energy/captain/xenoarch)
+			/obj/item/weapon/gun/energy/laser/practice,\
+			/obj/item/weapon/gun/energy/laser,\
+			/obj/item/weapon/gun/energy/xray,\
+			/obj/item/weapon/gun/energy/laser/captain)
 			if(spawn_type)
 				var/obj/item/weapon/gun/energy/new_gun = new spawn_type(src.loc)
 				new_item = new_gun
+				new_item.icon = 'icons/obj/xenoarchaeology.dmi'
 				new_item.icon_state = "egun[rand(1,6)]"
 				new_gun.desc = "This is an antique energy weapon, you're not sure if it will fire or not."
+				new_gun.charge_states = 0 //let's prevent it from losing that great icon if we charge it
 
 				//5% chance to explode when first fired
 				//10% chance to have an unchargeable cell
@@ -367,23 +354,25 @@
 			item_type = "gun"
 		if(27)
 			//revolver
-			var/obj/item/weapon/gun/projectile/new_gun = new /obj/item/weapon/gun/projectile/revolver(src.loc)
+			var/obj/item/weapon/gun/projectile/new_gun = new /obj/item/weapon/gun/projectile(src.loc)
 			new_item = new_gun
 			new_item.icon_state = "gun[rand(1,4)]"
 			new_item.icon = 'icons/obj/xenoarchaeology.dmi'
 
-			//33% chance to be able to reload the gun with human ammunition
-			if(prob(66))
-				new_gun.caliber = "999"
+			//let's get some ammunition in this gun : weighted to pick available ammo
+			new_gun.caliber = pick(50;list("357" = 1),
+								   10;list("75" = 1),
+								   30;list("38" = 1),
+								   10;list("12mm" = 1))
 
 			//33% chance to fill it with a random amount of bullets
 			new_gun.max_shells = rand(1,12)
 			if(prob(33))
 				var/num_bullets = rand(1,new_gun.max_shells)
 				if(num_bullets < new_gun.loaded.len)
-					new_gun.loaded.Cut()
+					new_gun.loaded.len = 0
 					for(var/i = 1, i <= num_bullets, i++)
-						var/A = new_gun.ammo_type
+						var/A = text2path(new_gun.ammo_type)
 						new_gun.loaded += new A(new_gun)
 				else
 					for(var/obj/item/I in new_gun)
@@ -454,7 +443,7 @@
 			//robot remains
 			apply_prefix = 0
 			item_type = "[pick("mechanical","robotic","cyborg")] [pick("remains","chassis","debris")]"
-			icon = 'icons/mob/robots.dmi'
+			icon = 'icons/effects/blood.dmi'
 			icon_state = "remainsrobot"
 			additional_desc = pick("Almost mistakeable for the remains of a modern cyborg.",\
 			"They are barely recognisable as anything other than a pile of waste metals.",\
@@ -482,11 +471,14 @@
 			apply_image_decorations = 0
 			apply_material_decorations = 0
 		if(35)
-			//gas mask
-			if(prob(25))
-				new_item = new /obj/item/clothing/mask/gas/poltergeist(src.loc)
-			else
-				new_item = new /obj/item/clothing/mask/gas(src.loc)
+			//masks
+			apply_material_decorations = 0
+			var/list/possible_spawns = list()
+			possible_spawns += /obj/item/clothing/mask/happy
+			//possible_spawns += /obj/item/clothing/mask/stone WHEN I CODE IT
+			var/new_type = pick(possible_spawns)
+			new_item = new new_type(src.loc)
+
 	var/decorations = ""
 	if(apply_material_decorations)
 		source_material = pick("cordite","quadrinium","steel","titanium","aluminium","ferritic-alloy","plasteel","duranium")
@@ -500,7 +492,7 @@
 		if(prob(30))
 			descriptors.Add("is encircled with bands of [pick("quadrinium","cordite","ferritic-alloy","plasteel","duranium")]")
 		if(prob(30))
-			descriptors.Add("menaces with spikes of [pick("solid phoron","uranium","white pearl","black steel")]")
+			descriptors.Add("menaces with spikes of [pick("solid plasma","uranium","white pearl","black steel")]")
 		if(descriptors.len > 0)
 			decorations = "It "
 			for(var/index=1, index <= descriptors.len, index++)
@@ -544,10 +536,18 @@
 		new_item.name = name
 		new_item.desc = src.desc
 
-		if(talkative)
-			new_item.talking_atom = new(new_item)
-
+		if(talkative && istype(new_item,/obj/item/weapon))
+			new_item.listening_to_players = 1
+			if(prob(25))
+				new_item.speaking_to_players = 1
+				processing_objects.Add(new_item)
+		var/turf/T = get_turf(src)
+		if(istype(T, /turf/unsimulated/mineral))
+			T:last_find = new_item
 		del(src)
 
 	else if(talkative)
-		src.talking_atom = new(src)
+		listening_to_players = 1
+		if(prob(25))
+			speaking_to_players = 1
+			processing_objects.Add(src)

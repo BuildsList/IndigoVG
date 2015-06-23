@@ -10,9 +10,7 @@ var/church_name = null
 	if (prob(20))
 		name += " Space"
 
-	name += " " + pick("Church", "Cathedral", "Body", "Worshippers", "Movement", "Witnesses")
-	name += " of [religion_name()]"
-
+	name += {"[pick("Church", "Cathedral", "Body", "Worshippers", "Movement", "Witnesses")] of [religion_name()]"}
 	return name
 
 var/command_name = null
@@ -20,7 +18,23 @@ var/command_name = null
 	if (command_name)
 		return command_name
 
-	var/name = "Central Command"
+	var/name = ""
+
+	if (prob(10))
+		name += pick("Super", "Ultra")
+		name += " "
+
+	// Prefix
+	if (name)
+		name += pick("", "Central", "System", "Home", "Galactic")
+	else
+		name += pick("Central", "System", "Home", "Galactic")
+	if (name)
+		name += " "
+
+	// Suffix
+	name += pick("Federation", "Command", "Alliance", "Unity", "Empire", "Confederation", "Protectorate", "Commonwealth", "Imperium", "Republic")
+	name += " "
 
 	command_name = name
 	return name
@@ -43,13 +57,9 @@ var/religion_name = null
 
 	return capitalize(name)
 
-/proc/system_name()
-	return "Nyx"
-
 /proc/station_name()
-	if (station_name)
+	if(station_name)
 		return station_name
-
 	var/random = rand(1,5)
 	var/name = ""
 
@@ -203,7 +213,7 @@ var/syndicate_code_response//Code response for traitors.
 							code_phrase += " "
 							code_phrase += pick(last_names)
 					if(2)
-						code_phrase += pick(joblist)//Returns a job.
+						code_phrase += pick(get_all_jobs())//Returns a job.
 				safety -= 1
 			if(2)
 				switch(rand(1,2))//Places or things.
@@ -273,7 +283,7 @@ var/syndicate_code_response//Code response for traitors.
 		if(5)
 			syndicate_code_phrase += pick("Do we have","Is there","Where is","Where's","Who's")
 			syndicate_code_phrase += " "
-			syndicate_code_phrase += "[pick(joblist)]"
+			syndicate_code_phrase += "[pick(get_all_jobs())]"
 			syndicate_code_phrase += "?"
 
 	switch(choice)
@@ -302,7 +312,7 @@ var/syndicate_code_response//Code response for traitors.
 					syndicate_code_response += pick(last_names)
 				else
 					syndicate_code_response += " the "
-					syndicate_code_response += "[pic(joblist)]"
+					syndicate_code_response += "[pic(get_all_jobs())]"
 				syndicate_code_response += "."
 			else
 				syndicate_code_response += pick("*shrug*","*smile*","*blink*","*sigh*","*laugh*","*nod*","*giggle*")

@@ -2,7 +2,7 @@
 	name = "suspension field generator"
 	desc = "It has stubby legs bolted up against it's body for stabilising."
 	icon = 'icons/obj/xenoarchaeology.dmi'
-	icon_state = "suspension2"
+	icon_state = "suspension2-b"
 	density = 1
 	req_access = list(access_research)
 	var/obj/item/weapon/cell/cell
@@ -15,12 +15,15 @@
 	var/obj/effect/suspension_field/suspension_field
 	var/list/secured_mobs = list()
 
+/obj/machinery/suspension_gen/power_change()
+	return
+
 /obj/machinery/suspension_gen/New()
 	src.cell = new/obj/item/weapon/cell/high(src)
 	..()
 
 /obj/machinery/suspension_gen/process()
-	set background = 1
+	//set background = 1
 
 	if (suspension_field)
 		cell.charge -= power_use
@@ -88,8 +91,8 @@
 		dat += "[field_type=="mercury"?"<b>":""	]<A href='?src=\ref[src];select_field=mercury'>Mercury dispersion wave</A></b><br>"
 		dat += "[field_type=="iron"?"<b>":""		]<A href='?src=\ref[src];select_field=iron'>Iron wafer conduction field</A></b><br>"
 		dat += "[field_type=="calcium"?"<b>":""	]<A href='?src=\ref[src];select_field=calcium'>Calcium binary deoxidiser</A></b><br>"
-		dat += "[field_type=="phoron"?"<b>":""	]<A href='?src=\ref[src];select_field=chlorine'>Chlorine diffusion emissions</A></b><br>"
-		dat += "[field_type=="phoron"?"<b>":""	]<A href='?src=\ref[src];select_field=phoron'>Phoron saturated field</A></b><br>"
+		dat += "[field_type=="chlorine"?"<b>":""	]<A href='?src=\ref[src];select_field=chlorine'>Chlorine diffusion emissions</A></b><br>"
+		dat += "[field_type=="plasma"?"<b>":""	]<A href='?src=\ref[src];select_field=plasma'>Plasma saturated field</A></b><br>"
 	else
 		dat += "<br>"
 		dat += "<br>"
@@ -111,7 +114,7 @@
 	onclose(user, "suspension")
 
 /obj/machinery/suspension_gen/Topic(href, href_list)
-	..()
+	if(..()) return
 	usr.set_machine(src)
 
 	if(href_list["toggle_field"])
@@ -157,11 +160,16 @@
 	if(!open)
 		interact(user)
 	else if(cell)
+		if(isobserver(user))
+			return 0
 		cell.loc = loc
 		cell.add_fingerprint(user)
 		cell.updateicon()
 
-		icon_state = "suspension0"
+		if(anchored)
+			icon_state = "suspension0"
+		else
+			icon_state = "suspension0-b"
 		cell = null
 		user << "<span class='info'>You remove the power cell</span>"
 
@@ -182,7 +190,7 @@
 					else
 						open = 1
 					user << "<span class='info'>You crowbar the battery panel [open ? "open" : "in place"].</span>"
-					icon_state = "suspension[open ? (cell ? "1" : "0") : "2"]"
+					icon_state = "suspension[anchored ? (open ? (cell ? "1" : "0") : "2") : (open ? (cell ? "1-b" : "0-b") : "2-b")]"
 				else
 					user << "<span class='warning'>[src]'s safety locks are engaged, shut it down first.</span>"
 			else
@@ -195,6 +203,7 @@
 				anchored = 0
 			else
 				anchored = 1
+			icon_state = "suspension[anchored ? (open ? (cell ? "1" : "0") : "2") : (open ? (cell ? "1-b" : "0-b") : "2-b")]"
 			user << "<span class='info'>You wrench the stabilising legs [anchored ? "into place" : "up against the body"].</span>"
 			if(anchored)
 				desc = "It is resting securely on four stubby legs."
@@ -211,7 +220,10 @@
 				W.loc = src
 				cell = W
 				user << "<span class='info'>You insert the power cell.</span>"
-				icon_state = "suspension1"
+				if(anchored)
+					icon_state = "suspension1"
+				else
+					icon_state = "suspension1-b"
 	else if(istype(W, /obj/item/weapon/card))
 		var/obj/item/weapon/card/I = W
 		if(!auth_card)
@@ -258,7 +270,7 @@
 		if("potassium")
 			success = 1
 			//
-		if("phoron")
+		if("plasma")
 			success = 1
 			//
 		if("calcium")
@@ -292,7 +304,7 @@
 		suspension_field.overlays += "shield2"
 		src.visible_message("\blue \icon[suspension_field] [suspension_field] gently absconds [collected > 1 ? "something" : "several things"].")
 	else
-		if(istype(T,/turf/simulated/mineral) || istype(T,/turf/simulated/wall))
+		if(istype(T,/turf/unsimulated/mineral) || istype(T,/turf/simulated/wall))
 			suspension_field.icon_state = "shieldsparkles"
 		else
 			suspension_field.icon_state = "shield2"
@@ -309,30 +321,20 @@
 	del(suspension_field)
 	icon_state = "suspension2"
 
-/obj/machinery/suspension_gen/Del()
+/obj/machinery/suspension_gen/Destroy()
 	//safety checks: clear the field and drop anything it's holding
 	deactivate()
 	..()
 
-/obj/machinery/suspension_gen/verb/rotate_ccw()
-	set src in view(1)
-	set name = "Rotate suspension gen (counter-clockwise)"
-	set category = "Object"
-
-	if(anchored)
-		usr << "\red You cannot rotate [src], it has been firmly fixed to the floor."
-	else
-		set_dir(turn(dir, 90))
-
-/obj/machinery/suspension_gen/verb/rotate_cw()
+/obj/machinery/suspension_gen/verb/toggle()
 	set src in view(1)
 	set name = "Rotate suspension gen (clockwise)"
-	set category = "Object"
+	set category = "IC"
 
 	if(anchored)
 		usr << "\red You cannot rotate [src], it has been firmly fixed to the floor."
 	else
-		set_dir(turn(dir, -90))
+		dir = turn(dir, 90)
 
 /obj/effect/suspension_field
 	name = "energy field"
@@ -341,7 +343,7 @@
 	density = 1
 	var/field_type = "chlorine"
 
-/obj/effect/suspension_field/Del()
+/obj/effect/suspension_field/Destroy()
 	for(var/obj/I in src)
 		I.loc = src.loc
 	..()

@@ -1,8 +1,6 @@
 /mob/living/silicon/ai/examine(mob/user)
-	if(!..(user))
-		return
-		
-	var/msg = ""
+
+	var/msg = "<span class='info'>*---------*\nThis is \icon[src] <EM>[src]</EM>!\n"
 	if (src.stat == DEAD)
 		msg += "<span class='deadsay'>It appears to be powered-down.</span>\n"
 	else
@@ -23,5 +21,4 @@
 		msg += "</span>"
 	msg += "*---------*</span>"
 
-	usr << msg
-	return
+	user << msg

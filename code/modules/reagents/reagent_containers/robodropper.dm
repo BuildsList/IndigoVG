@@ -10,6 +10,9 @@
 	var/filled = 0
 
 	afterattack(obj/target, mob/user , flag)
+		if(!user.Adjacent(target))
+			return
+
 		if(!target.reagents) return
 
 		if(filled)
@@ -23,22 +26,29 @@
 				return
 
 
-			var/trans = 0
+			var/trans = src.reagents.trans_to(target, amount_per_transfer_from_this)
+			user << "\blue You transfer [trans] units of the solution."
+			if (src.reagents.total_volume<=0)
+				filled = 0
+				icon_state = "dropper[filled]"
 
-			if(ismob(target))
+			if(isobj(target))
+				// /vg/: Logging transfers of bad things
+				if(istype(target.reagents_to_log) && target.reagents_to_log.len)
+					var/list/badshit=list()
+					for(var/bad_reagent in target.reagents_to_log)
+						if(reagents.has_reagent(bad_reagent))
+							badshit += reagents_to_log[bad_reagent]
+					if(badshit.len)
+						var/hl="\red <b>([english_list(badshit)])</b> \black"
+						message_admins("[user.name] ([user.ckey]) added [trans]U to \a [target] with [src].[hl] (<A HREF='?_src_=holder;adminplayerobservecoodjump=1;X=[user.x];Y=[user.y];Z=[user.z]'>JMP</a>)")
+						log_game("[user.name] ([user.ckey]) added [trans]U to \a [target] with [src].")
+
+			else if(ismob(target))
 				if(istype(target , /mob/living/carbon/human))
 					var/mob/living/carbon/human/victim = target
 
-					var/obj/item/safe_thing = null
-					if( victim.wear_mask )
-						if ( victim.wear_mask.flags & MASKCOVERSEYES )
-							safe_thing = victim.wear_mask
-					if( victim.head )
-						if ( victim.head.flags & MASKCOVERSEYES )
-							safe_thing = victim.head
-					if(victim.glasses)
-						if ( !safe_thing )
-							safe_thing = victim.glasses
+					var/obj/item/safe_thing = victim.get_body_part_coverage(EYES)
 
 					if(safe_thing)
 						if(!safe_thing.reagents)
@@ -70,13 +80,10 @@
 				M.attack_log += text("\[[time_stamp()]\] <font color='orange'>Has been squirted with [src.name] by [user.name] ([user.ckey]). Reagents: [contained]</font>")
 				user.attack_log += text("\[[time_stamp()]\] <font color='red'>Used the [src.name] to squirt [M.name] ([M.key]). Reagents: [contained]</font>")
 				msg_admin_attack("[user.name] ([user.ckey]) squirted [M.name] ([M.key]) with [src.name]. Reagents: [contained] (INTENT: [uppertext(user.a_intent)]) (<A HREF='?_src_=holder;adminplayerobservecoodjump=1;X=[user.x];Y=[user.y];Z=[user.z]'>JMP</a>)")
-
-
-			trans = src.reagents.trans_to(target, amount_per_transfer_from_this)
-			user << "\blue You transfer [trans] units of the solution."
-			if (src.reagents.total_volume<=0)
-				filled = 0
-				icon_state = "dropper[filled]"
+				if(!iscarbon(user))
+					M.LAssailant = null
+				else
+					M.LAssailant = user
 
 		else
 

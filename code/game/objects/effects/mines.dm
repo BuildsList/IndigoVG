@@ -1,8 +1,9 @@
 /obj/effect/mine
 	name = "Mine"
-	desc = "I Better stay away from that thing."
+	desc = "I better stay away from that thing."
 	density = 1
 	anchored = 1
+	w_type=NOT_RECYCLABLE
 	layer = 3
 	icon = 'icons/obj/weapons.dmi'
 	icon_state = "uglymine"
@@ -51,15 +52,27 @@
 
 	for (var/turf/simulated/floor/target in range(1,src))
 		if(!target.blocks_air)
-			target.assume_gas("sleeping_agent", 30)
+
+			var/datum/gas_mixture/payload = new
+			var/datum/gas/sleeping_agent/trace_gas = new
+
+			trace_gas.moles = 30
+			payload += trace_gas
+
+			target.zone.air.merge(payload)
 
 	spawn(0)
 		del(src)
 
-/obj/effect/mine/proc/triggerphoron(obj)
+/obj/effect/mine/proc/triggerplasma(obj)
 	for (var/turf/simulated/floor/target in range(1,src))
 		if(!target.blocks_air)
-			target.assume_gas("phoron", 30)
+
+			var/datum/gas_mixture/payload = new
+
+			payload.toxins = 30
+
+			target.zone.air.merge(payload)
 
 			target.hotspot_expose(1000, CELL_VOLUME)
 
@@ -84,10 +97,10 @@
 	icon_state = "uglymine"
 	triggerproc = "triggerrad"
 
-/obj/effect/mine/phoron
-	name = "Phoron Mine"
+/obj/effect/mine/plasma
+	name = "Plasma Mine"
 	icon_state = "uglymine"
-	triggerproc = "triggerphoron"
+	triggerproc = "triggerplasma"
 
 /obj/effect/mine/kick
 	name = "Kick Mine"

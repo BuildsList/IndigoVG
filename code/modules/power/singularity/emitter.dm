@@ -1,50 +1,124 @@
-#define EMITTER_DAMAGE_POWER_TRANSFER 450 //used to transfer power to containment field generators
+//This file was auto-corrected by findeclaration.exe on 25.5.2012 20:42:33
 
 /obj/machinery/power/emitter
 	name = "Emitter"
-	desc = "It is a heavy duty industrial laser."
+	desc = "A heavy duty industrial laser"
 	icon = 'icons/obj/singularity.dmi'
 	icon_state = "emitter"
 	anchored = 0
 	density = 1
 	req_access = list(access_engine_equip)
-	var/id = null
 
-	use_power = 0	//uses powernet power, not APC power
-	active_power_usage = 30000	//30 kW laser. I guess that means 30 kJ per shot.
+	use_power = 0
+	idle_power_usage = 10
+	active_power_usage = 300
 
 	var/active = 0
 	var/powered = 0
 	var/fire_delay = 100
-	var/max_burst_delay = 100
-	var/min_burst_delay = 20
-	var/burst_shots = 3
 	var/last_shot = 0
 	var/shot_number = 0
-	var/state = 0
 	var/locked = 0
 
+	machine_flags = EMAGGABLE | WRENCHMOVE | FIXED2WORK | WELD_FIXED
 
-/obj/machinery/power/emitter/verb/rotate()
-	set name = "Rotate"
+	var/frequency = 0
+	var/id_tag = null
+	var/datum/radio_frequency/radio_connection
+
+	// Now uses a constant beam.
+	var/obj/effect/beam/emitter/beam = null
+
+	//Radio remote control
+/obj/machinery/power/emitter/proc/set_frequency(new_frequency)
+	radio_controller.remove_object(src, frequency)
+	frequency = new_frequency
+	if(frequency)
+		radio_connection = radio_controller.add_object(src, frequency, RADIO_ATMOSIA)
+
+
+/obj/machinery/power/emitter/verb/rotate_cw()
+	set name = "Rotate (Clockwise)"
 	set category = "Object"
 	set src in oview(1)
 
 	if (src.anchored || usr:stat)
 		usr << "It is fastened to the floor!"
 		return 0
-	src.set_dir(turn(src.dir, 90))
+	src.dir = turn(src.dir, -90)
+	return 1
+
+/obj/machinery/power/emitter/verb/rotate_ccw()
+	set name = "Rotate (Counter-Clockwise)"
+	set category = "Object"
+	set src in oview(1)
+
+	if (src.anchored || usr:stat)
+		usr << "It is fastened to the floor!"
+		return 0
+	src.dir = turn(src.dir, 90)
 	return 1
 
 /obj/machinery/power/emitter/initialize()
 	..()
 	if(state == 2 && anchored)
 		connect_to_network()
+		update_icon()
+		update_beam()
 
-/obj/machinery/power/emitter/Del()
+	if(frequency)
+		set_frequency(frequency)
+
+/obj/machinery/power/emitter/multitool_menu(var/mob/user,var/obj/item/device/multitool/P)
+	return {"
+	<ul>
+		<li><b>Frequency:</b> <a href="?src=\ref[src];set_freq=-1">[format_frequency(frequency)] GHz</a> (<a href="?src=\ref[src];set_freq=[1439]">Reset</a>)</li>
+		<li>[format_tag("ID Tag","id_tag","set_id")]</a></li>
+	</ul>
+	"}
+
+/obj/machinery/power/emitter/proc/update_beam()
+	if(active)
+		if(!beam)
+			beam = new (loc)
+			beam.dir=dir
+			beam.emit(spawn_by=src)
+	else
+		qdel(beam)
+		beam=null
+
+/obj/machinery/power/emitter/receive_signal(datum/signal/signal)
+	if(!signal.data["tag"] || (signal.data["tag"] != id_tag))
+		return 0
+
+	var/on=0
+	switch(signal.data["command"])
+		if("on")
+			on=1
+
+		if("off")
+			on=0
+
+		if("set")
+			on = signal.data["state"] > 0
+
+		if("toggle")
+			on = !active
+
+	if(anchored && state == 2 && on != active)
+		active=on
+		var/statestr=on?"on":"off"
+		// Spammy message_admins("Emitter turned [statestr] by radio signal ([signal.data["command"]] @ [frequency]) in [formatJumpTo(src)]",0,1)
+		log_game("Emitter turned [statestr] by radio signal ([signal.data["command"]] @ [frequency]) in ([x],[y],[z])")
+		investigation_log(I_SINGULO,"turned <font color='orange'>[statestr]</font> by radio signal ([signal.data["command"]] @ [frequency])")
+		update_icon()
+		update_beam()
+
+/obj/machinery/power/emitter/Destroy()
+	qdel(beam)
 	message_admins("Emitter deleted at ([x],[y],[z] - <A HREF='?_src_=holder;adminplayerobservecoodjump=1;X=[x];Y=[y];Z=[z]'>JMP</a>)",0,1)
 	log_game("Emitter deleted at ([x],[y],[z])")
-	investigate_log("<font color='red'>deleted</font> at ([x],[y],[z])","singulo")
+	investigation_log(I_SINGULO,"<font color='red'>deleted</font> at ([x],[y],[z])")
 	..()
 
 /obj/machinery/power/emitter/update_icon()
@@ -53,11 +127,12 @@
 	else
 		icon_state = "emitter"
 
-/obj/machinery/power/emitter/attack_hand(mob/user as mob)
-	src.add_fingerprint(user)
-	activate(user)
 
-/obj/machinery/power/emitter/proc/activate(mob/user as mob)
+/obj/machinery/power/emitter/attack_hand(mob/user as mob)
+	// Require consciousness
+	if(user.stat && !isAdminGhost(user))
+		return
+	src.add_fingerprint(user)
 	if(state == 2)
 		if(!powernet)
 			user << "The emitter isn't connected to a wire."
@@ -68,7 +143,7 @@
 				user << "You turn off the [src]."
 				message_admins("Emitter turned off by [key_name(user, user.client)](<A HREF='?_src_=holder;adminmoreinfo=\ref[user]'>?</A>) in ([x],[y],[z] - <A HREF='?_src_=holder;adminplayerobservecoodjump=1;X=[x];Y=[y];Z=[z]'>JMP</a>)",0,1)
 				log_game("Emitter turned off by [user.ckey]([user]) in ([x],[y],[z])")
-				investigate_log("turned <font color='red'>off</font> by [user.key]","singulo")
+				investigation_log(I_SINGULO,"turned <font color='red'>off</font> by [user.key]")
 			else
 				src.active = 1
 				user << "You turn on the [src]."
@@ -76,8 +151,9 @@
 				src.fire_delay = 100
 				message_admins("Emitter turned on by [key_name(user, user.client)](<A HREF='?_src_=holder;adminmoreinfo=\ref[user]'>?</A>) in ([x],[y],[z] - <A HREF='?_src_=holder;adminplayerobservecoodjump=1;X=[x];Y=[y];Z=[z]'>JMP</a>)",0,1)
 				log_game("Emitter turned on by [user.ckey]([user]) in ([x],[y],[z])")
-				investigate_log("turned <font color='green'>on</font> by [user.key]","singulo")
+				investigation_log(I_SINGULO,"turned <font color='green'>on</font> by [user.key]")
 			update_icon()
+			update_beam()
 		else
 			user << "\red The controls are locked!"
 	else
@@ -97,123 +173,84 @@
 	return 0
 
 /obj/machinery/power/emitter/process()
-	if(stat & (BROKEN))
-		return
-	if(src.state != 2 || (!powernet && active_power_usage))
-		src.active = 0
+	if(!anchored)
+		active = 0
 		update_icon()
+		update_beam()
 		return
-	if(((src.last_shot + src.fire_delay) <= world.time) && (src.active == 1))
+	if(stat & BROKEN)
+		return
 
-		var/actual_load = draw_power(active_power_usage)
-		if(actual_load >= active_power_usage) //does the laser have enough power to shoot?
+	if(state != 2 || (!powernet && active_power_usage))
+		active = 0
+		update_icon()
+		update_beam()
+		return
+
+	if(((last_shot + fire_delay) <= world.time) && (active == 1))
+		if(!active_power_usage || avail(active_power_usage))
+			add_load(active_power_usage)
+
 			if(!powered)
 				powered = 1
 				update_icon()
-				investigate_log("regained power and turned <font color='green'>on</font>","singulo")
+				investigation_log(I_SINGULO,"regained power and turned <font color='green'>on</font>")
 		else
 			if(powered)
 				powered = 0
 				update_icon()
-				investigate_log("lost power and turned <font color='red'>off</font>","singulo")
+				investigation_log(I_SINGULO,"lost power and turned <font color='red'>off</font>")
 			return
 
-		src.last_shot = world.time
-		if(src.shot_number < burst_shots)
-			src.fire_delay = 2
-			src.shot_number ++
+		last_shot = world.time
+
+		if(shot_number < 3)
+			fire_delay = 2
+			shot_number++
 		else
-			src.fire_delay = rand(min_burst_delay, max_burst_delay)
-			src.shot_number = 0
+			fire_delay = rand(20, 100)
+			shot_number = 0
 
-		//need to calculate the power per shot as the emitter doesn't fire continuously.
-		var/burst_time = (min_burst_delay + max_burst_delay)/2 + 2*(burst_shots-1)
-		var/power_per_shot = active_power_usage * (burst_time/10) / burst_shots
-		var/obj/item/projectile/beam/emitter/A = new /obj/item/projectile/beam/emitter( src.loc )
-		A.damage = round(power_per_shot/EMITTER_DAMAGE_POWER_TRANSFER)
+		//beam = getFromPool(/obj/item/projectile/beam/emitter, loc)
+		//beam.dir = dir
+		//playsound(get_turf(src), 'sound/weapons/emitter.ogg', 25, 1)
 
-		playsound(src.loc, 'sound/weapons/emitter.ogg', 25, 1)
 		if(prob(35))
-			var/datum/effect/effect/system/spark_spread/s = new /datum/effect/effect/system/spark_spread
-			s.set_up(5, 1, src)
-			s.start()
-		A.set_dir(src.dir)
-		switch(dir)
-			if(NORTH)
-				A.yo = 20
-				A.xo = 0
-			if(EAST)
-				A.yo = 0
-				A.xo = 20
-			if(WEST)
-				A.yo = 0
-				A.xo = -20
-			else // Any other
-				A.yo = -20
-				A.xo = 0
-		A.process()	//TODO: Carn: check this out
+			var/datum/effect/effect/system/spark_spread/Sparks = new
+			Sparks.set_up(5, 1, src)
+			Sparks.start()
 
+		//A.dumbfire()
+
+/obj/machinery/power/emitter/emag(mob/user)
+	if(!emagged)
+		locked = 0
+		emagged = 1
+		user.visible_message("[user.name] emags the [src.name].","\red You short out the lock.")
+		return
+
+/obj/machinery/power/emitter/wrenchAnchor(mob/user)
+	if(active)
+		user << "Turn off the [src] first."
+		return
+	return ..()
+
+/obj/machinery/power/emitter/weldToFloor()
+	if(..() == 1)
+		switch(state)
+			if(1)
+				disconnect_from_network()
+			if(2)
+				connect_to_network()
+		return 1
+	return -1
 
 /obj/machinery/power/emitter/attackby(obj/item/W, mob/user)
+	if(..())
+		return 1
 
-	if(istype(W, /obj/item/weapon/wrench))
-		if(active)
-			user << "Turn off the [src] first."
-			return
-		switch(state)
-			if(0)
-				state = 1
-				playsound(src.loc, 'sound/items/Ratchet.ogg', 75, 1)
-				user.visible_message("[user.name] secures [src.name] to the floor.", \
-					"You secure the external reinforcing bolts to the floor.", \
-					"You hear a ratchet")
-				src.anchored = 1
-			if(1)
-				state = 0
-				playsound(src.loc, 'sound/items/Ratchet.ogg', 75, 1)
-				user.visible_message("[user.name] unsecures [src.name] reinforcing bolts from the floor.", \
-					"You undo the external reinforcing bolts.", \
-					"You hear a ratchet")
-				src.anchored = 0
-			if(2)
-				user << "\red The [src.name] needs to be unwelded from the floor."
-		return
-
-	if(istype(W, /obj/item/weapon/weldingtool))
-		var/obj/item/weapon/weldingtool/WT = W
-		if(active)
-			user << "Turn off the [src] first."
-			return
-		switch(state)
-			if(0)
-				user << "\red The [src.name] needs to be wrenched to the floor."
-			if(1)
-				if (WT.remove_fuel(0,user))
-					playsound(src.loc, 'sound/items/Welder2.ogg', 50, 1)
-					user.visible_message("[user.name] starts to weld the [src.name] to the floor.", \
-						"You start to weld the [src] to the floor.", \
-						"You hear welding")
-					if (do_after(user,20))
-						if(!src || !WT.isOn()) return
-						state = 2
-						user << "You weld the [src] to the floor."
-						connect_to_network()
-				else
-					user << "\red You need more welding fuel to complete this task."
-			if(2)
-				if (WT.remove_fuel(0,user))
-					playsound(src.loc, 'sound/items/Welder2.ogg', 50, 1)
-					user.visible_message("[user.name] starts to cut the [src.name] free from the floor.", \
-						"You start to cut the [src] free from the floor.", \
-						"You hear welding")
-					if (do_after(user,20))
-						if(!src || !WT.isOn()) return
-						state = 1
-						user << "You cut the [src] free from the floor."
-						disconnect_from_network()
-				else
-					user << "\red You need more welding fuel to complete this task."
-		return
+	if(istype(W, /obj/item/device/multitool))
+		update_multitool_menu(user)
 
 	if(istype(W, /obj/item/weapon/card/id) || istype(W, /obj/item/device/pda))
 		if(emagged)
@@ -230,12 +267,52 @@
 			user << "\red Access denied."
 		return
 
+/obj/effect/beam/emitter
+	name = "emitter beam"
+	icon = 'icons/effects/beam.dmi'
 
-	if(istype(W, /obj/item/weapon/card/emag) && !emagged)
-		locked = 0
-		emagged = 1
-		user.visible_message("[user.name] emags the [src.name].","\red You short out the lock.")
+	var/base_state = "emitter"
+
+	icon_state = "emitter_1"
+
+	max_range = 20
+
+	var/power = 1
+
+	anchored = 1.0
+	flags = 0
+
+	damage_type=BURN
+	damage=30
+
+	// Notify prisms of power change.
+	var/event/power_change=new
+
+/obj/effect/beam/emitter/proc/set_power(var/newpower=1)
+	power=newpower
+	if(next)
+		var/obj/effect/beam/emitter/next_beam=next
+		next_beam.set_power(power)
+	update_icon()
+	if(!master)
+		INVOKE_EVENT(power_change,list("beam"=src))
+
+/obj/effect/beam/emitter/spawn_child()
+	var/obj/effect/beam/emitter/beam = ..()
+	beam.power=power
+	return beam
+
+/obj/effect/beam/emitter/update_icon()
+	if(!master)
+		invisibility=101 // Make doubly sure
 		return
+	var/visible_power=Clamp(round(power/3)+1, 1, 3)
+	//if(!master) testing("Visible power: [visible_power]")
+	icon_state="[base_state]_[visible_power]"
 
-	..()
-	return
+/obj/effect/beam/emitter/get_machine_underlay(var/mdir)
+	var/visible_power=Clamp(round(power/3)+1, 1, 3)
+	return image(icon=icon, icon_state="[base_state]_[visible_power] underlay", dir=mdir)
+
+/obj/effect/beam/emitter/get_damage()
+	return damage*power

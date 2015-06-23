@@ -1,15 +1,3 @@
-/client/var/inquisitive_ghost = 1
-/mob/dead/observer/verb/toggle_inquisition() // warning: unexpected inquisition
-	set name = "Toggle Inquisitiveness"
-	set desc = "Sets whether your ghost examines everything on click by default"
-	set category = "Ghost"
-	if(!client) return
-	client.inquisitive_ghost = !client.inquisitive_ghost
-	if(client.inquisitive_ghost)
-		src << "\blue You will now examine everything you click on."
-	else
-		src << "\blue You will no longer examine things you click on."
-
 /mob/dead/observer/DblClickOn(var/atom/A, var/params)
 	if(client.buildmode)
 		build_click(src, client.buildmode, params, A)
@@ -25,24 +13,61 @@
 
 	// Otherwise jump
 	else
-		following = null
-		loc = get_turf(A)
+		var/turf/targetloc = get_turf(A)
+		var/area/targetarea = get_area(A)
+		if(targetarea && targetarea.anti_ethereal && !isAdminGhost(usr))
+			usr << "<span class='sinister'>A dark forcefield prevents you from entering the area.<span>"
+		else
+			if(targetloc.holy && ((src.invisibility == 0) || (src.mind in ticker.mode.cult)))
+				usr << "<span class='warning'>These are sacred grounds, you cannot go there!</span>"
+			else
+				loc = targetloc
 
 /mob/dead/observer/ClickOn(var/atom/A, var/params)
 	if(client.buildmode)
 		build_click(src, client.buildmode, params, A)
 		return
-	if(world.time <= next_move) return
-	next_move = world.time + 8
+	if(attack_delayer.blocked())
+		return
+	//next_move = world.time + 8
+
+	var/list/modifiers = params2list(params)
+	if(modifiers["middle"])
+		MiddleClickOn(A)
+		return
+	if(modifiers["shift"])
+		ShiftClickOn(A)
+		return
+	if(modifiers["alt"])
+		AltClickOn(A)
+		return
+	if(modifiers["ctrl"])
+		CtrlClickOn(A)
+		return
 	// You are responsible for checking config.ghost_interaction when you override this function
 	// Not all of them require checking, see below
 	A.attack_ghost(src)
 
+// We don't need a fucking toggle.
+/mob/dead/observer/ShiftClickOn(var/atom/A)
+	examination(A)
+
+/atom/proc/attack_ghost(mob/user as mob)
+	var/ghost_flags = 0
+	if(ghost_read)
+		ghost_flags |= PERMIT_ALL
+	if(canGhostRead(user,src,ghost_flags))
+		src.attack_ai(user)
+	else
+		user.examination(src)
+
+/* Bay edition
 // Oh by the way this didn't work with old click code which is why clicking shit didn't spam you
 /atom/proc/attack_ghost(mob/dead/observer/user as mob)
 	if(user.client && user.client.inquisitive_ghost)
-		user.examinate(src)
+		examine()
 	return
+*/
 
 // ---------------------------------------
 // And here are some good things for free:

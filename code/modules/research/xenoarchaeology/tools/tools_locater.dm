@@ -8,7 +8,7 @@
 	icon = 'icons/obj/device.dmi'
 	icon_state = "pinoff"	//pinonfar, pinonmedium, pinonclose, pinondirect, pinonnull
 	item_state = "electronic"
-	var/frequency = PUB_FREQ
+	var/frequency = 1459
 	var/scan_ticks = 0
 	var/obj/item/device/radio/target_radio
 
@@ -16,13 +16,13 @@
 	..()
 	processing_objects.Add(src)
 
-/obj/item/device/beacon_locator/Del()
+/obj/item/device/beacon_locator/Destroy()
 	processing_objects.Remove(src)
 	..()
 
 /obj/item/device/beacon_locator/process()
 	if(target_radio)
-		set_dir(get_dir(src,target_radio))
+		dir = get_dir(src,target_radio)
 		switch(get_dist(src,target_radio))
 			if(0 to 3)
 				icon_state = "pinondirect"
@@ -38,7 +38,7 @@
 			scan_ticks++
 			if(prob(scan_ticks * 10))
 				spawn(0)
-					set background = 1
+					//set background = 1
 					if(processing_objects.Find(src))
 						//scan radios in the world to try and find one
 						var/cur_dist = 999

@@ -3,7 +3,7 @@
 
 /obj/machinery/computer/lockdown
 	//for reference
-	/*name = "lockdown control"
+	/*name = "Lockdown Control"
 	desc = "Used to control blast doors."
 	icon_state = "lockdown"
 	circuit = "/obj/item/weapon/circuitboard/lockdown"
@@ -60,6 +60,7 @@
 				L.Add(D)
 
 	attack_ai(mob/user)
+		src.add_hiddenprint(user)
 		attack_hand(user)
 
 	attack_hand(mob/user)
@@ -110,7 +111,7 @@
 		onclose(user, "lockdown")
 
 	Topic(href, href_list)
-		if(..()) return 1
+		..()
 
 		if( href_list["close"] )
 			usr << browse(null, "window=lockdown")

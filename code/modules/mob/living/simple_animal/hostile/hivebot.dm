@@ -13,7 +13,7 @@
 	maxHealth = 15
 	melee_damage_lower = 2
 	melee_damage_upper = 3
-	attacktext = "clawed"
+	attacktext = "claws"
 	projectilesound = 'sound/weapons/Gunshot.ogg'
 	projectiletype = /obj/item/projectile/hivebotbullet
 	faction = "hivebot"
@@ -32,10 +32,14 @@
 	name = "Hivebot"
 	desc = "A smallish robot, this one is armed!"
 	ranged = 1
+	retreat_distance = 5
+	minimum_distance = 5
 
 /mob/living/simple_animal/hostile/hivebot/rapid
 	ranged = 1
 	rapid = 1
+	retreat_distance = 5
+	minimum_distance = 5
 
 /mob/living/simple_animal/hostile/hivebot/strong
 	name = "Strong Hivebot"
@@ -44,7 +48,7 @@
 	ranged = 1
 
 
-/mob/living/simple_animal/hostile/hivebot/death()
+/mob/living/simple_animal/hostile/hivebot/Die()
 	..()
 	visible_message("<b>[src]</b> blows apart!")
 	new /obj/effect/decal/cleanable/blood/gibs/robot(src.loc)
@@ -80,7 +84,7 @@
 		smoke.set_up(5, 0, src.loc)
 		smoke.start()
 		visible_message("\red <B>The [src] warps in!</B>")
-		playsound(src.loc, 'sound/effects/EMPulse.ogg', 25, 1)
+		playsound(get_turf(src), 'sound/effects/EMPulse.ogg', 25, 1)
 
 	warpbots()
 		icon_state = "def_radar"

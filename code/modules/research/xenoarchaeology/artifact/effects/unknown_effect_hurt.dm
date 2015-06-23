@@ -16,13 +16,12 @@
 			C.adjustBrainLoss(rand(5,25) * weakness)
 			C.radiation += 25 * weakness
 			C.nutrition -= min(50 * weakness, C.nutrition)
-			C.make_dizzy(6 * weakness)
+			C.Dizzy(6 * weakness)
 			C.weakened += 6 * weakness
 
 /datum/artifact_effect/hurt/DoEffectAura()
 	if(holder)
-		var/turf/T = get_turf(holder)
-		for (var/mob/living/carbon/C in range(src.effectrange,T))
+		for (var/mob/living/carbon/C in range(src.effectrange,holder))
 			var/weakness = GetAnomalySusceptibility(C)
 			if(prob(weakness * 100))
 				if(prob(10))
@@ -36,8 +35,7 @@
 
 /datum/artifact_effect/hurt/DoEffectPulse()
 	if(holder)
-		var/turf/T = get_turf(holder)
-		for (var/mob/living/carbon/C in range(effectrange, T))
+		for (var/mob/living/carbon/C in range(effectrange, holder))
 			var/weakness = GetAnomalySusceptibility(C)
 			if(prob(weakness * 100))
 				C << "\red A wave of painful energy strikes you!"

@@ -29,14 +29,15 @@
 	name = "Gas turbine control computer"
 	desc = "A computer to remotely control a gas turbine"
 	icon = 'icons/obj/computer.dmi'
-	icon_state = "turbinecomp"
-	circuit = /obj/item/weapon/circuitboard/turbine_control
+	icon_state = "airtunnel0e"
 	anchored = 1
 	density = 1
 	var/obj/machinery/compressor/compressor
-	var/list/obj/machinery/door/blast/doors
-	var/id = 0
+	var/list/obj/machinery/door/poddoor/doors
+	var/id_tag = 0
 	var/door_status = 0
+
+	l_color = "#0000FF"
 
 // the inlet stage of the gas turbine electricity generator
 
@@ -50,9 +51,6 @@
 		turbine = locate() in get_step(src, get_dir(inturf, src))
 		if(!turbine)
 			stat |= BROKEN
-		else
-			turbine.stat &= !BROKEN
-			turbine.compressor = src
 
 
 #define COMPFRICTION 5e5
@@ -61,7 +59,7 @@
 /obj/machinery/compressor/process()
 	if(!starter)
 		return
-	overlays.Cut()
+	overlays.len = 0
 	if(stat & BROKEN)
 		return
 	if(!turbine)
@@ -69,7 +67,7 @@
 		return
 	rpm = 0.9* rpm + 0.1 * rpmtarget
 	var/datum/gas_mixture/environment = inturf.return_air()
-	var/transfer_moles = environment.total_moles / 10
+	var/transfer_moles = environment.total_moles()/10
 	//var/transfer_moles = rpm/10000*capacity
 	var/datum/gas_mixture/removed = inturf.remove_air(transfer_moles)
 	gas_contained.merge(removed)
@@ -107,9 +105,6 @@
 		compressor = locate() in get_step(src, get_dir(outturf, src))
 		if(!compressor)
 			stat |= BROKEN
-		else
-			compressor.stat &= !BROKEN
-			compressor.turbine = src
 
 
 #define TURBPRES 9000000
@@ -119,7 +114,7 @@
 /obj/machinery/power/turbine/process()
 	if(!compressor.starter)
 		return
-	overlays.Cut()
+	overlays.len = 0
 	if(stat & BROKEN)
 		return
 	if(!compressor)
@@ -128,14 +123,14 @@
 	lastgen = ((compressor.rpm / TURBGENQ)**TURBGENG) *TURBGENQ
 
 	add_avail(lastgen)
-	var/newrpm = ((compressor.gas_contained.temperature) * compressor.gas_contained.total_moles)/4
+	var/newrpm = ((compressor.gas_contained.temperature) * compressor.gas_contained.total_moles())/4
 	newrpm = max(0, newrpm)
 
 	if(!compressor.starter || newrpm > 1000)
 		compressor.rpmtarget = newrpm
 
-	if(compressor.gas_contained.total_moles>0)
-		var/oamount = min(compressor.gas_contained.total_moles, (compressor.rpm+100)/35000*compressor.capacity)
+	if(compressor.gas_contained.total_moles()>0)
+		var/oamount = min(compressor.gas_contained.total_moles(), (compressor.rpm+100)/35000*compressor.capacity)
 		var/datum/gas_mixture/removed = compressor.gas_contained.remove(oamount)
 		outturf.assume_air(removed)
 
@@ -159,15 +154,15 @@
 
 	var/t = "<TT><B>Gas Turbine Generator</B><HR><PRE>"
 
-	t += "Generated power : [round(lastgen)] W<BR><BR>"
 
-	t += "Turbine: [round(compressor.rpm)] RPM<BR>"
-
-	t += "Starter: [ compressor.starter ? "<A href='?src=\ref[src];str=1'>Off</A> <B>On</B>" : "<B>Off</B> <A href='?src=\ref[src];str=1'>On</A>"]"
-
-	t += "</PRE><HR><A href='?src=\ref[src];close=1'>Close</A>"
-
-	t += "</TT>"
+	// AUTOFIXED BY fix_string_idiocy.py
+	// C:\Users\Rob\Documents\Projects\vgstation13\code\modules\power\turbine.dm:156: t += "Generated power : [round(lastgen)] W<BR><BR>"
+	t += {"Generated power : [round(lastgen)] W<BR><BR>
+		Turbine: [round(compressor.rpm)] RPM<BR>
+		Starter: [ compressor.starter ? "<A href='?src=\ref[src];str=1'>Off</A> <B>On</B>" : "<B>Off</B> <A href='?src=\ref[src];str=1'>On</A>"]
+		</PRE><HR><A href='?src=\ref[src];close=1'>Close</A>
+		</TT>"}
+	// END AUTOFIX
 	user << browse(t, "window=turbine")
 	onclose(user, "turbine")
 
@@ -219,26 +214,25 @@
 	..()
 	spawn(5)
 		for(var/obj/machinery/compressor/C in machines)
-			if(id == C.comp_id)
+			if(id_tag == C.comp_id)
 				compressor = C
 		doors = new /list()
-		for(var/obj/machinery/door/blast/P in machines)
-			if(P.id == id)
+		for(var/obj/machinery/door/poddoor/P in machines)
+			if(P.id_tag == id_tag)
 				doors += P
 
-/*
 /obj/machinery/computer/turbine_computer/attackby(I as obj, user as mob)
 	if(istype(I, /obj/item/weapon/screwdriver))
-		playsound(src.loc, 'sound/items/Screwdriver.ogg', 50, 1)
+		playsound(get_turf(src), 'sound/items/Screwdriver.ogg', 50, 1)
 		if(do_after(user, 20))
 			if (src.stat & BROKEN)
 				user << "\blue The broken glass falls out."
 				var/obj/structure/computerframe/A = new /obj/structure/computerframe( src.loc )
-				new /obj/item/weapon/shard( src.loc )
+				getFromPool(/obj/item/weapon/shard, loc)
 				var/obj/item/weapon/circuitboard/turbine_control/M = new /obj/item/weapon/circuitboard/turbine_control( A )
 				for (var/obj/C in src)
 					C.loc = src.loc
-				M.id = src.id
+				M.id_tag = src.id_tag
 				A.circuit = M
 				A.state = 3
 				A.icon_state = "3"
@@ -250,7 +244,7 @@
 				var/obj/item/weapon/circuitboard/turbine_control/M = new /obj/item/weapon/circuitboard/turbine_control( A )
 				for (var/obj/C in src)
 					C.loc = src.loc
-				M.id = src.id
+				M.id_tag = src.id_tag
 				A.circuit = M
 				A.state = 4
 				A.icon_state = "4"
@@ -259,7 +253,6 @@
 	else
 		src.attack_hand(user)
 	return
-*/
 
 /obj/machinery/computer/turbine_computer/attack_hand(var/mob/user as mob)
 	user.machine = src
@@ -296,7 +289,7 @@
 		else if( href_list["str"] )
 			src.compressor.starter = !src.compressor.starter
 		else if (href_list["doors"])
-			for(var/obj/machinery/door/blast/D in src.doors)
+			for(var/obj/machinery/door/poddoor/D in src.doors)
 				if (door_status == 0)
 					spawn( 0 )
 						D.open()

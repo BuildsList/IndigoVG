@@ -19,8 +19,6 @@
 	maxHealth = 30
 	health = 30
 
-	universal_speak =1
-
 	stop_automated_movement = 1
 	animate_movement = SYNC_STEPS
 
@@ -30,9 +28,9 @@
 	max_co2 = 0
 	max_tox = 0
 
-	a_intent = "harm" //so they don't get pushed around
+	a_intent = "hurt" //so they don't get pushed around
 
-	wall_smash = 1
+	environment_smash = 2
 
 	speed = -1
 
@@ -57,7 +55,7 @@
 
 		melee_damage_lower = 10
 		melee_damage_upper = 15
-		attacktext = "bitten"
+		attacktext = "bites"
 
 		animate_movement = SLIDE_STEPS
 
@@ -75,7 +73,7 @@
 			if(stat == CONSCIOUS || stat == UNCONSCIOUS)
 				icon_state = "spacewormhead[previous?1:0]"
 				if(previous)
-					set_dir(get_dir(previous,src))
+					dir = get_dir(previous,src)
 			else
 				icon_state = "spacewormheaddead"
 
@@ -98,7 +96,7 @@
 
 		return
 
-	Del() //if a chunk a destroyed, make a new worm out of the split halves
+	Destroy() //if a chunk a destroyed, make a new worm out of the split halves
 		if(previous)
 			previous.Detach()
 		..()
@@ -129,7 +127,7 @@
 				icon_state = "spaceworm[get_dir(src,previous) | get_dir(src,next)]" //see 3 lines below
 			else //tail
 				icon_state = "spacewormtail"
-				set_dir(get_dir(src,next)) //next will always be present since it's not a head and if it's dead, it goes in the other if branch
+				dir = get_dir(src,next) //next will always be present since it's not a head and if it's dead, it goes in the other if branch
 		else
 			icon_state = "spacewormdead"
 
@@ -168,7 +166,7 @@
 		newHead.Attach(newHeadPrevious)
 
 		if(die)
-			newHead.death()
+			newHead.Die()
 
 		del(src)
 
@@ -176,18 +174,18 @@
 		for(var/atom/movable/stomachContent in contents)
 			if(prob(digestionProbability))
 				if(istype(stomachContent,/obj/item/stack)) //converts to plasma, keeping the stack value
-					if(!istype(stomachContent,/obj/item/stack/sheet/mineral/phoron))
+					if(!istype(stomachContent,/obj/item/stack/sheet/mineral/plasma))
 						var/obj/item/stack/oldStack = stomachContent
-						new /obj/item/stack/sheet/mineral/phoron(src, oldStack.get_amount())
+						new /obj/item/stack/sheet/mineral/plasma(src, oldStack.amount)
 						del(oldStack)
 						continue
 				else if(istype(stomachContent,/obj/item)) //converts to plasma, keeping the w_class
 					var/obj/item/oldItem = stomachContent
-					new /obj/item/stack/sheet/mineral/phoron(src, oldItem.w_class)
+					new /obj/item/stack/sheet/mineral/plasma(src, oldItem.w_class)
 					del(oldItem)
 					continue
 				else
-					new /obj/item/stack/sheet/mineral/phoron(src, flatPlasmaValue) //just flat amount
+					new /obj/item/stack/sheet/mineral/plasma(src, flatPlasmaValue) //just flat amount
 					del(stomachContent)
 					continue
 

@@ -8,12 +8,13 @@
 	invocation = "AULIE OXIN FIERA"
 	invocation_type = "whisper"
 	range = 3
+	cooldown_min = 20 //20 deciseconds reduction per rank
 
 /obj/effect/proc_holder/spell/aoe_turf/knock/cast(list/targets)
 	for(var/turf/T in targets)
 		for(var/obj/machinery/door/door in T.contents)
 			spawn(1)
 				if(istype(door,/obj/machinery/door/airlock))
-					door:unlock(1)	//forced because it's magic!
+					door:locked = 0
 				door.open()
 	return

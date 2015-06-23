@@ -13,14 +13,14 @@
 	response_help = "touches"
 	response_disarm = "pushes"
 	response_harm = "hits"
-	speed = 4
+	speed = -1
 	maxHealth = 250
 	health = 250
 
 	harm_intent_damage = 5
 	melee_damage_lower = 8
 	melee_damage_upper = 12
-	attacktext = "attacked"
+	attacktext = "attacks"
 	attack_sound = 'sound/weapons/bite.ogg'
 
 	min_oxy = 0
@@ -39,11 +39,14 @@
 /mob/living/simple_animal/hostile/mimic/FindTarget()
 	. = ..()
 	if(.)
-		audible_emote("growls at [.]")
+		emote("growls at [.]")
 
-/mob/living/simple_animal/hostile/mimic/death()
+/mob/living/simple_animal/hostile/mimic/Die()
 	..()
+	visible_message("\red <b>[src]</b> stops moving!")
 	del(src)
+
+
 
 //
 // Crate Mimic
@@ -53,7 +56,7 @@
 // Aggro when you try to open them. Will also pickup loot when spawns and drop it when dies.
 /mob/living/simple_animal/hostile/mimic/crate
 
-	attacktext = "bitten"
+	attacktext = "bites"
 
 	stop_automated_movement = 1
 	wander = 0
@@ -75,7 +78,7 @@
 /mob/living/simple_animal/hostile/mimic/crate/ListTargets()
 	if(attempt_open)
 		return ..()
-	return view(src, 1)
+	return ..(1)
 
 /mob/living/simple_animal/hostile/mimic/crate/FindTarget()
 	. = ..()
@@ -104,7 +107,7 @@
 	..()
 	icon_state = initial(icon_state)
 
-/mob/living/simple_animal/hostile/mimic/crate/death()
+/mob/living/simple_animal/hostile/mimic/crate/Die()
 
 	var/obj/structure/closet/crate/C = new(get_turf(src))
 	// Put loot in crate
@@ -124,7 +127,12 @@
 // Copy Mimic
 //
 
-var/global/list/protected_objects = list(/obj/structure/table, /obj/structure/cable, /obj/structure/window, /obj/item/projectile/animate)
+var/global/list/protected_objects = list(
+	/obj/structure/table,
+	/obj/structure/cable,
+	/obj/structure/window,
+	/obj/structure/particle_accelerator // /vg/ Redmine #116
+)
 
 /mob/living/simple_animal/hostile/mimic/copy
 
@@ -133,12 +141,25 @@ var/global/list/protected_objects = list(/obj/structure/table, /obj/structure/ca
 	var/mob/living/creator = null // the creator
 	var/destroy_objects = 0
 	var/knockdown_people = 0
+	var/time_to_die=0 // The world.time after which we expire. (0 = no time limit)
 
-/mob/living/simple_animal/hostile/mimic/copy/New(loc, var/obj/copy, var/mob/living/creator)
+/mob/living/simple_animal/hostile/mimic/copy/New(loc, var/obj/copy, var/mob/living/creator, var/destroy_original = 0, var/duration=0)
 	..(loc)
-	CopyObject(copy, creator)
+	CopyObject(copy, creator, destroy_original)
+	if(duration)
+		time_to_die=world.time+duration
 
-/mob/living/simple_animal/hostile/mimic/copy/death()
+/mob/living/simple_animal/hostile/mimic/copy/Life()
+	..()
+	// Die after a specified time limit
+	if(time_to_die && world.time >= time_to_die)
+		Die()
+		return
+	for(var/mob/living/M in contents) //a fix for animated statues from the flesh to stone spell
+		Die()
+		return
+
+/mob/living/simple_animal/hostile/mimic/copy/Die()
 
 	for(var/atom/movable/M in src)
 		M.loc = get_turf(src)
@@ -149,9 +170,20 @@ var/global/list/protected_objects = list(/obj/structure/table, /obj/structure/ca
 	. = ..()
 	return . - creator
 
-/mob/living/simple_animal/hostile/mimic/copy/proc/CopyObject(var/obj/O, var/mob/living/creator)
+/mob/living/simple_animal/hostile/mimic/copy/proc/ChangeOwner(var/mob/owner)
+	if(owner != creator)
+		LoseTarget()
+		creator = owner
+		faction = "\ref[owner]"
 
+/mob/living/simple_animal/hostile/mimic/copy/proc/CheckObject(var/obj/O)
 	if((istype(O, /obj/item) || istype(O, /obj/structure)) && !is_type_in_list(O, protected_objects))
+		return 1
+	return 0
+
+/mob/living/simple_animal/hostile/mimic/copy/proc/CopyObject(var/obj/O, var/mob/living/creator, var/destroy_original = 0)
+
+	if(destroy_original || CheckObject(O))
 
 		O.loc = src
 		name = O.name
@@ -160,7 +192,7 @@ var/global/list/protected_objects = list(/obj/structure/table, /obj/structure/ca
 		icon_state = O.icon_state
 		icon_living = icon_state
 
-		if(istype(O, /obj/structure))
+		if(istype(O, /obj/structure) || istype(O, /obj/machinery))
 			health = (anchored * 50) + 50
 			destroy_objects = 1
 			if(O.density && O.anchored)
@@ -178,6 +210,8 @@ var/global/list/protected_objects = list(/obj/structure/table, /obj/structure/ca
 		if(creator)
 			src.creator = creator
 			faction = "\ref[creator]" // very unique
+		if(destroy_original)
+			del(O)
 		return 1
 	return
 

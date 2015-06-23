@@ -1,3 +1,7 @@
+var/list/levels_3d = list(1,2) //To expediate calculations, just do "z in levels_3d"
+var/list/global_adjacent_z_levels = list("1" = list("up" = 2), "2" = list("down" = 1)) //Example.  2 is above 1
+
+
 /obj/effect/landmark/zcontroller
 	name = "Z-Level Controller"
 	var/initialized = 0 // when set to 1, turfs will report to the controller

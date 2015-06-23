@@ -16,12 +16,14 @@
 	var/frequency = 1451
 	var/broadcasting = null
 	var/listening = 1.0
-	flags = CONDUCT
+	flags = FPRINT
+	siemens_coefficient = 1
 	w_class = 2.0
 	item_state = "electronic"
 	throw_speed = 4
 	throw_range = 20
-	matter = list("metal" = 400)
+	m_amt = 400
+	w_type = RECYK_ELECTRONIC
 	origin_tech = "magnets=1"
 
 /obj/item/weapon/locator/attack_self(mob/user as mob)
@@ -100,7 +102,7 @@ Frequency:
 									direct = "weak"
 							src.temp += "[W.id]-[dir2text(get_dir(sr, tr))]-[direct]<BR>"
 
-				src.temp += "<B>You are at \[[sr.x],[sr.y],[sr.z]\]</B> in orbital coordinates.<BR><BR><A href='byond://?src=\ref[src];refresh=1'>Refresh</A><BR>"
+				src.temp += "<B>You are at \[[sr.x-WORLD_X_OFFSET],[sr.y-WORLD_Y_OFFSET],[sr.z]\]</B> in orbital coordinates.<BR><BR><A href='byond://?src=\ref[src];refresh=1'>Refresh</A><BR>"
 			else
 				src.temp += "<B><FONT color='red'>Processing Error:</FONT></B> Unable to locate orbital position.<BR>"
 		else
@@ -132,7 +134,8 @@ Frequency:
 	w_class = 2.0
 	throw_speed = 3
 	throw_range = 5
-	matter = list("metal" = 10000)
+	m_amt = 10000
+	w_type = RECYK_ELECTRONIC
 	origin_tech = "magnets=1;bluespace=3"
 
 /obj/item/weapon/hand_tele/attack_self(mob/user as mob)
@@ -144,7 +147,7 @@ Frequency:
 	for(var/obj/machinery/teleport/hub/R in world)
 		var/obj/machinery/computer/teleporter/com = locate(/obj/machinery/computer/teleporter, locate(R.x - 2, R.y, R.z))
 		if (istype(com, /obj/machinery/computer/teleporter) && com.locked && !com.one_time_use)
-			if(R.icon_state == "tele1")
+			if(R.engaged)
 				L["[com.id] (Active)"] = com.locked
 			else
 				L["[com.id] (Inactive)"] = com.locked
@@ -172,3 +175,5 @@ Frequency:
 	P.creator = src
 	src.add_fingerprint(user)
 	return
+
+

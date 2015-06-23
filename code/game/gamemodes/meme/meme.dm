@@ -7,7 +7,7 @@
 	config_tag = "meme"
 	required_players = 3
 	required_players_secret = 10
-	restricted_jobs = list("AI", "Cyborg")
+	restricted_jobs = list("AI", "Cyborg", "Mobile MMI")
 	recommended_enemies = 2 // need at least a meme and a host
 	votable = 0 // temporarily disable this mode for voting
 
@@ -108,9 +108,6 @@
 
 
 /datum/game_mode/proc/forge_meme_objectives(var/datum/mind/meme, var/datum/mind/first_host)
-	if (config.objectives_disabled)
-		return
-
 	// meme always needs to attune X hosts
 	var/datum/objective/meme_attune/attune_objective = new
 	attune_objective.owner = meme
@@ -131,7 +128,11 @@
 /datum/game_mode/proc/greet_meme(var/datum/mind/meme, var/you_are=1)
 	if (you_are)
 		meme.current << "<B>\red You are a meme!</B>"
-	show_objectives(meme)
+
+	var/obj_count = 1
+	for(var/datum/objective/objective in meme.objectives)
+		meme.current << "<B>Objective #[obj_count]</B>: [objective.explanation_text]"
+		obj_count++
 	return
 
 /datum/game_mode/meme/check_finished()

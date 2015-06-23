@@ -1,15 +1,18 @@
 /obj/item/weapon/camera_assembly
 	name = "camera assembly"
-	desc = "A pre-fabricated security camera kit, ready to be assembled and mounted to a surface."
+	desc = "The basic construction for Nanotrasen-Always-Watching-You cameras."
 	icon = 'icons/obj/monitors.dmi'
 	icon_state = "cameracase"
 	w_class = 2
 	anchored = 0
 
-	matter = list("metal" = 700,"glass" = 300)
+	m_amt = 700
+	g_amt = 300
+	w_type = RECYK_ELECTRONIC
+	melt_temperature = MELTPOINT_STEEL
 
 	//	Motion, EMP-Proof, X-Ray
-	var/list/obj/item/possible_upgrades = list(/obj/item/device/assembly/prox_sensor, /obj/item/stack/sheet/mineral/osmium, /obj/item/weapon/stock_parts/scanning_module)
+	var/list/obj/item/possible_upgrades = list(/obj/item/device/assembly/prox_sensor, /obj/item/stack/sheet/mineral/plasma, /obj/item/weapon/reagent_containers/food/snacks/grown/carrot)
 	var/list/upgrades = list()
 	var/state = 0
 	var/busy = 0
@@ -28,7 +31,7 @@
 		if(0)
 			// State 0
 			if(iswrench(W) && isturf(src.loc))
-				playsound(src.loc, 'sound/items/Ratchet.ogg', 50, 1)
+				playsound(get_turf(src), 'sound/items/Ratchet.ogg', 50, 1)
 				user << "You wrench the assembly into place."
 				anchored = 1
 				state = 1
@@ -46,7 +49,7 @@
 				return
 
 			else if(iswrench(W))
-				playsound(src.loc, 'sound/items/Ratchet.ogg', 50, 1)
+				playsound(get_turf(src), 'sound/items/Ratchet.ogg', 50, 1)
 				user << "You unattach the assembly from it's place."
 				anchored = 0
 				update_icon()
@@ -56,12 +59,10 @@
 		if(2)
 			// State 2
 			if(iscoil(W))
-				var/obj/item/stack/cable_coil/C = W
+				var/obj/item/weapon/cable_coil/C = W
 				if(C.use(2))
-					user << "<span class='notice'>You add wires to the assembly.</span>"
+					user << "You add wires to the assembly."
 					state = 3
-				else
-					user << "<span class='warning'>You need 2 coils of wire to wire the assembly.</span>"
 				return
 
 			else if(iswelder(W))
@@ -76,9 +77,9 @@
 		if(3)
 			// State 3
 			if(isscrewdriver(W))
-				playsound(src.loc, 'sound/items/Screwdriver.ogg', 50, 1)
+				playsound(get_turf(src), 'sound/items/Screwdriver.ogg', 50, 1)
 
-				var/input = strip_html(input(usr, "Which networks would you like to connect this camera to? Separate networks with a comma. No Spaces!\nFor example: SS13,Security,Secret ", "Set Network", "SS13"))
+				var/input = strip_html_properly(input(usr, "Which networks would you like to connect this camera to? Seperate networks with a comma. No Spaces!\nFor example: SS13,Security,Secret ", "Set Network", "SS13"))
 				if(!input)
 					usr << "No input found please hang up and try your call again."
 					return
@@ -88,10 +89,6 @@
 					usr << "No network found please hang up and try your call again."
 					return
 
-				var/area/camera_area = get_area(src)
-				var/temptag = "[sanitize(camera_area.name)] ([rand(1, 999)])"
-				input = strip_html(input(usr, "How would you like to name the camera?", "Set Camera Name", temptag))
-
 				state = 4
 				var/obj/machinery/camera/C = new(src.loc)
 				src.loc = C
@@ -99,9 +96,9 @@
 
 				C.auto_turn()
 
-				C.replace_networks(uniquelist(tempnetwork))
+				C.network = tempnetwork
 
-				C.c_tag = input
+				C.c_tag = "[get_area_name(src)] ([rand(1, 999)]"
 
 				for(var/i = 5; i >= 0; i -= 1)
 					var/direct = input(user, "Direction?", "Assembling Camera", null) in list("LEAVE IT", "NORTH", "EAST", "SOUTH", "WEST" )
@@ -115,15 +112,15 @@
 
 			else if(iswirecutter(W))
 
-				new/obj/item/stack/cable_coil(get_turf(src), 2)
-				playsound(src.loc, 'sound/items/Wirecutter.ogg', 50, 1)
+				new/obj/item/weapon/cable_coil(get_turf(src), 2)
+				playsound(get_turf(src), 'sound/items/Wirecutter.ogg', 50, 1)
 				user << "You cut the wires from the circuits."
 				state = 2
 				return
 
 	// Upgrades!
 	if(is_type_in_list(W, possible_upgrades) && !is_type_in_list(W, upgrades)) // Is a possible upgrade and isn't in the camera already.
-		user << "You attach \the [W] into the assembly inner circuits."
+		user << "You attach the [W] into the assembly inner circuits."
 		upgrades += W
 		user.drop_item(W)
 		W.loc = src
@@ -134,7 +131,7 @@
 		var/obj/U = locate(/obj) in upgrades
 		if(U)
 			user << "You unattach an upgrade from the assembly."
-			playsound(src.loc, 'sound/items/Crowbar.ogg', 50, 1)
+			playsound(get_turf(src), 'sound/items/Crowbar.ogg', 50, 1)
 			U.loc = get_turf(src)
 			upgrades -= U
 		return
@@ -159,7 +156,7 @@
 		return 0
 
 	user << "<span class='notice'>You start to weld the [src]..</span>"
-	playsound(src.loc, 'sound/items/Welder.ogg', 50, 1)
+	playsound(get_turf(src), 'sound/items/Welder.ogg', 50, 1)
 	WT.eyecheck(user)
 	busy = 1
 	if(do_after(user, 20))

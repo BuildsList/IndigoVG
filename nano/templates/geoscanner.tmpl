@@ -87,14 +87,14 @@ Used In File(s): \code\modules\research\xenoarchaeology\machinery\geosample_scan
 		{{:data.maser_wavelength}} MHz
 	</div>
 	<div class="itemContent" style="text-align:left; width: 22%;">
-		{{:helper.link('-2 GHz', null, {'maserWavelength' : -2}, null)}}
-		{{:helper.link('-1 GHz', null, {'maserWavelength' : -1}, null)}}
-		{{:helper.link('-0.5 GHz', null, {'maserWavelength' : -0.5}, null)}}
+		{{:helper.link('-2 KHz', null, {'maserWavelength' : -2}, null)}}
+		{{:helper.link('-1 KHz', null, {'maserWavelength' : -1}, null)}}
+		{{:helper.link('-0.5 KHz', null, {'maserWavelength' : -0.5}, null)}}
 	</div>
 	<div class="itemContent" style="text-align:right; width: 22%;">
-		{{:helper.link('+0.5 GHz', null, {'maserWavelength' : 0.5}, null)}}
-		{{:helper.link('+1 GHz', null, {'maserWavelength' : 1}, null)}}
-		{{:helper.link('+2 GHz', null, {'maserWavelength' : 2}, null)}}
+		{{:helper.link('+0.5 KHz', null, {'maserWavelength' : 0.5}, null)}}
+		{{:helper.link('+1 KHz', null, {'maserWavelength' : 1}, null)}}
+		{{:helper.link('+2 KHz', null, {'maserWavelength' : 2}, null)}}
 	</div>
 </div>
 
@@ -109,7 +109,7 @@ Used In File(s): \code\modules\research\xenoarchaeology\machinery\geosample_scan
 <div class="item">
 	<div class="itemLabel" style="width: 21%;">Internal temperature:</div>
 	<div class="itemContent" style="width: 35%;">
-		{{:helper.displayBar(data.scanner_temperature, 0, 1273, (data.scanner_temperature > 250 ? (data.scanner_temperature > 1000 ? 'bad' : 'average') : 'good'))}}
+		{{:helper.displayBar(data.scanner_temperature, 0, 1273, (data.scanner_temperature > 250 ? (data.scanner_temperature > 1000 ? 'bad' : 'average') : 'good')))}}
 		{{:data.scanner_temperature}} K
 	</div>
 	<div class="itemContent" style="width: 44%;">

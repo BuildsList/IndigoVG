@@ -8,8 +8,6 @@
 
 /obj/machinery/camera/process()
 	// motion camera event loop
-	if (stat & (EMPED|NOPOWER))
-		return
 	if(!isMotion())
 		. = PROCESS_KILL
 		return
@@ -42,18 +40,16 @@
 		cancelAlarm()
 
 /obj/machinery/camera/proc/cancelAlarm()
-	if (!status || (stat & NOPOWER))
-		return 0
 	if (detectTime == -1)
-		motion_alarm.clearAlarm(loc, src)
+		for (var/mob/living/silicon/aiPlayer in player_list)
+			if (status) aiPlayer.cancelAlarm("Motion", src.loc.loc)
 	detectTime = 0
 	return 1
 
 /obj/machinery/camera/proc/triggerAlarm()
-	if (!status || (stat & NOPOWER))
-		return 0
 	if (!detectTime) return 0
-	motion_alarm.triggerAlarm(loc, src)
+	for (var/mob/living/silicon/aiPlayer in player_list)
+		if (status) aiPlayer.triggerAlarm("Motion", src.loc.loc, src)
 	detectTime = -1
 	return 1
 

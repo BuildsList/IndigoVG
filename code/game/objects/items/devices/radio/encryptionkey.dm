@@ -1,24 +1,20 @@
 
 /obj/item/device/encryptionkey/
-	name = "standard encrpytion key"
-	desc = "An encryption key for a radio headset. Contains cypherkeys."
+	name = "Standard Encryption Key"
+	desc = "An enrcyption key for a radio headset.  Has no special codes in it.  WHY DOES IT EXIST?  ASK NANOTRASEN."
 	icon = 'icons/obj/radio.dmi'
 	icon_state = "cypherkey"
 	item_state = ""
-	w_class = 1
 	var/translate_binary = 0
 	var/translate_hive = 0
 	var/syndie = 0
 	var/list/channels = list()
 
-
-/obj/item/device/encryptionkey/New()
-
 /obj/item/device/encryptionkey/attackby(obj/item/weapon/W as obj, mob/user as mob)
 
 /obj/item/device/encryptionkey/syndicate
 	icon_state = "cypherkey"
-	channels = list("Mercenary" = 1)
+	channels = list("Syndicate" = 1)
 	origin_tech = "syndicate=3"
 	syndie = 1//Signifies that it de-crypts Syndicate transmissions
 
@@ -28,96 +24,107 @@
 	origin_tech = "syndicate=3"
 
 /obj/item/device/encryptionkey/headset_sec
-	name = "security radio encryption key"
+	name = "Security Radio Encryption Key"
+	desc = "An encryption key for a radio headset.  Contains cypherkeys."
 	icon_state = "sec_cypherkey"
 	channels = list("Security" = 1)
 
 /obj/item/device/encryptionkey/headset_eng
-	name = "engineering radio encryption key"
+	name = "Engineering Radio Encryption Key"
+	desc = "An encryption key for a radio headset.  Contains cypherkeys."
 	icon_state = "eng_cypherkey"
 	channels = list("Engineering" = 1)
 
 /obj/item/device/encryptionkey/headset_rob
-	name = "robotics radio encryption key"
+	name = "Robotics Radio Encryption Key"
+	desc = "An encryption key for a radio headset.  Contains cypherkeys."
 	icon_state = "rob_cypherkey"
 	channels = list("Engineering" = 1, "Science" = 1)
 
 /obj/item/device/encryptionkey/headset_med
-	name = "medical radio encryption key"
+	name = "Medical Radio Encryption Key"
+	desc = "An encryption key for a radio headset.  Contains cypherkeys."
 	icon_state = "med_cypherkey"
 	channels = list("Medical" = 1)
 
 /obj/item/device/encryptionkey/headset_sci
-	name = "science radio encryption key"
+	name = "Science Radio Encryption Key"
+	desc = "An encryption key for a radio headset.  Contains cypherkeys."
 	icon_state = "sci_cypherkey"
 	channels = list("Science" = 1)
 
 /obj/item/device/encryptionkey/headset_medsci
-	name = "medical research radio encryption key"
+	name = "Medical Research Radio Encryption Key"
+	desc = "An encryption key for a radio headset.  Contains cypherkeys."
 	icon_state = "medsci_cypherkey"
 	channels = list("Medical" = 1, "Science" = 1)
 
 /obj/item/device/encryptionkey/headset_com
-	name = "command radio encryption key"
+	name = "Command Radio Encryption Key"
+	desc = "An encryption key for a radio headset.  Contains cypherkeys."
 	icon_state = "com_cypherkey"
 	channels = list("Command" = 1)
 
 /obj/item/device/encryptionkey/heads/captain
-	name = "captain's encryption key"
+	name = "Captain's Encryption Key"
+	desc = "An encryption key for a radio headset.  Contains cypherkeys."
 	icon_state = "cap_cypherkey"
 	channels = list("Command" = 1, "Security" = 1, "Engineering" = 0, "Science" = 0, "Medical" = 0, "Supply" = 0, "Service" = 0)
 
-/obj/item/device/encryptionkey/heads/ai_integrated
-	name = "ai integrated encryption key"
-	desc = "Integrated encryption key"
-	icon_state = "cap_cypherkey"
-	channels = list("Command" = 1, "Security" = 1, "Engineering" = 1, "Science" = 1, "Medical" = 1, "Supply" = 1, "Service" = 1, "AI Private" = 1)
+/obj/item/device/encryptionkey/syndicate/hacked
+	name = "Standard Encryption Key"
+	desc = "An encryption key for a radio headset.  Has no special codes in it. Looks more sophisticated than usual."
+	channels = list("Command" = 0, "Security" = 0, "Engineering" = 0, "Science" = 0, "Medical" = 0, "Supply" = 0)
 
 /obj/item/device/encryptionkey/heads/rd
-	name = "research director's encryption key"
+	name = "Research Director's Encryption Key"
+	desc = "An encryption key for a radio headset.  Contains cypherkeys."
 	icon_state = "rd_cypherkey"
 	channels = list("Science" = 1, "Command" = 1)
 
 /obj/item/device/encryptionkey/heads/hos
-	name = "head of security's encryption key"
+	name = "Head of Security's Encryption Key"
+	desc = "An encryption key for a radio headset.  Contains cypherkeys."
 	icon_state = "hos_cypherkey"
 	channels = list("Security" = 1, "Command" = 1)
 
 /obj/item/device/encryptionkey/heads/ce
-	name = "chief engineer's encryption key"
+	name = "Chief Engineer's Encryption Key"
+	desc = "An encryption key for a radio headset.  Contains cypherkeys."
 	icon_state = "ce_cypherkey"
 	channels = list("Engineering" = 1, "Command" = 1)
 
 /obj/item/device/encryptionkey/heads/cmo
-	name = "chief medical officer's encryption key"
+	name = "Chief Medical Officer's Encryption Key"
+	desc = "An encryption key for a radio headset.  Contains cypherkeys."
 	icon_state = "cmo_cypherkey"
 	channels = list("Medical" = 1, "Command" = 1)
 
 /obj/item/device/encryptionkey/heads/hop
-	name = "head of personnel's encryption key"
+	name = "Head of Personnel's Encryption Key"
+	desc = "An encryption key for a radio headset.  Contains cypherkeys."
 	icon_state = "hop_cypherkey"
 	channels = list("Supply" = 1, "Service" = 1, "Command" = 1, "Security" = 0)
-/*
-/obj/item/device/encryptionkey/headset_mine
-	name = "mining radio encryption key"
-	icon_state = "mine_cypherkey"
-	channels = list("Mining" = 1)
 
-/obj/item/device/encryptionkey/heads/qm
-	name = "quartermaster's encryption key"
-	icon_state = "qm_cypherkey"
-	channels = list("Cargo" = 1, "Mining" = 1)
-*/
 /obj/item/device/encryptionkey/headset_cargo
-	name = "supply radio encryption key"
+	name = "Supply Radio Encryption Key"
+	desc = "An encryption key for a radio headset.  Contains cypherkeys."
 	icon_state = "cargo_cypherkey"
 	channels = list("Supply" = 1)
 
 /obj/item/device/encryptionkey/headset_service
-	name = "service radio encryption key"
-	icon_state = "srv_cypherkey"
+	name = "Service Radio Encryption Key"
+	desc = "An encryption key for a radio headset.  Contains cypherkeys."
+	icon_state = "service_cypherkey"
 	channels = list("Service" = 1)
 
+/obj/item/device/encryptionkey/headset_engsci
+	name = "Research Engineering Radio Encryption Key"
+	desc = "An encryption key for a radio headset.  Contains cypherkeys."
+	icon_state = "engsci_cypherkey"
+	channels = list("Science" = 1, "Engineering" = 1)
+
 /obj/item/device/encryptionkey/ert
-	name = "\improper NanoTrasen ERT radio encryption key"
-	channels = list("Response Team" = 1, "Science" = 1, "Command" = 1, "Medical" = 1, "Engineering" = 1, "Security" = 1, "Supply" = 1, "Service" = 1)
+	name = "NanoTrasen ERT Radio Encryption Key"
+	desc = "An encryption key for a radio headset.  Contains cypherkeys."
+	channels = list("Response Team" = 1, "Science" = 1, "Command" = 1, "Medical" = 1, "Engineering" = 1, "Security" = 1, "Mining" = 1, "Cargo" = 1,)

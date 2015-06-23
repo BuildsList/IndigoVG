@@ -3,7 +3,8 @@
 	desc = "Should anything ever go wrong..."
 	icon = 'icons/obj/items.dmi'
 	icon_state = "red_phone"
-	flags = CONDUCT
+	flags = FPRINT
+	siemens_coefficient = 1
 	force = 3.0
 	throwforce = 2.0
 	throw_speed = 1
@@ -11,6 +12,29 @@
 	w_class = 2
 	attack_verb = list("called", "rang")
 	hitsound = 'sound/weapons/ring.ogg'
+
+	suicide_act(mob/user)
+		viewers(user) << "\red <b>[user] wraps the cord of the [src.name] around \his neck! It looks like \he's trying to commit suicide.</b>"
+		return(OXYLOSS)
+
+/*/obj/item/weapon/syndicate_uplink
+	name = "station bounced radio"
+	desc = "Remain silent about this..."
+	icon = 'icons/obj/radio.dmi'
+	icon_state = "radio"
+	var/temp = null
+	var/uses = 10.0
+	var/selfdestruct = 0.0
+	var/traitor_frequency = 0.0
+	var/mob/currentUser = null
+	var/obj/item/device/radio/origradio = null
+	flags = FPRINT  | CONDUCT | ONBELT
+	w_class = 2.0
+	item_state = "radio"
+	throw_speed = 4
+	throw_range = 20
+	m_amt = 100
+	origin_tech = "magnets=2;syndicate=3"*/
 
 /obj/item/weapon/rsp
 	name = "\improper Rapid-Seed-Producer (RSP)"
@@ -20,9 +44,35 @@
 	opacity = 0
 	density = 0
 	anchored = 0.0
-	var/stored_matter = 0
+	var/matter = 0
 	var/mode = 1
 	w_class = 3.0
+
+/obj/item/weapon/bananapeel
+	name = "banana peel"
+	desc = "A peel from a banana."
+	icon = 'icons/obj/items.dmi'
+	icon_state = "banana_peel"
+	item_state = "banana_peel"
+	w_class = 1.0
+	throwforce = 0
+	throw_speed = 4
+	throw_range = 20
+
+	suicide_act(mob/user)
+		viewers(user) << "\red <b>[user] drops the [src.name] on the ground and steps on it causing \him to crash to the floor, bashing \his head wide open. </b>"
+		return(OXYLOSS)
+
+/obj/item/weapon/corncob
+	name = "corn cob"
+	desc = "A reminder of meals gone by."
+	icon = 'icons/obj/harvest.dmi'
+	icon_state = "corncob"
+	item_state = "corncob"
+	w_class = 1.0
+	throwforce = 0
+	throw_speed = 4
+	throw_range = 20
 
 /obj/item/weapon/soap
 	name = "soap"
@@ -30,20 +80,18 @@
 	gender = PLURAL
 	icon = 'icons/obj/items.dmi'
 	icon_state = "soap"
-	w_class = 2.0
+	w_class = 1.0
 	throwforce = 0
 	throw_speed = 4
 	throw_range = 20
 
 /obj/item/weapon/soap/nanotrasen
-	desc = "A Nanotrasen brand bar of soap. Smells of phoron."
+	desc = "A Nanotrasen brand bar of soap. Smells of plasma."
 	icon_state = "soapnt"
 
 /obj/item/weapon/soap/deluxe
+	desc = "A deluxe Waffle Co. brand bar of soap. Smells of condoms."
 	icon_state = "soapdeluxe"
-
-/obj/item/weapon/soap/deluxe/New()
-	desc = "A deluxe Waffle Co. brand bar of soap. Smells of [pick("lavender", "vanilla", "strawberry", "chocolate" ,"space")]."
 
 /obj/item/weapon/soap/syndie
 	desc = "An untrustworthy bar of soap. Smells of fear."
@@ -56,7 +104,7 @@
 	icon_state = "bike_horn"
 	item_state = "bike_horn"
 	throwforce = 3
-	w_class = 2
+	w_class = 1.0
 	throw_speed = 3
 	throw_range = 15
 	attack_verb = list("HONKED")
@@ -69,7 +117,7 @@
 	icon = 'icons/obj/items.dmi'
 	icon_state = "c_tube"
 	throwforce = 1
-	w_class = 2.0
+	w_class = 1.0
 	throw_speed = 4
 	throw_range = 5
 
@@ -79,55 +127,15 @@
 	icon = 'icons/obj/weapons.dmi'
 	icon_state = "cane"
 	item_state = "stick"
-	flags = CONDUCT
+	flags = FPRINT
+	siemens_coefficient = 1
 	force = 5.0
 	throwforce = 7.0
 	w_class = 2.0
-	matter = list("metal" = 50)
+	m_amt = 50
+	w_type = RECYK_MISC
+	melt_temperature = MELTPOINT_STEEL
 	attack_verb = list("bludgeoned", "whacked", "disciplined", "thrashed")
-
-/obj/item/weapon/cane/concealed
-	var/concealed_blade
-
-/obj/item/weapon/cane/concealed/New()
-	..()
-	var/obj/item/weapon/butterfly/switchblade/temp_blade = new(src)
-	concealed_blade = temp_blade
-	temp_blade.attack_self()
-
-/obj/item/weapon/cane/concealed/attack_self(var/mob/user)
-	if(concealed_blade)
-		user.visible_message("<span class='warning'>[user] has unsheathed \a [concealed_blade] from \his [src]!</span>", "You unsheathe \the [concealed_blade] from \the [src].")
-		// Calling drop/put in hands to properly call item drop/pickup procs
-		playsound(user.loc, 'sound/weapons/flipblade.ogg', 50, 1)
-		user.drop_from_inventory(src)
-		user.put_in_hands(concealed_blade)
-		user.put_in_hands(src)
-		user.update_inv_l_hand(0)
-		user.update_inv_r_hand()
-		concealed_blade = null
-	else
-		..()
-
-/obj/item/weapon/cane/concealed/attackby(var/obj/item/weapon/butterfly/W, var/mob/user)
-	if(!src.concealed_blade && istype(W))
-		user.visible_message("<span class='warning'>[user] has sheathed \a [W] into \his [src]!</span>", "You sheathe \the [W] into \the [src].")
-		user.drop_from_inventory(W)
-		W.loc = src
-		src.concealed_blade = W
-		update_icon()
-	else
-		..()
-
-/obj/item/weapon/cane/concealed/update_icon()
-	if(concealed_blade)
-		name = initial(name)
-		icon_state = initial(icon_state)
-		item_state = initial(icon_state)
-	else
-		name = "cane shaft"
-		icon_state = "nullrod"
-		item_state = "foldcane"
 
 /obj/item/weapon/disk
 	name = "disk"
@@ -138,7 +146,21 @@
 	desc = "Better keep this safe."
 	icon_state = "nucleardisk"
 	item_state = "card-id"
-	w_class = 2.0
+	w_class = 1.0
+
+//TODO: Figure out wtf this is and possibly remove it -Nodrak
+/obj/item/weapon/dummy
+	name = "dummy"
+	invisibility = 101.0
+	anchored = 1.0
+	flags = 0
+
+/obj/item/weapon/dummy/ex_act()
+	return
+
+/obj/item/weapon/dummy/blob_act()
+	return
+
 
 /*
 /obj/item/weapon/game_kit
@@ -153,27 +175,227 @@
 	w_class = 5.0
 */
 
-/obj/item/weapon/gift
-	name = "gift"
-	desc = "A wrapped item."
-	icon = 'icons/obj/items.dmi'
-	icon_state = "gift3"
-	var/size = 3.0
-	var/obj/item/gift = null
-	item_state = "gift"
-	w_class = 4.0
-
 /obj/item/weapon/legcuffs
 	name = "legcuffs"
 	desc = "Use this to keep prisoners in line."
 	gender = PLURAL
 	icon = 'icons/obj/items.dmi'
 	icon_state = "handcuff"
-	flags = CONDUCT
+	flags = FPRINT
+	siemens_coefficient = 1
 	throwforce = 0
 	w_class = 3.0
 	origin_tech = "materials=1"
 	var/breakouttime = 300	//Deciseconds = 30s = 0.5 minute
+
+/obj/item/weapon/legcuffs/bolas
+	name = "bolas"
+	desc = "An entangling bolas. Throw at your foes to trip them and prevent them from running."
+	gender = NEUTER
+	icon = 'icons/obj/weapons.dmi'
+	icon_state = "bolas"
+	flags = FPRINT
+	siemens_coefficient = 1
+	slot_flags = SLOT_BELT
+	throwforce = 2
+	w_class = 2
+	w_type = RECYK_METAL
+	origin_tech = "materials=1"
+	attack_verb = list("lashed", "bludgeoned", "whipped")
+	force = 4
+	breakouttime = 50 //10 seconds
+	throw_speed = 1
+	throw_range = 10
+	var/dispenser = 0
+	var/throw_sound = 'sound/weapons/whip.ogg'
+	var/trip_prob = 60
+	var/thrown_from
+
+/obj/item/weapon/legcuffs/bolas/suicide_act(mob/living/user)
+		viewers(user) << "\red <b>[user] is wrapping the [src.name] around \his neck! It looks like \he's trying to commit suicide.</b>"
+		return(OXYLOSS)
+
+/obj/item/weapon/legcuffs/bolas/throw_at(var/atom/A, throw_range, throw_speed)
+	if(usr && !istype(thrown_from, /obj/item/mecha_parts/mecha_equipment/weapon/ballistic/missile_rack/bolas)) //if there is a user, but not a mech
+		if(istype(usr, /mob/living/carbon/human)) //if the user is human
+			var/mob/living/carbon/human/H = usr
+			if((M_CLUMSY in H.mutations) && prob(50))
+				H <<"\red You smack yourself in the face while swinging the [src]!"
+				H.Stun(2)
+				H.drop_item()
+				return
+	if (!thrown_from && usr) //if something hasn't set it already (like a mech does when it launches)
+		thrown_from = usr //then the user must have thrown it
+	if (!istype(thrown_from, /obj/item/mecha_parts/mecha_equipment/weapon/ballistic/missile_rack/bolas))
+		playsound(src, throw_sound, 20, 1) //because mechs play the sound anyways
+	var/turf/target = get_turf(A)
+	var/atom/movable/adjtarget = new /atom/movable
+	var/xadjust = 0
+	var/yadjust = 0
+	var/scaler = 0 //used to changed the normalised vector to the proper size
+	scaler = throw_range / max(abs(target.x - src.x), abs(target.y - src.y)) //whichever is larger magnitude is what we normalise to
+	if (target.x - src.x != 0) //just to avoid fucking with math for no reason
+		xadjust = round((target.x - src.x) * scaler) //normalised vector is now scaled up to throw_range
+		adjtarget.x = src.x + xadjust //the new target at max range
+	else
+		adjtarget.x = src.x
+	if (target.y - src.y != 0)
+		yadjust = round((target.y - src.y) * scaler)
+		adjtarget.y = src.y + yadjust
+	else
+		adjtarget.y = src.y
+	// log_admin("Adjusted target of [adjtarget.x] and [adjtarget.y], adjusted with [xadjust] and [yadjust] from [scaler]")
+	..(get_turf(adjtarget), throw_range, throw_speed)
+	thrown_from = null
+
+/obj/item/weapon/legcuffs/bolas/throw_impact(atom/hit_atom) //Pomf was right, I was wrong - Comic
+	if(isliving(hit_atom) && hit_atom != usr) //if the target is a live creature other than the thrower
+		var/mob/living/M = hit_atom
+		if(ishuman(M)) //if they're a human species
+			var/mob/living/carbon/human/H = M
+			if(H.m_intent == "run") //if they're set to run (though not necessarily running at that moment)
+				if(prob(trip_prob)) //this probability is up for change and mostly a placeholder - Comic
+					step(H, H.dir)
+					H.visible_message("<span class='warning'>[H] was tripped by the bolas!</span>","<span class='warning'>Your legs have been tangled!</span>");
+					H.Stun(2) //used instead of setting damage in vars to avoid non-human targets being affected
+					H.Weaken(4)
+					H.legcuffed = src //applies legcuff properties inherited through legcuffs
+					src.loc = H
+					H.update_inv_legcuffed()
+					if(!H.legcuffed) //in case it didn't happen, we need a safety net
+						throw_failed()
+			else if(H.legcuffed) //if the target is already legcuffed (has to be walking)
+				throw_failed()
+				return
+			else //walking, but uncuffed, or the running prob() failed
+				H << "\blue You stumble over the thrown bolas"
+				step(H, H.dir)
+				H.Stun(1)
+				throw_failed()
+				return
+		else
+			M.Stun(2) //minor stun damage to anything not human
+			throw_failed()
+			return
+
+/obj/item/weapon/legcuffs/bolas/proc/throw_failed() //called when the throw doesn't entangle
+	//log_admin("Logged as [thrown_from]")
+	if(!thrown_from || !istype(thrown_from, /mob/living)) //in essence, if we don't know whether a person threw it
+		qdel(src) //destroy it, to stop infinite bolases
+
+/obj/item/weapon/legcuffs/bolas/Bump()
+	..()
+	throw_failed() //allows a mech bolas to be destroyed
+
+// /obj/item/weapon/legcuffs/bolas/cyborg To be implemented
+//	dispenser = 1
+
+/obj/item/weapon/legcuffs/bolas/cable
+	name = "cable bolas"
+	desc = "A poorly made bolas, tied together with cable."
+	icon_state = ""
+	throw_speed = 1
+	throw_range = 6
+	trip_prob = 10
+	var/obj/item/weight1 = null //the two items that are attached to the cable
+	var/obj/item/weight2 = null
+	var/cable_color = ""
+	var/desc_empty = "A poorly made bolas, tied together with cable. It has nothing on it."
+	var/screw_state = "" //used for storing info about the screwdriver
+	var/screw_istate = ""
+
+/obj/item/weapon/legcuffs/bolas/cable/New()
+	..()
+	desc = desc_empty
+	weight1 = null
+	weight2 = null
+	update_icon()
+
+/obj/item/weapon/legcuffs/bolas/cable/update_icon()
+	if (!weight1 && !weight2)
+		icon_state = "cbolas_[cable_color]"
+		overlays.len = 0
+		desc = desc_empty
+		trip_prob = 0
+		return
+	else
+		overlays.len = 0
+		if (weight1)
+			trip_prob = 10
+			overlays += icon("icons/obj/weapons.dmi", "cbolas_weight1")
+		if (weight2)
+			trip_prob = 30
+			overlays += icon("icons/obj/weapons.dmi", "cbolas_weight2")
+		desc = "A poorly made bolas, made out of \a [weight1] and [weight2 ? "\a [weight2]": "missing a second weight"], tied together with cable."
+
+/obj/item/weapon/legcuffs/bolas/cable/throw_failed()
+	if(prob(20))
+		for (var/mob/V in viewers(src, null))
+			V << "\red \The [src] falls to pieces on impact!"
+		if(weight1)
+			weight1.loc = src.loc
+			weight1 = null
+		if(weight2)
+			weight2.loc = src.loc
+			weight2 = null
+		update_icon(src)
+
+/obj/item/weapon/legcuffs/bolas/cable/attackby(var/obj/O)
+	if(istype(O, /obj/item))
+		var/obj/item/I = O
+		if(istype(I, /obj/item/weapon/wirecutters)) //allows you to convert the wire back to a cable coil
+			if(!weight1 && !weight2) //if there's nothing attached
+				usr << "\blue You cut the knot in the [src]."
+				playsound(usr, 'sound/items/Wirecutter.ogg', 50, 1)
+				var /obj/item/weapon/cable_coil/C = new /obj/item/weapon/cable_coil(usr.loc) //we get back the wire lengths we put in
+				var /obj/item/weapon/cable_coil/S = new /obj/item/weapon/screwdriver(src.loc)
+				C.amount = 10
+				C._color = cable_color
+				C.icon_state = "coil_[C._color]"
+				C.update_icon()
+				S.item_state = screw_state
+				S.icon_state = screw_istate
+				S.update_icon()
+				qdel(src)
+				return
+			else
+				usr << "\blue You cut off [weight1] [weight2 ? "and [weight2]" : ""]." //you remove the items currently attached
+				if(weight1)
+					weight1.loc = get_turf(usr)
+					weight1 = null
+				if(weight2)
+					weight2.loc = get_turf(usr)
+					weight2 = null
+				playsound(usr, 'sound/items/Wirecutter.ogg', 50, 1)
+				update_icon()
+				return
+		if(I.w_class) //if it has a defined weight
+			if(I.w_class == 2.0 || I.w_class == 3.0) //just one is too specific, so don't change this
+				if(weight1 == null)
+					usr.drop_item(I)
+					weight1 = I
+					I.forceMove(src)
+					usr << "\blue You tie [weight1] to the [src]."
+					update_icon()
+					//del(I)
+					return
+				if(weight2 == null) //just in case
+					usr.drop_item(I)
+					weight2 = I
+					I.forceMove(src)
+					usr << "\blue You tie [weight2] to the [src]."
+					update_icon()
+					//del(I)
+					return
+				else
+					usr << "\red There are already two weights on this [src]!"
+					return
+			else if (I.w_class < 2.0)
+				usr << "\red \The [I] is too small to be used as a weight."
+			else if (I.w_class > 3.0)
+				usr << "\red \The [I] is [I.w_class > 4.0 ? "far " : ""] too big to be used a weight."
+			else
+				usr << "\red There are already two weights on this [src]!"
 
 /obj/item/weapon/legcuffs/beartrap
 	name = "bear trap"
@@ -228,31 +450,74 @@
 	throw_speed = 1
 	throw_range = 5
 	w_class = 2.0
+	flags = FPRINT
 	attack_verb = list("warned", "cautioned", "smashed")
+
+/obj/item/weapon/caution/proximity_sign
+	var/timing = 0
+	var/armed = 0
+	var/timepassed = 0
+
+/obj/item/weapon/caution/proximity_sign/attack_self(mob/user as mob)
+	if(ishuman(user))
+		var/mob/living/carbon/human/H = user
+		if(H.mind.assigned_role != "Janitor")
+			return
+		if(armed)
+			armed = 0
+			user << "<span class='notice'>You disarm \the [src].</span>"
+			return
+		timing = !timing
+		if(timing)
+			processing_objects.Add(src)
+		else
+			armed = 0
+			timepassed = 0
+		H << "<span class='notice'>You [timing ? "activate \the [src]'s timer, you have 15 seconds." : "de-activate \the [src]'s timer."]</span>"
+
+/obj/item/weapon/caution/proximity_sign/process()
+	if(!timing)
+		processing_objects.Remove(src)
+	timepassed++
+	if(timepassed >= 15 && !armed)
+		armed = 1
+		timing = 0
+
+/obj/item/weapon/caution/proximity_sign/HasProximity(atom/movable/AM as mob|obj)
+	if(armed)
+		if(istype(AM, /mob/living/carbon) && !istype(AM, /mob/living/carbon/brain))
+			var/mob/living/carbon/C = AM
+			if(C.m_intent != "walk")
+				src.visible_message("The [src.name] beeps, \"Running on wet floors is hazardous to your health.\"")
+				explosion(src.loc,-1,2,0)
+				if(ishuman(C))
+					dead_legs(C)
+				if(src)
+					qdel(src)
+
+/obj/item/weapon/caution/proximity_sign/proc/dead_legs(mob/living/carbon/human/H as mob)
+	var/datum/organ/external/l = H.organs_by_name["l_leg"]
+	var/datum/organ/external/r = H.organs_by_name["r_leg"]
+	if(l && !(l.status & ORGAN_DESTROYED))
+		l.status |= ORGAN_DESTROYED
+	if(r && !(r.status & ORGAN_DESTROYED))
+		r.status |= ORGAN_DESTROYED
 
 /obj/item/weapon/caution/cone
 	desc = "This cone is trying to warn you of something!"
 	name = "warning cone"
 	icon_state = "cone"
 
-/*/obj/item/weapon/syndicate_uplink
-	name = "station bounced radio"
-	desc = "Remain silent about this..."
-	icon = 'icons/obj/radio.dmi'
-	icon_state = "radio"
-	var/temp = null
-	var/uses = 10.0
-	var/selfdestruct = 0.0
-	var/traitor_frequency = 0.0
-	var/mob/currentUser = null
-	var/obj/item/device/radio/origradio = null
-	flags = CONDUCT | ONBELT
-	w_class = 2.0
-	item_state = "radio"
-	throw_speed = 4
-	throw_range = 20
-	matter = list("metal" = 100
-	origin_tech = "magnets=2;syndicate=3"*/
+/obj/item/weapon/rack_parts
+	name = "rack parts"
+	desc = "Parts of a rack."
+	icon = 'icons/obj/items.dmi'
+	icon_state = "rack_parts"
+	flags = FPRINT
+	siemens_coefficient = 1
+	m_amt = 3750
+	w_type = RECYK_METAL
+	melt_temperature=MELTPOINT_STEEL
 
 /obj/item/weapon/SWF_uplink
 	name = "station-bounced radio"
@@ -264,14 +529,17 @@
 	var/selfdestruct = 0.0
 	var/traitor_frequency = 0.0
 	var/obj/item/device/radio/origradio = null
-	flags = CONDUCT
+	flags = FPRINT
+	siemens_coefficient = 1
 	slot_flags = SLOT_BELT
 	item_state = "radio"
 	throwforce = 5
 	w_class = 2.0
 	throw_speed = 4
 	throw_range = 20
-	matter = list("metal" = 100)
+	m_amt = 100
+	w_type = RECYK_ELECTRONIC
+	melt_temperature=MELTPOINT_SILICON
 	origin_tech = "magnets=1"
 
 /obj/item/weapon/staff
@@ -284,7 +552,7 @@
 	throw_speed = 1
 	throw_range = 5
 	w_class = 2.0
-	flags = NOSHIELD
+	flags = FPRINT
 	attack_verb = list("bludgeoned", "whacked", "disciplined")
 
 /obj/item/weapon/staff/broom
@@ -292,13 +560,6 @@
 	desc = "Used for sweeping, and flying into the night while cackling. Black cat not included."
 	icon = 'icons/obj/wizard.dmi'
 	icon_state = "broom"
-
-/obj/item/weapon/staff/gentcane
-	name = "Gentlemans Cane"
-	desc = "An ebony can with an ivory tip."
-	icon = 'icons/obj/weapons.dmi'
-	icon_state = "cane"
-	item_state = "stick"
 
 /obj/item/weapon/staff/stick
 	name = "stick"
@@ -311,7 +572,44 @@
 	throw_speed = 1
 	throw_range = 5
 	w_class = 2.0
-	flags = NOSHIELD
+	flags = FPRINT
+
+/obj/item/weapon/table_parts
+	name = "table parts"
+	desc = "Parts of a table. Poor table."
+	gender = PLURAL
+	icon = 'icons/obj/items.dmi'
+	icon_state = "table_parts"
+	m_amt = 3750
+	w_type = RECYK_METAL
+	melt_temperature=MELTPOINT_STEEL
+	flags = FPRINT
+	siemens_coefficient = 1
+	attack_verb = list("slammed", "bashed", "battered", "bludgeoned", "thrashed", "whacked")
+
+/obj/item/weapon/table_parts/cultify()
+	new /obj/item/weapon/table_parts/wood(loc)
+	..()
+
+/obj/item/weapon/table_parts/reinforced
+	name = "reinforced table parts"
+	desc = "Hard table parts. Well...harder..."
+	icon = 'icons/obj/items.dmi'
+	icon_state = "reinf_tableparts"
+	m_amt = 7500
+	w_type = RECYK_METAL
+	melt_temperature=MELTPOINT_STEEL
+	flags = FPRINT
+	siemens_coefficient = 1
+
+/obj/item/weapon/table_parts/wood
+	name = "wooden table parts"
+	desc = "Keep away from fire."
+	icon_state = "wood_tableparts"
+	flags = 0
+
+/obj/item/weapon/table_parts/wood/cultify()
+	return
 
 /obj/item/weapon/wire
 	desc = "This is just a simple piece of regular insulated wire."
@@ -321,7 +619,9 @@
 	var/amount = 1.0
 	var/laying = 0.0
 	var/old_lay = null
-	matter = list("metal" = 40)
+	m_amt = 40
+	w_type = RECYK_METAL
+	melt_temperature=MELTPOINT_STEEL
 	attack_verb = list("whipped", "lashed", "disciplined", "tickled")
 
 	suicide_act(mob/user)
@@ -333,7 +633,8 @@
 	icon_state = "std_module"
 	w_class = 2.0
 	item_state = "electronic"
-	flags = CONDUCT
+	flags = FPRINT
+	siemens_coefficient = 1
 	var/mtype = 1						// 1=electronic 2=hardware
 
 /obj/item/weapon/module/card_reader
@@ -345,14 +646,6 @@
 	name = "power control module"
 	icon_state = "power_mod"
 	desc = "Heavy-duty switching circuits for power control."
-	matter = list("metal" = 50, "glass" = 50)
-
-/obj/item/weapon/module/power_control/attackby(var/obj/item/weapon/W as obj, var/mob/user as mob)
-	if (istype(W, /obj/item/device/multitool))
-		var/obj/item/weapon/circuitboard/ghettosmes/newcircuit = new/obj/item/weapon/circuitboard/ghettosmes(user.loc)
-		del(src)
-		user.put_in_hands(newcircuit)
-
 
 /obj/item/weapon/module/id_auth
 	name = "\improper ID authentication module"
@@ -369,40 +662,67 @@
 	icon_state = "power_mod"
 	desc = "Charging circuits for power cells."
 
-
-/obj/item/device/camera_bug
-	name = "camera bug"
-	icon = 'icons/obj/device.dmi'
-	icon_state = "flash"
+/obj/item/weapon/syntiflesh
+	name = "syntiflesh"
+	desc = "Meat that appears...strange..."
+	icon = 'icons/obj/food.dmi'
+	icon_state = "meat"
+	flags = FPRINT
+	siemens_coefficient = 1
 	w_class = 1.0
-	item_state = "electronic"
+	origin_tech = "biotech=2"
+
+/obj/item/weapon/hatchet
+	name = "hatchet"
+	desc = "A very sharp axe blade upon a short fibremetal handle. It has a long history of chopping things, but now it is used for chopping wood."
+	icon = 'icons/obj/weapons.dmi'
+	icon_state = "hatchet"
+	flags = FPRINT
+	siemens_coefficient = 1
+	force = 12.0
+	w_class = 2.0
+	throwforce = 15.0
 	throw_speed = 4
-	throw_range = 20
+	throw_range = 4
+	m_amt = 15000
+	w_type = RECYK_METAL
+	melt_temperature=MELTPOINT_STEEL
+	origin_tech = "materials=2;combat=1"
+	attack_verb = list("chopped", "torn", "cut")
 
-/obj/item/weapon/camera_bug/attack_self(mob/usr as mob)
-	var/list/cameras = new/list()
-	for (var/obj/machinery/camera/C in cameranet.cameras)
-		if (C.bugged && C.status)
-			cameras.Add(C)
-	if (length(cameras) == 0)
-		usr << "\red No bugged functioning cameras found."
-		return
+/obj/item/weapon/hatchet/attack(mob/living/carbon/M as mob, mob/living/carbon/user as mob)
+	playsound(loc, 'sound/weapons/bladeslice.ogg', 50, 1, -1)
+	return ..()
 
-	var/list/friendly_cameras = new/list()
+/obj/item/weapon/hatchet/unathiknife
+	name = "duelling knife"
+	desc = "A length of leather-bound wood studded with razor-sharp teeth. How crude."
+	icon = 'icons/obj/weapons.dmi'
+	icon_state = "unathiknife"
+	attack_verb = list("ripped", "torn", "cut")
 
-	for (var/obj/machinery/camera/C in cameras)
-		friendly_cameras.Add(C.c_tag)
+/obj/item/weapon/scythe
+	icon_state = "scythe0"
+	name = "scythe"
+	desc = "A sharp and curved blade on a long fibremetal handle, this tool makes it easy to reap what you sow."
+	force = 13.0
+	throwforce = 5.0
+	throw_speed = 1
+	throw_range = 3
+	w_class = 4.0
+	m_amt = 15000
+	w_type = RECYK_METAL
+	flags = FPRINT
+	slot_flags = SLOT_BACK
+	origin_tech = "materials=2;combat=2"
+	attack_verb = list("chopped", "sliced", "cut", "reaped")
 
-	var/target = input("Select the camera to observe", null) as null|anything in friendly_cameras
-	if (!target)
-		return
-	for (var/obj/machinery/camera/C in cameras)
-		if (C.c_tag == target)
-			target = C
-			break
-	if (usr.stat == 2) return
-
-	usr.client.eye = target
+/obj/item/weapon/scythe/afterattack(atom/A, mob/user as mob)
+	if(istype(A, /obj/effect/plantsegment))
+		for(var/obj/effect/plantsegment/B in orange(A,1))
+			if(prob(80))
+				del B
+		del A
 
 /*
 /obj/item/weapon/cigarpacket
@@ -414,7 +734,7 @@
 	w_class = 1
 	throwforce = 2
 	var/cigarcount = 6
-	flags = ONBELT */
+	flags = ONBELT  */
 
 /obj/item/weapon/pai_cable
 	desc = "A flexible coated cable with a universal jack on one end."
@@ -426,22 +746,6 @@
 
 ///////////////////////////////////////Stock Parts /////////////////////////////////
 
-/obj/item/weapon/storage/part_replacer
-	name = "rapid part exchange device"
-	desc = "Special mechanical module made to store, sort, and apply standard machine parts."
-	icon_state = "RPED"
-	item_state = "RPED"
-	w_class = 5
-	can_hold = list(/obj/item/weapon/stock_parts)
-	storage_slots = 50
-	use_to_pickup = 1
-	allow_quick_gather = 1
-	allow_quick_empty = 1
-	collection_mode = 1
-	display_contents_with_number = 1
-	max_w_class = 3
-	max_combined_w_class = 100
-
 /obj/item/weapon/stock_parts
 	name = "stock part"
 	desc = "What?"
@@ -449,9 +753,12 @@
 	icon = 'icons/obj/stock_parts.dmi'
 	w_class = 2.0
 	var/rating = 1
-	New()
-		src.pixel_x = rand(-5.0, 5)
-		src.pixel_y = rand(-5.0, 5)
+	melt_temperature=MELTPOINT_STEEL
+
+/obj/item/weapon/stock_parts/New()
+	. = ..()
+	pixel_x = rand(-5, 5)
+	pixel_y = rand(-5, 5)
 
 //Rank 1
 
@@ -460,51 +767,62 @@
 	desc = "Used in the construction of computers and other devices with a interactive console."
 	icon_state = "screen"
 	origin_tech = "materials=1"
-	matter = list("glass" = 200)
+	g_amt = 200
+	w_type = RECYK_GLASS
 
 /obj/item/weapon/stock_parts/capacitor
 	name = "capacitor"
 	desc = "A basic capacitor used in the construction of a variety of devices."
-	icon_state = "capacitor"
+	icon_state = "capacitor2_basic"
 	origin_tech = "powerstorage=1"
-	matter = list("metal" = 50,"glass" = 50)
+	m_amt = 50
+	g_amt = 50
+	w_type = RECYK_ELECTRONIC
 
 /obj/item/weapon/stock_parts/scanning_module
 	name = "scanning module"
 	desc = "A compact, high resolution scanning module used in the construction of certain devices."
 	icon_state = "scan_module"
 	origin_tech = "magnets=1"
-	matter = list("metal" = 50,"glass" = 20)
+	m_amt = 50
+	g_amt = 20
+	w_type = RECYK_ELECTRONIC
 
 /obj/item/weapon/stock_parts/manipulator
 	name = "micro-manipulator"
 	desc = "A tiny little manipulator used in the construction of certain devices."
 	icon_state = "micro_mani"
 	origin_tech = "materials=1;programming=1"
-	matter = list("metal" = 30)
+	m_amt = 30
+	w_type = RECYK_ELECTRONIC
 
 /obj/item/weapon/stock_parts/micro_laser
 	name = "micro-laser"
 	desc = "A tiny laser used in certain devices."
 	icon_state = "micro_laser"
 	origin_tech = "magnets=1"
-	matter = list("metal" = 10,"glass" = 20)
+	m_amt = 10
+	g_amt = 20
+	w_type = RECYK_ELECTRONIC
 
 /obj/item/weapon/stock_parts/matter_bin
 	name = "matter bin"
 	desc = "A container for hold compressed matter awaiting re-construction."
 	icon_state = "matter_bin"
 	origin_tech = "materials=1"
-	matter = list("metal" = 80)
+	m_amt = 80
+	w_type = RECYK_ELECTRONIC
 
 //Rank 2
 
 /obj/item/weapon/stock_parts/capacitor/adv
 	name = "advanced capacitor"
 	desc = "An advanced capacitor used in the construction of a variety of devices."
+	icon_state = "capacitor2_adv"
 	origin_tech = "powerstorage=3"
 	rating = 2
-	matter = list("metal" = 50,"glass" = 50)
+	m_amt = 50
+	g_amt = 50
 
 /obj/item/weapon/stock_parts/scanning_module/adv
 	name = "advanced scanning module"
@@ -512,15 +830,16 @@
 	icon_state = "scan_module"
 	origin_tech = "magnets=3"
 	rating = 2
-	matter = list("metal" = 50,"glass" = 20)
+	m_amt = 50
+	g_amt = 20
 
 /obj/item/weapon/stock_parts/manipulator/nano
 	name = "nano-manipulator"
 	desc = "A tiny little manipulator used in the construction of certain devices."
 	icon_state = "nano_mani"
-	origin_tech = "materials=3,programming=2"
+	origin_tech = "materials=3;programming=2"
 	rating = 2
-	matter = list("metal" = 30)
+	m_amt = 30
 
 /obj/item/weapon/stock_parts/micro_laser/high
 	name = "high-power micro-laser"
@@ -528,7 +847,8 @@
 	icon_state = "high_micro_laser"
 	origin_tech = "magnets=3"
 	rating = 2
-	matter = list("metal" = 10,"glass" = 20)
+	m_amt = 10
+	g_amt = 20
 
 /obj/item/weapon/stock_parts/matter_bin/adv
 	name = "advanced matter bin"
@@ -536,31 +856,34 @@
 	icon_state = "advanced_matter_bin"
 	origin_tech = "materials=3"
 	rating = 2
-	matter = list("metal" = 80)
+	m_amt = 80
 
 //Rating 3
 
 /obj/item/weapon/stock_parts/capacitor/super
 	name = "super capacitor"
 	desc = "A super-high capacity capacitor used in the construction of a variety of devices."
+	icon_state = "capacitor2_super"
 	origin_tech = "powerstorage=5;materials=4"
 	rating = 3
-	matter = list("metal" = 50,"glass" = 50)
+	m_amt = 50
+	g_amt = 50
 
 /obj/item/weapon/stock_parts/scanning_module/phasic
 	name = "phasic scanning module"
 	desc = "A compact, high resolution phasic scanning module used in the construction of certain devices."
 	origin_tech = "magnets=5"
 	rating = 3
-	matter = list("metal" = 50,"glass" = 20)
+	m_amt = 50
+	g_amt = 20
 
 /obj/item/weapon/stock_parts/manipulator/pico
 	name = "pico-manipulator"
 	desc = "A tiny little manipulator used in the construction of certain devices."
 	icon_state = "pico_mani"
-	origin_tech = "materials=5,programming=2"
+	origin_tech = "materials=5;programming=2"
 	rating = 3
-	matter = list("metal" = 30)
+	m_amt = 30
 
 /obj/item/weapon/stock_parts/micro_laser/ultra
 	name = "ultra-high-power micro-laser"
@@ -568,7 +891,8 @@
 	desc = "A tiny laser used in certain devices."
 	origin_tech = "magnets=5"
 	rating = 3
-	matter = list("metal" = 10,"glass" = 20)
+	m_amt = 10
+	g_amt = 20
 
 /obj/item/weapon/stock_parts/matter_bin/super
 	name = "super matter bin"
@@ -576,7 +900,7 @@
 	icon_state = "super_matter_bin"
 	origin_tech = "materials=5"
 	rating = 3
-	matter = list("metal" = 80)
+	m_amt = 80
 
 // Subspace stock parts
 
@@ -585,49 +909,54 @@
 	icon_state = "subspace_ansible"
 	desc = "A compact module capable of sensing extradimensional activity."
 	origin_tech = "programming=3;magnets=5;materials=4;bluespace=2"
-	matter = list("metal" = 30,"glass" = 10)
+	m_amt = 30
+	g_amt = 10
 
 /obj/item/weapon/stock_parts/subspace/filter
 	name = "hyperwave filter"
 	icon_state = "hyperwave_filter"
 	desc = "A tiny device capable of filtering and converting super-intense radiowaves."
 	origin_tech = "programming=4;magnets=2"
-	matter = list("metal" = 30,"glass" = 10)
+	m_amt = 30
+	g_amt = 10
 
 /obj/item/weapon/stock_parts/subspace/amplifier
 	name = "subspace amplifier"
 	icon_state = "subspace_amplifier"
 	desc = "A compact micro-machine capable of amplifying weak subspace transmissions."
 	origin_tech = "programming=3;magnets=4;materials=4;bluespace=2"
-	matter = list("metal" = 30,"glass" = 10)
+	m_amt = 30
+	g_amt = 10
 
 /obj/item/weapon/stock_parts/subspace/treatment
 	name = "subspace treatment disk"
 	icon_state = "treatment_disk"
 	desc = "A compact micro-machine capable of stretching out hyper-compressed radio waves."
 	origin_tech = "programming=3;magnets=2;materials=5;bluespace=2"
-	matter = list("metal" = 30,"glass" = 10)
+	m_amt = 30
+	g_amt = 10
 
 /obj/item/weapon/stock_parts/subspace/analyzer
 	name = "subspace wavelength analyzer"
 	icon_state = "wavelength_analyzer"
 	desc = "A sophisticated analyzer capable of analyzing cryptic subspace wavelengths."
 	origin_tech = "programming=3;magnets=4;materials=4;bluespace=2"
-	matter = list("metal" = 30,"glass" = 10)
+	m_amt = 30
+	g_amt = 10
 
 /obj/item/weapon/stock_parts/subspace/crystal
 	name = "ansible crystal"
 	icon_state = "ansible_crystal"
 	desc = "A crystal made from pure glass used to transmit laser databursts to subspace."
 	origin_tech = "magnets=4;materials=4;bluespace=2"
-	matter = list("glass" = 50)
+	g_amt = 50
 
 /obj/item/weapon/stock_parts/subspace/transmitter
 	name = "subspace transmitter"
 	icon_state = "subspace_transmitter"
 	desc = "A large piece of equipment used to open a window into the subspace dimension."
 	origin_tech = "magnets=5;materials=5;bluespace=3"
-	matter = list("metal" = 50)
+	m_amt = 50
 
 /obj/item/weapon/ectoplasm
 	name = "ectoplasm"
@@ -635,10 +964,76 @@
 	gender = PLURAL
 	icon = 'icons/obj/wizard.dmi'
 	icon_state = "ectoplasm"
+	w_type = RECYK_BIOLOGICAL
 
-/obj/item/weapon/research
-	name = "research debugging device"
-	desc = "Instant research tool. For testing purposes only."
+/*
+/obj/item/weapon/research//Makes testing much less of a pain -Sieve
+	name = "research"
 	icon = 'icons/obj/stock_parts.dmi'
-	icon_state = "smes_coil"
-	origin_tech = "materials=19;programming=19;magnets=19;powerstorage=19;bluespace=19;combat=19;biotech=19;syndicate=19;phorontech=19;engineering=19"
+	icon_state = "capacitor"
+	desc = "A debug item for research."
+	origin_tech = "materials=8;programming=8;magnets=8;powerstorage=8;bluespace=8;combat=8;biotech=8;syndicate=8"
+*/
+
+/////////Random shit////////
+
+/obj/item/weapon/lightning
+	name = "lightning"
+	icon = 'icons/obj/lightning.dmi'
+	icon_state = "lightning"
+	desc = "test lightning"
+	flags = 0
+
+	New()
+		icon = midicon
+		icon_state = "1"
+
+	afterattack(atom/A as mob|obj|turf|area, mob/living/user as mob|obj, flag, params)
+		var/angle = get_angle(A, user)
+		//world << angle
+		angle = round(angle) + 45
+		if(angle > 180)
+			angle -= 180
+		else
+			angle += 180
+
+		if(!angle)
+			angle = 1
+		//world << "adjusted [angle]"
+		icon_state = "[angle]"
+		//world << "[angle] [(get_dist(user, A) - 1)]"
+		user.Beam(A, "lightning", 'icons/obj/zap.dmi', 50, 15)
+/*Testing
+proc/get_angle(atom/a, atom/b)
+    return atan2(b.y - a.y, b.x - a.x)
+proc/atan2(x, y)
+    if(!x && !y) return 0
+    return y >= 0 ? arccos(x / sqrt(x * x + y * y)) : -arccos(x / sqrt(x * x + y * y))
+proc
+    //  creates an /icon object with 360 states of rotation
+    rotate_icon(file, state, step = 1, aa = FALSE)
+        var icon/base = icon(file, state)
+
+        var w, h, w2, h2
+        if(aa)
+            aa ++
+            w = base.Width()
+            w2 = w * aa
+            h = base.Height()
+            h2 = h * aa
+
+        var icon{result = icon(base); temp}
+
+        for(var/angle in 0 to 360 step step)
+            if(angle == 0  ) continue
+            if(angle == 360)   continue
+
+            temp = icon(base)
+
+            if(aa) temp.Scale(w2, h2)
+            temp.Turn(angle)
+            if(aa) temp.Scale(w,   h)
+
+            result.Insert(temp, "[angle]")
+
+        return result*/

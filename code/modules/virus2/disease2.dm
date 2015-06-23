@@ -8,57 +8,72 @@
 	var/clicks = 0
 	var/uniqueID = 0
 	var/list/datum/disease2/effectholder/effects = list()
-	var/antigen = list() // 16 bits describing the antigens, when one bit is set, a cure with that bit can dock here
+	var/antigen = 0 // 16 bits describing the antigens, when one bit is set, a cure with that bit can dock here
 	var/max_stage = 4
-	var/list/affected_species = list("Human","Unathi","Skrell","Tajara")
 
-/datum/disease2/disease/New()
+	var/log = ""
+	var/logged_virusfood=0
+
+/datum/disease2/disease/New(var/notes="No notes.")
 	uniqueID = rand(0,10000)
+	log += "<br />[timestamp()] CREATED - [notes]<br>"
 	..()
 
-/datum/disease2/disease/proc/makerandom(var/severity=1)
-	var/list/excludetypes = list()
+/datum/disease2/disease/proc/makerandom(var/greater=0)
 	for(var/i=1 ; i <= max_stage ; i++ )
-		var/datum/disease2/effectholder/holder = new /datum/disease2/effectholder
+		var/datum/disease2/effectholder/holder = new /datum/disease2/effectholder(src)
 		holder.stage = i
-		holder.getrandomeffect(severity, excludetypes)
-		excludetypes += holder.effect.type
+		if(greater)
+			holder.getrandomeffect(2)
+		else
+			holder.getrandomeffect()
 		effects += holder
 	uniqueID = rand(0,10000)
-	switch(severity)
-		if(1)
-			infectionchance = 1
-		if(2)
-			infectionchance = rand(10,20)
-		else
-			infectionchance = rand(60,90)
-
-	antigen = list(pick(ALL_ANTIGENS))
-	antigen |= pick(ALL_ANTIGENS)
+	infectionchance = rand(60,90)
+	antigen |= text2num(pick(ANTIGENS))
+	antigen |= text2num(pick(ANTIGENS))
 	spreadtype = prob(70) ? "Airborne" : "Contact"
 
-	if(all_species.len)
-		affected_species = get_infectable_species()
+/proc/virus2_make_custom(client/C)
+	if(!C.holder || !istype(C))
+		return 0
+	if(!(C.holder.rights & R_DEBUG))
+		return 0
+	var/mob/living/carbon/infectedMob = input(C, "Select person to infect", "Infect Person") in (player_list) // get the selected mob
+	if(!istype(infectedMob))
+		return // return if isn't proper mob type
+	var/datum/disease2/disease/D = new /datum/disease2/disease("custom_disease") //set base name
+	for(var/i = 1; i <= D.max_stage; i++)  // run through this loop until everything is set
+		var/datum/disease2/effect/sympton = input(C, "Choose a sympton to add ([5-i] remaining)", "Choose a Sympton") in ((typesof(/datum/disease2/effect) - /datum/disease2/effect)) // choose a sympton from the list of them
+		var/datum/disease2/effectholder/holder = new /datum/disease2/effectholder(infectedMob) // create the infectedMob as a holder for it.
+		holder.stage = i // set the stage of this holder equal to i.
+		var/datum/disease2/effect/f = new sympton // initalize the new sympton
+		holder.effect = f // assign the new sympton to the holder
+		holder.chance = input(C, "Choose chance", "Chance") as num // set the chance of the sympton that can occur
+		if(holder.chance > 100 || holder.chance < 0)
+			return 0
+		D.log += "[f.name] [holder.chance]%<br>"
+		D.effects += holder // add the holder to the disease
 
-/proc/get_infectable_species()
-	var/list/meat = list()
-	var/list/res = list()
-	for (var/specie in all_species)
-		var/datum/species/S = all_species[specie]
-		if(!(S.flags & IS_SYNTHETIC))
-			meat += S.name
-	if(meat.len)
-		var/num = rand(1,meat.len)
-		for(var/i=0,i<num,i++)
-			var/picked = pick(meat)
-			meat -= picked
-			res += picked
-	return res
+	D.uniqueID = rand(0, 10000)
+	D.infectionchance = input(C, "Choose an infection rate percent", "Infection Rate") as num
+	if(D.infectionchance > 100 || D.infectionchance < 0)
+		return 0
+	//pick random antigens for the disease to have
+	D.antigen |= text2num(pick(ANTIGENS))
+	D.antigen |= text2num(pick(ANTIGENS))
+
+	D.spreadtype = input(C, "Select spread type", "Spread Type") in list("Airborne", "Contact") // select how the disease is spread
+	infectedMob.virus2["[D.uniqueID]"] = D // assign the disease datum to the infectedMob/ selected user.
+	log_admin("[infectedMob] was infected with a virus with uniqueID : [D.uniqueID] by [C.ckey]")
+	message_admins("[infectedMob] was infected with a virus with uniqueID : [D.uniqueID] by [C.ckey]")
+	return 1
 
 /datum/disease2/disease/proc/activate(var/mob/living/carbon/mob)
 	if(dead)
 		cure(mob)
 		return
+
 
 	if(mob.stat == 2)
 		return
@@ -69,83 +84,82 @@
 	if(mob.radiation > 50)
 		if(prob(1))
 			majormutate()
+			log += "<br />[timestamp()] MAJORMUTATE (rads)!"
 
-	//Space antibiotics stop disease completely
+
+	//Space antibiotics stop disease completely (temporary)
 	if(mob.reagents.has_reagent("spaceacillin"))
-		if(stage == 1 && prob(20))
-			src.cure(mob)
 		return
 
 	//Virus food speeds up disease progress
 	if(mob.reagents.has_reagent("virusfood"))
 		mob.reagents.remove_reagent("virusfood",0.1)
+		if(!logged_virusfood)
+			log += "<br />[timestamp()] Virus Fed ([mob.reagents.get_reagent_amount("virusfood")]U)"
+			logged_virusfood=1
 		clicks += 10
-
-	if(prob(1) && prob(stage)) // Increasing chance of curing as the virus progresses
-		src.cure(mob)
-		mob.antibodies |= src.antigen
+	else
+		logged_virusfood=0
 
 	//Moving to the next stage
-	if(clicks > max(stage*100, 200) && prob(10))
-		if((stage <= max_stage) && prob(20)) // ~60% of viruses will be cured by the end of S4 with this
+	if(clicks > stage*100 && prob(10))
+		if(stage == max_stage)
 			src.cure(mob)
 			mob.antibodies |= src.antigen
-		stage++
-		clicks = 0
+			log += "<br />[timestamp()] STAGEMAX ([stage])"
+		else
+			stage++
+			log += "<br />[timestamp()] NEXT STAGE ([stage])"
+			clicks = 0
 
 	//Do nasty effects
 	for(var/datum/disease2/effectholder/e in effects)
-		if(prob(33))
-			e.runeffect(mob,stage)
+		e.runeffect(mob,stage)
 
 	//Short airborne spread
 	if(src.spreadtype == "Airborne")
 		for(var/mob/living/carbon/M in oview(1,mob))
 			if(airborne_can_reach(get_turf(mob), get_turf(M)))
-				infect_virus2(M,src)
+				infect_virus2(M,src, notes="(Airborne from [key_name(mob)])")
 
 	//fever
-	mob.bodytemperature = max(mob.bodytemperature, min(310+5*min(stage,max_stage) ,mob.bodytemperature+5*min(stage,max_stage)))
+	mob.bodytemperature = max(mob.bodytemperature, min(310+5*stage ,mob.bodytemperature+5*stage))
 	clicks+=speed
 
 /datum/disease2/disease/proc/cure(var/mob/living/carbon/mob)
 	for(var/datum/disease2/effectholder/e in effects)
 		e.effect.deactivate(mob)
 	mob.virus2.Remove("[uniqueID]")
-	BITSET(mob.hud_updateflag, STATUS_HUD)
 
 /datum/disease2/disease/proc/minormutate()
 	//uniqueID = rand(0,10000)
 	var/datum/disease2/effectholder/holder = pick(effects)
 	holder.minormutate()
 	infectionchance = min(50,infectionchance + rand(0,10))
+	log += "<br />[timestamp()] Infection chance now [infectionchance]%"
 
 /datum/disease2/disease/proc/majormutate()
 	uniqueID = rand(0,10000)
 	var/datum/disease2/effectholder/holder = pick(effects)
-	var/list/exclude = list()
-	for(var/datum/disease2/effectholder/D in effects)
-		if(D != holder)
-			exclude += D.effect.type
-	holder.majormutate(exclude)
+	holder.majormutate()
 	if (prob(5))
-		antigen = list(pick(ALL_ANTIGENS))
-		antigen |= pick(ALL_ANTIGENS)
-	if (prob(5) && all_species.len)
-		affected_species = get_infectable_species()
+		antigen = text2num(pick(ANTIGENS))
+		antigen |= text2num(pick(ANTIGENS))
 
 /datum/disease2/disease/proc/getcopy()
-	var/datum/disease2/disease/disease = new /datum/disease2/disease
+	var/datum/disease2/disease/disease = new /datum/disease2/disease("")
+	disease.log=log
 	disease.infectionchance = infectionchance
 	disease.spreadtype = spreadtype
 	disease.stageprob = stageprob
 	disease.antigen   = antigen
 	disease.uniqueID = uniqueID
-	disease.affected_species = affected_species.Copy()
+	disease.speed = speed
+	disease.stage = stage
+	disease.clicks = clicks
 	for(var/datum/disease2/effectholder/holder in effects)
-		var/datum/disease2/effectholder/newholder = new /datum/disease2/effectholder
+		var/datum/disease2/effectholder/newholder = new /datum/disease2/effectholder(disease)
 		newholder.effect = new holder.effect.type
-		newholder.effect.generate(holder.effect.data)
 		newholder.chance = holder.chance
 		newholder.cure = holder.cure
 		newholder.multiplier = holder.multiplier
@@ -176,7 +190,10 @@
 	var/list/res = list()
 	for (var/ID in viruses)
 		var/datum/disease2/disease/V = viruses[ID]
-		res["[V.uniqueID]"] = V.getcopy()
+		if(istype(V))
+			res["[V.uniqueID]"] = V.getcopy()
+		else
+			testing("Got a NULL disease2 in virus_copylist ([V] is [V.type])!")
 	return res
 
 
@@ -188,28 +205,15 @@ var/global/list/virusDB = list()
 		var/datum/data/record/V = virusDB["[uniqueID]"]
 		.= V.fields["name"]
 
-/datum/disease2/disease/proc/get_basic_info()
-	var/t = ""
-	for(var/datum/disease2/effectholder/E in effects)
-		t += ", [E.effect.name]"
-	return "[name()] ([copytext(t,3)])"
-
 /datum/disease2/disease/proc/get_info()
-	var/r = {"
-	<small>Analysis determined the existence of a GNAv2-based viral lifeform.</small><br>
-	<u>Designation:</u> [name()]<br>
-	<u>Antigen:</u> [antigens2string(antigen)]<br>
-	<u>Transmitted By:</u> [spreadtype]<br>
-	<u>Rate of Progression:</u> [stageprob * 10]<br>
-	<u>Species Affected:</u> [list2text(affected_species, ", ")]<br>
-"}
-
-	r += "<u>Symptoms:</u><br>"
+	var/r = "GNAv2 based virus lifeform - [name()], #[add_zero("[uniqueID]", 4)]"
+	r += "<BR>Infection rate : [infectionchance * 10]"
+	r += "<BR>Spread form : [spreadtype]"
+	r += "<BR>Progress Speed : [stageprob * 10]"
 	for(var/datum/disease2/effectholder/E in effects)
-		r += "([E.stage]) [E.effect.name]    "
-		r += "<small><u>Strength:</u> [E.multiplier >= 3 ? "Severe" : E.multiplier > 1 ? "Above Average" : "Average"]    "
-		r += "<u>Verosity:</u> [E.chance * 15]</small><br>"
+		r += "<BR>Effect:[E.effect.name]. Strength : [E.multiplier * 8]. Verosity : [E.chance * 15]. Type : [5-E.stage]."
 
+	r += "<BR>Antigen pattern: [antigens2string(antigen)]"
 	return r
 
 /datum/disease2/disease/proc/addToDB()
@@ -230,7 +234,6 @@ proc/virus2_lesser_infection()
 	for(var/mob/living/carbon/human/G in player_list)
 		if(G.client && G.stat != DEAD)
 			candidates += G
-
 	if(!candidates.len)	return
 
 	candidates = shuffle(candidates)
@@ -248,17 +251,3 @@ proc/virus2_greater_infection()
 	candidates = shuffle(candidates)
 
 	infect_mob_random_greater(candidates[1])
-
-proc/virology_letterhead(var/report_name)
-	return {"
-		<center><h1><b>[report_name]</b></h1></center>
-		<center><small><i>[station_name()] Virology Lab</i></small></center>
-		<hr>
-"}
-
-/datum/disease2/disease/proc/can_add_symptom(type)
-	for(var/datum/disease2/effectholder/H in effects)
-		if(H.effect.type == type)
-			return 0
-
-	return 1

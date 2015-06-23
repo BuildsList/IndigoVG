@@ -22,7 +22,7 @@
 		now_pushing = 1
 		if(ismob(AM))
 			var/mob/tmob = AM
-			if(istype(tmob, /mob/living/carbon/human) && (FAT in tmob.mutations))
+			if(istype(tmob, /mob/living/carbon/human) && (M_FAT in tmob.mutations))
 				if(prob(70))
 					src << "\red <B>You fail to push [tmob]'s fat ass out of the way.</B>"
 					now_pushing = 0
@@ -40,12 +40,10 @@
 			now_pushing = 1
 			if (!( AM.anchored ))
 				var/t = get_dir(src, AM)
-				if (istype(AM, /obj/structure/window))
-					var/obj/structure/window/W = AM
-					if(W.is_full_window())
-						for(var/obj/structure/window/win in get_step(AM,t))
-							now_pushing = 0
-							return
+				if (istype(AM, /obj/structure/window/full))
+					for(var/obj/structure/window/win in get_step(AM,t))
+						now_pushing = 0
+						return
 				step(AM, t)
 			now_pushing = null
 		return
@@ -71,7 +69,7 @@
 	overlays += "aslime-:33"
 
 
-/mob/living/simple_animal/slime/adult/death()
+/mob/living/simple_animal/adultslime/Die()
 	var/mob/living/simple_animal/slime/S1 = new /mob/living/simple_animal/slime (src.loc)
 	S1.icon_state = "[src.colour] baby slime"
 	S1.icon_living = "[src.colour] baby slime"
@@ -83,3 +81,28 @@
 	S2.icon_dead = "[src.colour] baby slime dead"
 	S2.colour = "[src.colour]"
 	del(src)
+
+
+/mob/living/simple_animal/slime/proc/rabid()
+	if(stat)
+		return
+	if(client)
+		return
+	var/mob/living/simple_animal/hostile/slime/pet = new /mob/living/simple_animal/hostile/slime(loc)
+	pet.icon_state = "[colour] baby slime eat"
+	pet.icon_living = "[colour] baby slime eat"
+	pet.icon_dead = "[colour] baby slime dead"
+	pet.colour = "[colour]"
+	del (src)
+
+/mob/living/simple_animal/adultslime/proc/rabid()
+	if(stat)
+		return
+	if(client)
+		return
+	var/mob/living/simple_animal/hostile/slime/adult/pet = new /mob/living/simple_animal/hostile/slime/adult(loc)
+	pet.icon_state = "[colour] baby adult eat"
+	pet.icon_living = "[colour] baby adult eat"
+	pet.icon_dead = "[colour] baby slime dead"
+	pet.colour = "[colour]"
+	del (src)

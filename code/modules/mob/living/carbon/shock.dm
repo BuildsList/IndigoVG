@@ -3,10 +3,6 @@
 
 // proc to find out in how much pain the mob is at the moment
 /mob/living/carbon/proc/updateshock()
-	if (species && (species.flags & NO_PAIN))
-		src.traumatic_shock = 0
-		return 0
-
 	src.traumatic_shock = 			\
 	1	* src.getOxyLoss() + 		\
 	0.7	* src.getToxLoss() + 		\
@@ -24,9 +20,9 @@
 	if(reagents.has_reagent("paracetamol"))
 		src.traumatic_shock -= 50
 	if(reagents.has_reagent("tramadol"))
-		src.traumatic_shock -= 80
+		src.traumatic_shock -= 80 // make synaptizine function as good painkiller
 	if(reagents.has_reagent("oxycodone"))
-		src.traumatic_shock -= 200
+		src.traumatic_shock -= 200 // make synaptizine function as good painkiller
 	if(src.slurring)
 		src.traumatic_shock -= 20
 	if(src.analgesic)

@@ -3,13 +3,12 @@
 	name = "Research Outpost"
 	icon_state = "anomaly"
 
-/area/research_outpost/filtering
-	name = "Research Outpost Filtering"
-	icon_state = "anofilter"
+	general_area = /area/research_outpost
+	general_area_name = "Research Outpost"
 
 /area/research_outpost/hallway
 	name = "Research Outpost Hallway"
-	icon_state = "anohallway"
+	icon_state = "hallC"
 
 /area/research_outpost/gearstore
 	name = "Expedition Preparation"
@@ -28,27 +27,15 @@
 	icon_state = "maintcentral"
 
 /area/research_outpost/iso1
-	name = "Isolation Cell 1"
-	icon_state = "iso1"
-
-/area/research_outpost/iso1_access
-	name = "Isolation Cell 1 - Access"
+	name = "Isolation Cell"
 	icon_state = "iso1"
 
 /area/research_outpost/iso2
-	name = "Isolation Cell 2"
-	icon_state = "iso2"
-
-/area/research_outpost/iso2_access
-	name = "Isolation Cell 2 - Access"
+	name = "Isolation Cell"
 	icon_state = "iso2"
 
 /area/research_outpost/iso3
-	name = "Isolation Cell 3"
-	icon_state = "iso3"
-
-/area/research_outpost/iso3_access
-	name = "Isolation Cell 3 - Access"
+	name = "Isolation Cell"
 	icon_state = "iso3"
 
 /area/research_outpost/harvesting
@@ -73,7 +60,7 @@
 
 /area/research_outpost/entry
 	name = "Research Outpost Shuttle Dock"
-	icon_state = "anoentry"
+	icon_state = "entry"
 
 /area/research_outpost/longtermstorage
 	name = "Long-Term Storage"
@@ -90,3 +77,23 @@
 /area/research_outpost/maintstore2
 	name = "Maintenance Storage"
 	icon_state = "auxstorage"
+
+/area/research_outpost/breakroom
+	name = "Break Room"
+	icon_state = "outpost_breakroom"
+
+/area/research_outpost/dorm1
+	name = "Dormitory 1"
+	icon_state = "outpost_dorm1"
+
+/area/research_outpost/dorm2
+	name = "Dormitory 2"
+	icon_state = "outpost_dorm2"
+
+/area/research_outpost/bathroom
+	name = "Bathroom"
+	icon_state = "outpost_bathroom"
+
+/area/research_outpost/solars
+	name = "Research Outpost Solar Array"
+	icon_state = "outpost_solars"

@@ -9,6 +9,7 @@
  * 		Wirecutters
  * 		Welding Tool
  * 		Crowbar
+ * 		Revolver Conversion Kit(made sense)
  */
 
 /*
@@ -16,43 +17,60 @@
  */
 /obj/item/weapon/wrench
 	name = "wrench"
-	desc = "A wrench with many common uses. Can be usually found in your hand."
+	desc = "A wrench with common uses. Can be found in your hand."
 	icon = 'icons/obj/items.dmi'
 	icon_state = "wrench"
-	flags = CONDUCT
+	hitsound = "sound/weapons/smash.ogg"
+	flags = FPRINT
+	siemens_coefficient = 1
 	slot_flags = SLOT_BELT
 	force = 5.0
 	throwforce = 7.0
 	w_class = 2.0
-	matter = list("metal" = 150)
+	m_amt = 150
+	w_type = RECYK_METAL
+	melt_temperature = MELTPOINT_STEEL
 	origin_tech = "materials=1;engineering=1"
 	attack_verb = list("bashed", "battered", "bludgeoned", "whacked")
 
+//we inherit a lot from wrench, so we change very little
+/obj/item/weapon/wrench/socket
+	name = "socket wrench"
+	desc = "A wrench intended to be wrenchier than other wrenches. It's the wrenchiest."
+	icon_state = "socket_wrench"
+	w_class = 4.0 //big shit, to balance its power
 
 /*
  * Screwdriver
  */
 /obj/item/weapon/screwdriver
 	name = "screwdriver"
-	desc = "You can be totally screwwy with this."
+	desc = "You can be totally screwy with this."
 	icon = 'icons/obj/items.dmi'
 	icon_state = "screwdriver"
-	flags = CONDUCT
+	hitsound = 'sound/weapons/toolhit.ogg'
+	flags = FPRINT
+	siemens_coefficient = 1
 	slot_flags = SLOT_BELT
 	force = 5.0
 	w_class = 1.0
 	throwforce = 5.0
 	throw_speed = 3
 	throw_range = 5
-	matter = list("metal" = 75)
+	g_amt = 0
+	m_amt = 75
+	w_type = RECYK_METAL
+	melt_temperature = MELTPOINT_STEEL
 	attack_verb = list("stabbed")
 
 	suicide_act(mob/user)
-		viewers(user) << pick("\red <b>[user] is stabbing the [src.name] into \his temple! It looks like \he's trying to commit suicide.</b>", \
-							"\red <b>[user] is stabbing the [src.name] into \his heart! It looks like \he's trying to commit suicide.</b>")
+		viewers(user) << pick("<span class='danger'>[user] is stabbing the [src.name] into \his temple! It looks like \he's trying to commit suicide.</span>", \
+							"<span class='danger'>[user] is stabbing the [src.name] into \his heart! It looks like \he's trying to commit suicide.</span>")
 		return(BRUTELOSS)
 
 /obj/item/weapon/screwdriver/New()
+	. = ..()
+
 	switch(pick("red","blue","purple","brown","green","cyan","yellow"))
 		if ("red")
 			icon_state = "screwdriver2"
@@ -78,16 +96,36 @@
 
 	if (prob(75))
 		src.pixel_y = rand(0, 16)
-	return
 
 /obj/item/weapon/screwdriver/attack(mob/living/carbon/M as mob, mob/living/carbon/user as mob)
 	if(!istype(M))	return ..()
 	if(user.zone_sel.selecting != "eyes" && user.zone_sel.selecting != "head")
 		return ..()
-	if((CLUMSY in user.mutations) && prob(50))
+	if((M_CLUMSY in user.mutations) && prob(50))
 		M = user
 	return eyestab(M,user)
 
+/obj/item/weapon/screwdriver/attackby(var/obj/O)
+	if(istype(O, /obj/item/weapon/cable_coil))
+		var/obj/item/weapon/cable_coil/C = O
+		var/mob/M = usr
+		if(ishuman(M) && !M.restrained() && !M.stat && !M.paralysis && ! M.stunned)
+			if(!istype(M.loc,/turf)) return
+			if(C.amount < 10)
+				usr << "<span class='warning'>You need at least 10 lengths to make a bolas wire!</span>"
+				return
+			var/obj/item/weapon/legcuffs/bolas/cable/B = new /obj/item/weapon/legcuffs/bolas/cable(usr.loc)
+			qdel(src)
+			B.icon_state = "cbolas_[C._color]"
+			B.cable_color = C._color
+			B.screw_state = item_state
+			B.screw_istate = icon_state
+			M << "<span class='notice'>You wind some cable around the screwdriver handle to make a bolas wire.</span>"
+			C.use(10)
+		else
+			usr << "<span class='warning'>You cannot do that.</span>"
+	else
+		..()
 /*
  * Wirecutters
  */
@@ -96,19 +134,23 @@
 	desc = "This cuts wires."
 	icon = 'icons/obj/items.dmi'
 	icon_state = "cutters"
-	flags = CONDUCT
+	hitsound = 'sound/weapons/toolhit.ogg'
+	flags = FPRINT
+	siemens_coefficient = 1
 	slot_flags = SLOT_BELT
 	force = 6.0
 	throw_speed = 2
 	throw_range = 9
 	w_class = 2.0
-	matter = list("metal" = 80)
+	m_amt = 80
+	w_type = RECYK_METAL
+	melt_temperature = MELTPOINT_STEEL
 	origin_tech = "materials=1;engineering=1"
 	attack_verb = list("pinched", "nipped")
-	sharp = 1
-	edge = 1
 
 /obj/item/weapon/wirecutters/New()
+	. = ..()
+
 	if(prob(50))
 		icon_state = "cutters-y"
 		item_state = "cutters_yellow"
@@ -118,9 +160,8 @@
 		usr.visible_message("\The [usr] cuts \the [C]'s restraints with \the [src]!",\
 		"You cut \the [C]'s restraints with \the [src]!",\
 		"You hear cable being cut.")
+		C.handcuffed.loc = null	//garbage collector awaaaaay
 		C.handcuffed = null
-		if(C.buckled && C.buckled.buckle_require_restraints)
-			C.buckled.unbuckle_mob()
 		C.update_inv_handcuffed()
 		return
 	else
@@ -133,7 +174,9 @@
 	name = "welding tool"
 	icon = 'icons/obj/items.dmi'
 	icon_state = "welder"
-	flags = CONDUCT
+	hitsound = 'sound/weapons/toolhit.ogg'
+	flags = FPRINT
+	siemens_coefficient = 1
 	slot_flags = SLOT_BELT
 
 	//Amount of OUCH when it's thrown
@@ -144,7 +187,10 @@
 	w_class = 2.0
 
 	//Cost to make in the autolathe
-	matter = list("metal" = 70, "glass" = 30)
+	m_amt = 70
+	g_amt = 30
+	w_type = RECYK_MISC
+	melt_temperature = MELTPOINT_PLASTIC
 
 	//R&D tech level
 	origin_tech = "engineering=1"
@@ -154,30 +200,29 @@
 	var/status = 1 		//Whether the welder is secured or unsecured (able to attach rods to it to make a flamethrower)
 	var/max_fuel = 20 	//The max amount of fuel the welder can hold
 
-/obj/item/weapon/weldingtool/New()
-//	var/random_fuel = min(rand(10,20),max_fuel)
-	var/datum/reagents/R = new/datum/reagents(max_fuel)
-	reagents = R
-	R.my_atom = src
-	R.add_reagent("fuel", max_fuel)
-	return
+	suicide_act(mob/user)
+		viewers(user) << "<span class='danger'>[user] is burning \his face off with the [src.name]! It looks like \he's  trying to commit suicide!</span>"
+		return (FIRELOSS|OXYLOSS)
 
+/obj/item/weapon/weldingtool/New()
+	. = ..()
+	create_reagents(max_fuel)
+	reagents.add_reagent("fuel", max_fuel)
 
 /obj/item/weapon/weldingtool/examine(mob/user)
-	if(..(user, 0))
-		user << text("\icon[] [] contains []/[] units of fuel!", src, src.name, get_fuel(),src.max_fuel )
-
+	..()
+	user << "It contains [get_fuel()]/[src.max_fuel] units of fuel!"
 
 /obj/item/weapon/weldingtool/attackby(obj/item/W as obj, mob/user as mob)
 	if(istype(W,/obj/item/weapon/screwdriver))
 		if(welding)
-			user << "\red Stop welding first!"
+			user << "<span class='warning'>Stop welding first!</span>"
 			return
 		status = !status
 		if(status)
-			user << "\blue You resecure the welder."
+			user << "<span class='notice'>You resecure the welder.</span>"
 		else
-			user << "\blue The welder can now be attached and modified."
+			user << "<span class='notice'>The welder can now be attached and modified.</span>"
 		src.add_fingerprint(user)
 		return
 
@@ -214,6 +259,7 @@
 				src.force = 3
 				src.damtype = "brute"
 				src.icon_state = "welder"
+				src.hitsound = "sound/weapons/toolhit.ogg"
 				src.welding = 0
 			processing_objects.Remove(src)
 			return
@@ -223,6 +269,7 @@
 				src.force = 15
 				src.damtype = "fire"
 				src.icon_state = "welder1"
+				src.hitsound = "sound/weapons/welderattack.ogg"
 			if(prob(5))
 				remove_fuel(1)
 
@@ -241,31 +288,31 @@
 		if(M.l_hand == src || M.r_hand == src)
 			location = get_turf(M)
 	if (istype(location, /turf))
-		location.hotspot_expose(700, 5)
+		location.hotspot_expose(700, 5,surfaces=istype(loc,/turf))
 
 
 /obj/item/weapon/weldingtool/afterattack(obj/O as obj, mob/user as mob, proximity)
 	if(!proximity) return
 	if (istype(O, /obj/structure/reagent_dispensers/fueltank) && get_dist(src,O) <= 1 && !src.welding)
 		O.reagents.trans_to(src, max_fuel)
-		user << "\blue Welder refueled"
-		playsound(src.loc, 'sound/effects/refill.ogg', 50, 1, -6)
+		user << "<span class='notice'>Welder refueled</span>"
+		playsound(get_turf(src), 'sound/effects/refill.ogg', 50, 1, -6)
 		return
 	else if (istype(O, /obj/structure/reagent_dispensers/fueltank) && get_dist(src,O) <= 1 && src.welding)
-		message_admins("[key_name_admin(user)] triggered a fueltank explosion with a welding tool.")
-		log_game("[key_name(user)] triggered a fueltank explosion with a welding tool.")
-		user << "\red You begin welding on the fueltank and with a moment of lucidity you realize, this might not have been the smartest thing you've ever done."
+		message_admins("[key_name_admin(user)] triggered a fueltank explosion.")
+		log_game("[key_name(user)] triggered a fueltank explosion.")
+		user << "<span class='warning'>That was stupid of you.</span>"
 		var/obj/structure/reagent_dispensers/fueltank/tank = O
 		tank.explode()
 		return
 	if (src.welding)
 		remove_fuel(1)
 		var/turf/location = get_turf(user)
-		if(isliving(O))
-			var/mob/living/L = O
-			L.IgniteMob()
 		if (istype(location, /turf))
-			location.hotspot_expose(700, 50, 1)
+			location.hotspot_expose(700, 50, 1,surfaces=1)
+			if(isliving(O))
+				var/mob/living/L = O
+				L.IgniteMob()
 	return
 
 
@@ -290,7 +337,7 @@
 		return 1
 	else
 		if(M)
-			M << "\blue You need more welding fuel to complete this task."
+			M << "<span class='notice'>You need more welding fuel to complete this task.</span>"
 		return 0
 
 //Returns whether or not the welding tool is currently on.
@@ -303,18 +350,18 @@
 	//If we're turning it on
 	if(temp_welding > 0)
 		if (remove_fuel(1))
-			usr << "\blue The [src] switches on."
+			usr << "<span class='notice'>\The [src] switches on.</span>"
 			src.force = 15
 			src.damtype = "fire"
 			src.icon_state = "welder1"
 			processing_objects.Add(src)
 		else
-			usr << "\blue Need more fuel!"
+			usr << "<span class='notice'>Need more fuel!</span>"
 			src.welding = 0
 			return
 	//Otherwise
 	else
-		usr << "\blue The [src] switches off."
+		usr << "<span class='notice'>\The [src] switches off.</span>"
 		src.force = 3
 		src.damtype = "brute"
 		src.icon_state = "welder"
@@ -334,26 +381,24 @@
 	src.welding = !( src.welding )
 	if (src.welding)
 		if (remove_fuel(1))
-			usr << "\blue You switch the [src] on."
+			usr << "<span class='notice'>You switch the [src] on.</span>"
 			src.force = 15
 			src.damtype = "fire"
 			src.icon_state = "welder1"
-			src.w_class = 4
 			processing_objects.Add(src)
 		else
-			usr << "\blue Need more fuel!"
+			usr << "<span class='notice'>Need more fuel!</span>"
 			src.welding = 0
 			return
 	else
 		if(!message)
-			usr << "\blue You switch the [src] off."
+			usr << "<span class='notice'>You switch the [src] off.</span>"
 		else
-			usr << "\blue The [src] shuts off!"
+			usr << "<span class='notice'>\The [src] shuts off!</span>"
 		src.force = 3
 		src.damtype = "brute"
 		src.icon_state = "welder"
 		src.welding = 0
-		src.w_class = initial(src.w_class)
 
 //Decides whether or not to damage a player's eyes based on what they're wearing as protection
 //Note: This should probably be moved to mob
@@ -369,56 +414,57 @@
 			return
 		switch(safety)
 			if(1)
-				usr << "\red Your eyes sting a little."
+				usr << "<span class='warning'>Your eyes sting a little.</span>"
 				E.damage += rand(1, 2)
 				if(E.damage > 12)
 					user.eye_blurry += rand(3,6)
 			if(0)
-				usr << "\red Your eyes burn."
+				usr << "<span class='warning'>Your eyes burn.</span>"
 				E.damage += rand(2, 4)
 				if(E.damage > 10)
 					E.damage += rand(4,10)
 			if(-1)
-				usr << "\red Your thermals intensify the welder's glow. Your eyes itch and burn severely."
+				usr << "<span class='warning'>Your thermals intensify the welder's glow. Your eyes itch and burn severely.</span>"
 				user.eye_blurry += rand(12,20)
 				E.damage += rand(12, 16)
-		if(safety<2)
-
-			if(E.damage > 10)
-				user << "\red Your eyes are really starting to hurt. This can't be good for you!"
-
-			if (E.damage >= E.min_broken_damage)
-				user << "\red You go blind!"
-				user.sdisabilities |= BLIND
-			else if (E.damage >= E.min_bruised_damage)
-				user << "\red You go blind!"
-				user.eye_blind = 5
-				user.eye_blurry = 5
-				user.disabilities |= NEARSIGHTED
-				spawn(100)
-					user.disabilities &= ~NEARSIGHTED
+		if(E.damage > 10 && safety < 2)
+			user << "<span class='warning'>Your eyes are really starting to hurt. This can't be good for you!</span>"
+		if (E.damage >= E.min_broken_damage)
+			user << "<span class='warning'>You go blind!</span>"
+			user.sdisabilities |= BLIND
+		else if (E.damage >= E.min_bruised_damage)
+			user << "<span class='warning'>You go blind!</span>"
+			user.eye_blind = 5
+			user.eye_blurry = 5
+			user.disabilities |= NEARSIGHTED
+			spawn(100)
+				user.disabilities &= ~NEARSIGHTED
 	return
 
 
 /obj/item/weapon/weldingtool/largetank
-	name = "industrial welding tool"
+	name = "Industrial Welding Tool"
 	max_fuel = 40
-	matter = list("metal" = 70, "glass" = 60)
+	m_amt = 70
+	g_amt = 60
 	origin_tech = "engineering=2"
 
 /obj/item/weapon/weldingtool/hugetank
-	name = "upgraded welding tool"
+	name = "Upgraded Welding Tool"
 	max_fuel = 80
 	w_class = 3.0
-	matter = list("metal" = 70, "glass" = 120)
+	m_amt = 70
+	g_amt = 120
 	origin_tech = "engineering=3"
 
 /obj/item/weapon/weldingtool/experimental
-	name = "experimental welding tool"
+	name = "Experimental Welding Tool"
 	max_fuel = 40
 	w_class = 3.0
-	matter = list("metal" = 70, "glass" = 120)
-	origin_tech = "engineering=4;phorontech=3"
+	m_amt = 70
+	g_amt = 120
+	origin_tech = "engineering=4;plasmatech=3"
+	icon_state = "ewelder"
 	var/last_gen = 0
 
 
@@ -435,105 +481,79 @@
 
 /obj/item/weapon/crowbar
 	name = "crowbar"
-	desc = "Used to remove floors and to pry open doors."
+	desc = "Used to hit floors"
 	icon = 'icons/obj/items.dmi'
 	icon_state = "crowbar"
-	flags = CONDUCT
+	hitsound = "sound/weapons/toolhit.ogg"
+	flags = FPRINT
+	siemens_coefficient = 1
 	slot_flags = SLOT_BELT
 	force = 5.0
 	throwforce = 7.0
 	item_state = "crowbar"
 	w_class = 2.0
-	matter = list("metal" = 50)
+	m_amt = 50
+	w_type = RECYK_METAL
+	melt_temperature = MELTPOINT_STEEL
 	origin_tech = "engineering=1"
 	attack_verb = list("attacked", "bashed", "battered", "bludgeoned", "whacked")
 
+	suicide_act(mob/user)
+		viewers(user) << "<span class='danger'>[user] is smashing \his head in with the [src.name]! It looks like \he's  trying to commit suicide!</span>"
+		return (BRUTELOSS)
+
 /obj/item/weapon/crowbar/red
+	desc = "Rise and shine."
 	icon = 'icons/obj/items.dmi'
 	icon_state = "red_crowbar"
 	item_state = "crowbar_red"
 
+	suicide_act(mob/user)
+		viewers(user) << "<span class='danger'>[user] is smashing \his head in with the [src.name]! It looks like \he's done waiting for half life three!</span>"
+		return (BRUTELOSS)
+
+
 /obj/item/weapon/weldingtool/attack(mob/M as mob, mob/user as mob)
-
 	if(hasorgans(M))
-
 		var/datum/organ/external/S = M:organs_by_name[user.zone_sel.selecting]
-
 		if (!S) return
 		if(!(S.status & ORGAN_ROBOT) || user.a_intent != "help")
 			return ..()
-
-		if(istype(M,/mob/living/carbon/human))
-			var/mob/living/carbon/human/H = M
-			if(H.species.flags & IS_SYNTHETIC)
-				if(M == user)
-					user << "\red You can't repair damage to your own body - it's against OH&S."
-					return
-
 		if(S.brute_dam)
 			S.heal_damage(15,0,0,1)
-			user.visible_message("\red \The [user] patches some dents on \the [M]'s [S.display_name] with \the [src].")
-			return
+			if(user != M)
+				user.visible_message("<span class='attack'>\The [user] patches some dents on \the [M]'s [S.display_name] with \the [src]</span>",\
+				"<span class='attack'>You patch some dents on \the [M]'s [S.display_name]</span>",\
+				"You hear a welder.")
+			else
+				user.visible_message("<span class='attack'>\The [user] patches some dents on their [S.display_name] with \the [src]</span>",\
+				"<span class='attack'>You patch some dents on your [S.display_name]</span>",\
+				"You hear a welder.")
 		else
 			user << "Nothing to fix!"
-
 	else
 		return ..()
 
-/*/obj/item/weapon/combitool
-	name = "combi-tool"
-	desc = "It even has one of those nubbins for doing the thingy."
-	icon = 'icons/obj/items.dmi'
-	icon_state = "combitool"
-	w_class = 2
+/obj/item/weapon/conversion_kit
+	name = "\improper Revolver Conversion Kit"
+	desc = "A professional conversion kit used to convert any knock off revolver into the real deal capable of shooting lethal .357 rounds without the possibility of catastrophic failure"
+	icon = 'icons/obj/weapons.dmi'
+	icon_state = "kit"
+	flags = FPRINT
+	siemens_coefficient = 1
+	w_class = 2.0
+	w_type = RECYK_MISC
+	origin_tech = "combat=2"
+	var/open = 0
 
-	var/list/spawn_tools = list(
-		/obj/item/weapon/screwdriver,
-		/obj/item/weapon/wrench,
-		/obj/item/weapon/wirecutters,
-		/obj/item/weapon/kitchen/utensil/knife,
-		/obj/item/weapon/kitchen/utensil/fork,
-		/obj/item/weapon/hatchet
-		)
-	var/list/tools = list()
-	var/current_tool = 1
+	New()
+		..()
+		update_icon()
 
-/obj/item/weapon/combitool/examine()
-	..()
-	if(loc == usr && tools.len)
-		usr << "It has the following fittings:"
-		for(var/obj/item/tool in tools)
-			usr << "\icon[tool] - [tool.name][tools[current_tool]==tool?" (selected)":""]"
+	update_icon()
+		icon_state = "[initial(icon_state)]_[open]"
 
-/obj/item/weapon/combitool/New()
-	..()
-	for(var/type in spawn_tools)
-		tools |= new type(src)
-
-/obj/item/weapon/combitool/attack_self(mob/user as mob)
-	if(++current_tool > tools.len) current_tool = 1
-	var/obj/item/tool = tools[current_tool]
-	if(!tool)
-		user << "You can't seem to find any fittings in \the [src]."
-	else
-		user << "You switch \the [src] to the [tool.name] fitting."
-	return 1
-
-/obj/item/weapon/combitool/attack(mob/living/carbon/M as mob, mob/living/carbon/user as mob)
-	if(!M.Adjacent(user))
-		return 0
-	var/obj/item/tool = tools[current_tool]
-	if(!tool) return 0
-	return (tool ? tool.attack(M,user) : 0)
-
-/obj/item/weapon/combitool/afterattack(var/atom/target, var/mob/living/user, proximity, params)
-	if(!proximity)
-		return 0
-	var/obj/item/tool = tools[current_tool]
-	if(!tool) return 0
-	tool.loc = user
-	var/resolved = target.attackby(tool,user)
-	if(!resolved && tool && target)
-		tool.afterattack(target,user,1)
-	if(tool)
-		tool.loc = src*/
+	attack_self(mob/user as mob)
+		open = !open
+		user << "<span class='notice'>You [open?"open" : "close"] the conversion kit.</span>"
+		update_icon()

@@ -17,7 +17,7 @@
 			playsound(T, 'sound/effects/phasein.ogg', 100, 1)
 			for(var/mob/living/carbon/human/M in viewers(T, null))
 				if(M:eyecheck() <= 0)
-					flick("e_flash", M.flash)
+					flick("e_flash", M.flash) // flash dose faggots
 
 			for(var/i=1, i<=deliveryamt, i++)
 				var/atom/movable/x = new spawner_type
@@ -35,6 +35,13 @@
 	name = "manhack delivery grenade"
 	spawner_type = /mob/living/simple_animal/hostile/viscerator
 	deliveryamt = 5
+	origin_tech = "materials=3;magnets=4;syndicate=4"
+
+/obj/item/weapon/grenade/spawnergrenade/manhacks/syndicate
+	desc = "It is set to detonate in 5 seconds. It will unleash a pair of hostile visceratorrs that will hack at any nearby targets indiscriminately."
+	name = "viscerator grenade"
+	spawner_type = /mob/living/simple_animal/hostile/viscerator
+	deliveryamt = 2
 	origin_tech = "materials=3;magnets=4;syndicate=4"
 
 /obj/item/weapon/grenade/spawnergrenade/spesscarp

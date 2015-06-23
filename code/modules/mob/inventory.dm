@@ -11,15 +11,29 @@
 		if(hand)	return l_hand
 		else		return r_hand
 
+// Get the organ of the active hand
+/mob/proc/get_active_hand_organ()
+	if(!istype(src, /mob/living/carbon)) return
+	if (hasorgans(src))
+		var/datum/organ/external/temp = src:organs_by_name["r_hand"]
+		if (hand)
+			temp = src:organs_by_name["l_hand"]
+		return temp
+
 //Returns the thing in our inactive hand
 /mob/proc/get_inactive_hand()
 	if(hand)	return r_hand
 	else		return l_hand
 
+// Because there's several different places it's stored.
+/mob/proc/get_multitool(var/if_active=0)
+	return null
+
 //Puts the item into your l_hand if possible and calls all necessary triggers/updates. returns 1 on success.
 /mob/proc/put_in_l_hand(var/obj/item/W)
-	if(lying)			return 0
-	if(!istype(W))		return 0
+	if(!put_in_hand_check(W))
+		return 0
+
 	if(!l_hand)
 		W.loc = src		//TODO: move to equipped?
 		l_hand = W
@@ -34,8 +48,9 @@
 
 //Puts the item into your r_hand if possible and calls all necessary triggers/updates. returns 1 on success.
 /mob/proc/put_in_r_hand(var/obj/item/W)
-	if(lying)			return 0
-	if(!istype(W))		return 0
+	if(!put_in_hand_check(W))
+		return 0
+
 	if(!r_hand)
 		W.loc = src
 		r_hand = W
@@ -47,6 +62,15 @@
 		update_inv_r_hand()
 		return 1
 	return 0
+
+/mob/proc/put_in_hand_check(var/obj/item/W)
+	if(lying) //&& !(W.flags & ABSTRACT))
+		return 0
+
+	if(!isitem(W))
+		return 0
+
+	return 1
 
 //Puts the item into our active hand if possible. returns 1 on success.
 /mob/proc/put_in_active_hand(var/obj/item/W)
@@ -85,23 +109,20 @@
 	return 0
 
 
-/mob/proc/drop_from_inventory(var/obj/item/W, var/atom/Target = null)
+/mob/proc/drop_from_inventory(var/obj/item/W)
 	if(W)
-		if(!Target)
-			Target = loc
-
 		if(client)	client.screen -= W
 		u_equip(W)
 		if(!W) return 1 // self destroying objects (tk, grabs)
 		W.layer = initial(W.layer)
-		W.loc = Target
+		W.loc = loc
 
-		var/turf/T = get_turf(Target)
+		var/turf/T = get_turf(loc)
 		if(isturf(T))
 			T.Entered(W)
 
 		W.dropped(src)
-		update_icons()
+		//update_icons() // Redundant as u_equip will handle updating the specific overlay
 		return 1
 	return 0
 
@@ -120,7 +141,9 @@
 			T.Entered(l_hand)
 
 		l_hand.dropped(src)
-		l_hand = null
+		if(l_hand)
+			l_hand.layer = initial(l_hand.layer)
+			l_hand = null
 		update_inv_l_hand()
 		return 1
 	return 0
@@ -139,6 +162,7 @@
 			T.Entered(r_hand)
 
 		r_hand.dropped(src)
+		r_hand.layer = initial(r_hand.layer)
 		r_hand = null
 		update_inv_r_hand()
 		return 1
@@ -181,34 +205,8 @@
 		update_inv_wear_mask(0)
 	return
 
-/mob/proc/unEquip(obj/item/I, force = 0) //Force overrides NODROP for things like wizarditis and admin undress.
-	if(!I) //If there's nothing to drop, the drop is automatically successful. If(unEquip) should generally be used to check for NODROP.
-		return 1
-
-	/*if((I.flags & NODROP) && !force)
-		return 0*/
-
-	if(!I.canremove && !force)
-		return 0
-
-	if(I == r_hand)
-		r_hand = null
-		update_inv_r_hand()
-	else if(I == l_hand)
-		l_hand = null
-		update_inv_l_hand()
-
-	if(I)
-		if(client)
-			client.screen -= I
-		I.loc = loc
-		I.dropped(src)
-		if(I)
-			I.layer = initial(I.layer)
-	return 1
 
 //Attemps to remove an object on a mob.  Will not move it to another area or such, just removes from the mob.
-//It does call u_equip() though. So it can drop items to the floor but only if src is human.
 /mob/proc/remove_from_mob(var/obj/O)
 	src.u_equip(O)
 	if (src.client)
@@ -224,8 +222,7 @@
 
 	if(hasvar(src,"back")) if(src:back) items += src:back
 	if(hasvar(src,"belt")) if(src:belt) items += src:belt
-	if(hasvar(src,"l_ear")) if(src:l_ear) items += src:l_ear
-	if(hasvar(src,"r_ear")) if(src:r_ear) items += src:r_ear
+	if(hasvar(src,"ears")) if(src:ears) items += src:ears
 	if(hasvar(src,"glasses")) if(src:glasses) items += src:glasses
 	if(hasvar(src,"gloves")) if(src:gloves) items += src:gloves
 	if(hasvar(src,"head")) if(src:head) items += src:head
@@ -243,9 +240,18 @@
 
 /** BS12's proc to get the item in the active hand. Couldn't find the /tg/ equivalent. **/
 /mob/proc/equipped()
-	return get_active_hand() //TODO: get rid of this proc
+	if(issilicon(src))
+		if(isrobot(src))
+			if(src:module_active)
+				return src:module_active
+	else
+		if (hand)
+			return l_hand
+		else
+			return r_hand
+		return
 
-/mob/living/carbon/human/proc/equip_if_possible(obj/item/W, slot, del_on_fail = 1) // since byond doesn't seem to have pointers, this seems like the best way to do this :/
+/mob/living/carbon/human/proc/equip_if_possible(obj/item/W, slot, act_on_fail = EQUIP_FAILACTION_DELETE) // since byond doesn't seem to have pointers, this seems like the best way to do this :/
 	//warning: icky code
 	var/equipped = 0
 	switch(slot)
@@ -277,13 +283,9 @@
 			if(!src.wear_id && src.w_uniform)
 				src.wear_id = W
 				equipped = 1
-		if(slot_l_ear)
-			if(!src.l_ear)
-				src.l_ear = W
-				equipped = 1
-		if(slot_r_ear)
-			if(!src.r_ear)
-				src.r_ear = W
+		if(slot_ears)
+			if(!src.ears)
+				src.ears = W
 				equipped = 1
 		if(slot_glasses)
 			if(!src.glasses)
@@ -333,6 +335,10 @@
 		if(src.back && W.loc != src.back)
 			W.loc = src
 	else
-		if (del_on_fail)
-			del(W)
+		switch(act_on_fail)
+			if(EQUIP_FAILACTION_DELETE)
+				del(W)
+			if(EQUIP_FAILACTION_DROP)
+				W.loc=get_turf(src) // I think.
 	return equipped
+

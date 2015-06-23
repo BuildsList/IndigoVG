@@ -1,54 +1,105 @@
 /obj/structure/grille
-	name = "grille"
 	desc = "A flimsy lattice of metal rods, with screws to secure it to the floor."
+	name = "grille"
 	icon = 'icons/obj/structures.dmi'
 	icon_state = "grille"
 	density = 1
 	anchored = 1
-	flags = CONDUCT
+	flags = FPRINT
+	siemens_coefficient = 1
 	pressure_resistance = 5*ONE_ATMOSPHERE
 	layer = 2.9
 	explosion_resistance = 5
 	var/health = 10
 	var/destroyed = 0
 
+/obj/structure/grille/cultify()
+	var/turf/T = get_turf(src)
+	if(T)
+		T.ChangeTurf(/turf/simulated/wall/cult)
+	..()
+
+/obj/structure/grille/fence/east_west
+	//width=80
+	//height=42
+	icon='icons/fence-ew.dmi'
+/obj/structure/grille/fence/north_south
+	//width=80
+	//height=42
+	icon='icons/fence-ns.dmi'
 
 /obj/structure/grille/ex_act(severity)
-	del(src)
+	returnToPool(src)
 
 /obj/structure/grille/blob_act()
-	del(src)
+	returnToPool(src)
 
 /obj/structure/grille/meteorhit(var/obj/M)
-	del(src)
+	returnToPool(src)
 
 
 /obj/structure/grille/Bumped(atom/user)
 	if(ismob(user)) shock(user, 70)
 
+
+/obj/structure/grille/attack_paw(mob/user as mob)
+	attack_hand(user)
+
 /obj/structure/grille/attack_hand(mob/user as mob)
-
+	user.delayNextAttack(8)
 	playsound(loc, 'sound/effects/grillehit.ogg', 80, 1)
-
-	var/damage_dealt = 1
-	var/attack_message = "kicks"
-	if(istype(user,/mob/living/carbon/human))
-		var/mob/living/carbon/human/H = user
-		if(H.species.can_shred(H))
-			attack_message = "mangles"
-			damage_dealt = 5
+	user.visible_message("<span class='warning'>[user] kicks [src].</span>", \
+						 "<span class='warning'>You kick [src].</span>", \
+						 "You hear twisting metal.")
 
 	if(shock(user, 70))
 		return
-
-	if(HULK in user.mutations)
-		damage_dealt += 5
+	if(M_HULK in user.mutations)
+		health -= 5
 	else
-		damage_dealt += 1
+		health -= 3
+	healthcheck()
 
-	attack_generic(user,damage_dealt,attack_message)
+/obj/structure/grille/attack_alien(mob/user as mob)
+	if(istype(user, /mob/living/carbon/alien/larva))	return
+	user.delayNextAttack(8)
+	playsound(loc, 'sound/effects/grillehit.ogg', 80, 1)
+	user.visible_message("<span class='warning'>[user] mangles [src].</span>", \
+						 "<span class='warning'>You mangle [src].</span>", \
+						 "You hear twisting metal.")
 
-/obj/structure/grille/CanPass(atom/movable/mover, turf/target, height=0, air_group=0)
+	if(!shock(user, 70))
+		health -= 5
+		healthcheck()
+		return
+
+/obj/structure/grille/attack_slime(mob/user as mob)
+	if(!istype(user, /mob/living/carbon/slime/adult))	return
+	user.delayNextAttack(8)
+	playsound(loc, 'sound/effects/grillehit.ogg', 80, 1)
+	user.visible_message("<span class='warning'>[user] smashes against [src].</span>", \
+						 "<span class='warning'>You smash against [src].</span>", \
+						 "You hear twisting metal.")
+
+	health -= rand(2,3)
+	healthcheck()
+	return
+
+/obj/structure/grille/attack_animal(var/mob/living/simple_animal/M as mob)
+	M.delayNextAttack(8)
+	if(M.melee_damage_upper == 0)	return
+
+	playsound(loc, 'sound/effects/grillehit.ogg', 80, 1)
+	M.visible_message("<span class='warning'>[M] smashes against [src].</span>", \
+					  "<span class='warning'>You smash against [src].</span>", \
+					  "You hear twisting metal.")
+
+	health -= M.melee_damage_upper
+	healthcheck()
+	return
+
+
+/obj/structure/grille/CanPass(atom/movable/mover, turf/target, height=1.5, air_group = 0)
 	if(air_group || (height==0)) return 1
 	if(istype(mover) && mover.checkpass(PASSGRILLE))
 		return 1
@@ -60,46 +111,17 @@
 
 /obj/structure/grille/bullet_act(var/obj/item/projectile/Proj)
 	if(!Proj)	return
-
-	//Tasers and the like should not damage grilles.
-	if(!(Proj.damage_type == BRUTE || Proj.damage_type == BURN))
-		return
-
-	//Flimsy grilles aren't so great at stopping projectiles. However they can absorb some of the impact
-	var/damage = Proj.damage
-	var/passthrough = 0
-
-	//20% chance that the grille provides a bit more cover than usual. Support structure for example might take up 20% of the grille's area.
-	//If they click on the grille itself then we assume they are aiming at the grille itself and the extra cover behaviour is always used.
-	switch(Proj.damage_type)
-		if(BRUTE)
-			//bullets
-			if(Proj.original == src || prob(20))
-				Proj.damage *= between(0, Proj.damage/60, 0.5)
-				if(prob(max((damage-10)/25, 0))*100)
-					passthrough = 1
-			else
-				Proj.damage *= between(0, Proj.damage/60, 1)
-				passthrough = 1
-		if(BURN)
-			//beams and other projectiles are either blocked completely by grilles or stop half the damage.
-			if(!(Proj.original == src || prob(20)))
-				Proj.damage *= 0.5
-				passthrough = 1
-
-	if(passthrough)
-		. = -1
-		damage = between(0, (damage - Proj.damage)*(Proj.damage_type == BRUTE? 0.4 : 1), 10) //if the bullet passes through then the grille avoids most of the damage
-
-	src.health -= damage*0.2
-	spawn(0) healthcheck() //spawn to make sure we return properly if the grille is deleted
+	src.health -= Proj.damage*0.2
+	healthcheck()
+	return 0
 
 /obj/structure/grille/attackby(obj/item/weapon/W as obj, mob/user as mob)
+	user.delayNextAttack(8)
 	if(iswirecutter(W))
 		if(!shock(user, 100))
 			playsound(loc, 'sound/items/Wirecutter.ogg', 100, 1)
 			new /obj/item/stack/rods(loc, 2)
-			del(src)
+			returnToPool(src)
 	else if((isscrewdriver(W)) && (istype(loc, /turf/simulated) || anchored))
 		if(!shock(user, 90))
 			playsound(loc, 'sound/items/Screwdriver.ogg', 100, 1)
@@ -110,7 +132,6 @@
 
 //window placing begin
 	else if(istype(W,/obj/item/stack/sheet/glass))
-		var/obj/item/stack/sheet/glass/ST = W
 		var/dir_to_set = 1
 		if(loc == user.loc)
 			dir_to_set = user.dir
@@ -135,16 +156,20 @@
 				return
 		user << "<span class='notice'>You start placing the window.</span>"
 		if(do_after(user,20))
+			if(!src) return //Grille destroyed while waiting
 			for(var/obj/structure/window/WINDOW in loc)
 				if(WINDOW.dir == dir_to_set)//checking this for a 2nd time to check if a window was made while we were waiting.
 					user << "<span class='notice'>There is already a window facing this way there.</span>"
 					return
-
-			var/wtype = ST.created_window
-			if (ST.use(1))
-				var/obj/structure/window/WD = new wtype(loc, dir_to_set, 1)
-				user << "<span class='notice'>You place the [WD] on [src].</span>"
-				WD.update_icon()
+			var/obj/item/stack/sheet/glass/glass/G = W
+			var/obj/structure/window/WD = new G.created_window(loc,0)
+			WD.dir = dir_to_set
+			WD.ini_dir = dir_to_set
+			WD.anchored = 0
+			WD.state = 0
+			var/obj/item/stack/ST = W
+			ST.use(1)
+			user << "<span class='notice'>You place the [WD] on [src].</span>"
 		return
 //window placing end
 
@@ -173,7 +198,7 @@
 		else
 			if(health <= -6)
 				new /obj/item/stack/rods(loc)
-				del(src)
+				returnToPool(src)
 				return
 	return
 
@@ -181,7 +206,6 @@
 // returns 1 if shocked, 0 otherwise
 
 /obj/structure/grille/proc/shock(mob/user as mob, prb)
-
 	if(!anchored || destroyed)		// anchored/destroyed grilles are never connected
 		return 0
 	if(!prob(prb))
@@ -192,13 +216,10 @@
 	var/obj/structure/cable/C = T.get_cable_node()
 	if(C)
 		if(electrocute_mob(user, C, src))
-			if(C.powernet)
-				C.powernet.trigger_warning()
 			var/datum/effect/effect/system/spark_spread/s = new /datum/effect/effect/system/spark_spread
 			s.set_up(3, 1, src)
 			s.start()
-			if(user.stunned)
-				return 1
+			return 1
 		else
 			return 0
 	return 0
@@ -209,9 +230,3 @@
 			health -= 1
 			healthcheck()
 	..()
-
-/obj/structure/grille/attack_generic(var/mob/user, var/damage, var/attack_verb)
-	visible_message("<span class='danger'>[user] [attack_verb] the [src]!</span>")
-	health -= damage
-	spawn(1) healthcheck()
-	return 1

@@ -1,48 +1,65 @@
 //This file was auto-corrected by findeclaration.exe on 25.5.2012 20:42:31
 
 /obj/machinery/computer/operating
-	name = "patient monitoring console"
+	name = "Operating Computer"
 	density = 1
 	anchored = 1.0
 	icon_state = "operating"
 	circuit = "/obj/item/weapon/circuitboard/operating"
 	var/mob/living/carbon/human/victim = null
-	var/obj/machinery/optable/table = null
+	var/obj/machinery/optable/optable = null
+
+	l_color = "#0000FF"
 
 /obj/machinery/computer/operating/New()
 	..()
+	spawn(5)
+		updatemodules()
+		return
+	return
+
+/obj/machinery/computer/operating/proc/updatemodules()
+	src.optable = findoptable()
+
+/obj/machinery/computer/operating/proc/findoptable()
+	var/obj/machinery/optable/optablef = null
+
+	// Loop through every direction
 	for(dir in list(NORTH,EAST,SOUTH,WEST))
-		table = locate(/obj/machinery/optable, get_step(src, dir))
-		if (table)
-			table.computer = src
+
+		// Try to find a scanner in that direction
+		optablef = locate(/obj/machinery/optable, get_step(src, dir))
+
+		// If found, then we break, and return the scanner
+		if (!isnull(optablef))
 			break
 
-/obj/machinery/computer/operating/attack_ai(mob/user)
+	// If no scanner was found, it will return null
+	return optablef
+
+/obj/machinery/computer/operating/attack_ai(user as mob)
+	src.add_hiddenprint(user)
+	return src.attack_hand(user)
+
+/obj/machinery/computer/med_data/attack_paw(user as mob)
+	return src.attack_hand(user)
+
+/obj/machinery/computer/operating/attack_hand(mob/user as mob)
+	if(..())
+		return
 	add_fingerprint(user)
+
 	if(stat & (BROKEN|NOPOWER))
 		return
-	interact(user)
 
+	updatemodules()
 
-/obj/machinery/computer/operating/attack_hand(mob/user)
-	add_fingerprint(user)
-	if(stat & (BROKEN|NOPOWER))
-		return
-	interact(user)
-
-
-/obj/machinery/computer/operating/interact(mob/user)
-	if ( (get_dist(src, user) > 1 ) || (stat & (BROKEN|NOPOWER)) )
-		if (!istype(user, /mob/living/silicon))
-			user.unset_machine()
-			user << browse(null, "window=op")
-			return
-
-	user.set_machine(src)
-	var/dat = "<HEAD><TITLE>Operating Computer</TITLE><META HTTP-EQUIV='Refresh' CONTENT='10'></HEAD><BODY>\n"
-	dat += "<A HREF='?src=\ref[user];mach_close=op'>Close</A><br><br>" //| <A HREF='?src=\ref[user];update=1'>Update</A>"
-	if(src.table && (src.table.check_victim()))
-		src.victim = src.table.victim
+	// AUTOFIXED BY fix_string_idiocy.py
+	// C:\Users\Rob\Documents\Projects\vgstation13\code\game\machinery\computer\Operating.dm:41: var/dat = "<HEAD><TITLE>Operating Computer</TITLE><META HTTP-EQUIV='Refresh' CONTENT='10'></HEAD><BODY>\n"
+	var/dat = {"<HEAD><TITLE>Operating Computer</TITLE><META HTTP-EQUIV='Refresh' CONTENT='10'></HEAD><BODY>"}
+	// END AUTOFIX
+	if(!isnull(src.optable) && (src.optable.check_victim()))
+		src.victim = src.optable.victim
 		dat += {"
 <B>Patient Information:</B><BR>
 <BR>
@@ -56,22 +73,24 @@
 <B>Fire Damage:</B> [src.victim.getFireLoss()]<BR>
 <B>Suffocation Damage:</B> [src.victim.getOxyLoss()]<BR>
 <B>Patient Status:</B> [src.victim.stat ? "Non-Responsive" : "Stable"]<BR>
-<B>Heartbeat rate:</B> [victim.get_pulse(GETPULSE_TOOL)]<BR>
-"}
+<BR>
+<A HREF='?src=\ref[user];mach_close=op'>Close</A>"}
 	else
 		src.victim = null
 		dat += {"
 <B>Patient Information:</B><BR>
 <BR>
-<B>No Patient Detected</B>
-"}
+<B>No Patient Detected</B><BR>
+<BR>
+<A HREF='?src=\ref[user];mach_close=op'>Close</A>"}
 	user << browse(dat, "window=op")
+	user.set_machine(src)
 	onclose(user, "op")
 
 
 /obj/machinery/computer/operating/Topic(href, href_list)
 	if(..())
-		return 1
+		return
 	if ((usr.contents.Find(src) || (in_range(src, usr) && istype(src.loc, /turf))) || (istype(usr, /mob/living/silicon)))
 		usr.set_machine(src)
 	return

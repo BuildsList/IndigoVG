@@ -2,70 +2,7 @@
 ///// Construction datums //////
 ////////////////////////////////
 
-/datum/construction/mecha/custom_action(step, atom/used_atom, mob/user)
-	if(istype(used_atom, /obj/item/weapon/weldingtool))
-		var/obj/item/weapon/weldingtool/W = used_atom
-		if (W.remove_fuel(0, user))
-			playsound(holder, 'sound/items/Welder2.ogg', 50, 1)
-		else
-			return 0
-	else if(istype(used_atom, /obj/item/weapon/wrench))
-		playsound(holder, 'sound/items/Ratchet.ogg', 50, 1)
-
-	else if(istype(used_atom, /obj/item/weapon/screwdriver))
-		playsound(holder, 'sound/items/Screwdriver.ogg', 50, 1)
-
-	else if(istype(used_atom, /obj/item/weapon/wirecutters))
-		playsound(holder, 'sound/items/Wirecutter.ogg', 50, 1)
-
-	else if(istype(used_atom, /obj/item/stack/cable_coil))
-		var/obj/item/stack/cable_coil/C = used_atom
-		if(C.use(4))
-			playsound(holder, 'sound/items/Deconstruct.ogg', 50, 1)
-		else
-			user << ("There's not enough cable to finish the task.")
-			return 0
-	else if(istype(used_atom, /obj/item/stack))
-		var/obj/item/stack/S = used_atom
-		if(S.get_amount() < 5)
-			user << ("There's not enough material in this stack.")
-			return 0
-		else
-			S.use(5)
-	return 1
-
-/datum/construction/reversible/mecha/custom_action(index as num, diff as num, atom/used_atom, mob/user as mob)
-	if(istype(used_atom, /obj/item/weapon/weldingtool))
-		var/obj/item/weapon/weldingtool/W = used_atom
-		if (W.remove_fuel(0, user))
-			playsound(holder, 'sound/items/Welder2.ogg', 50, 1)
-		else
-			return 0
-	else if(istype(used_atom, /obj/item/weapon/wrench))
-		playsound(holder, 'sound/items/Ratchet.ogg', 50, 1)
-
-	else if(istype(used_atom, /obj/item/weapon/screwdriver))
-		playsound(holder, 'sound/items/Screwdriver.ogg', 50, 1)
-
-	else if(istype(used_atom, /obj/item/weapon/wirecutters))
-		playsound(holder, 'sound/items/Wirecutter.ogg', 50, 1)
-
-	else if(istype(used_atom, /obj/item/stack/cable_coil))
-		var/obj/item/stack/cable_coil/C = used_atom
-		if(C.use(4))
-			playsound(holder, 'sound/items/Deconstruct.ogg', 50, 1)
-		else
-			user << ("There's not enough cable to finish the task.")
-			return 0
-	else if(istype(used_atom, /obj/item/stack))
-		var/obj/item/stack/S = used_atom
-		if(S.get_amount() < 5)
-			user << ("There's not enough material in this stack.")
-			return 0
-		else
-			S.use(5)
-	return 1
-
+// custom_actions moved to construction_datum - N3X
 
 /datum/construction/mecha/ripley_chassis
 	steps = list(list("key"=/obj/item/mecha_parts/part/ripley_torso),//1
@@ -84,7 +21,7 @@
 	action(atom/used_atom,mob/user as mob)
 		return check_all_steps(used_atom,user)
 
-	spawn_result()
+	spawn_result(mob/user as mob)
 		var/obj/item/mecha_parts/chassis/const_holder = holder
 		const_holder.construct = new /datum/construction/reversible/mecha/ripley(const_holder)
 		const_holder.icon = 'icons/mecha/mech_construction.dmi'
@@ -144,7 +81,7 @@
 					 		"backkey"=/obj/item/weapon/screwdriver,
 					 		"desc"="The wiring is added"),
 					 //12
-					 list("key"=/obj/item/stack/cable_coil,
+					 list("key"=/obj/item/weapon/cable_coil,
 					 		"backkey"=/obj/item/weapon/screwdriver,
 					 		"desc"="The hydraulic systems are active."),
 					 //13
@@ -188,7 +125,7 @@
 					holder.icon_state = "ripley4"
 				else
 					user.visible_message("[user] removes the wiring from [holder].", "You remove the wiring from [holder].")
-					var/obj/item/stack/cable_coil/coil = new /obj/item/stack/cable_coil(get_turf(holder))
+					var/obj/item/weapon/cable_coil/coil = new /obj/item/weapon/cable_coil(get_turf(holder))
 					coil.amount = 4
 					holder.icon_state = "ripley2"
 			if(10)
@@ -270,7 +207,7 @@
 					holder.icon_state = "ripley12"
 		return 1
 
-	spawn_result()
+	spawn_result(mob/user as mob)
 		..()
 		feedback_inc("mecha_ripley_created",1)
 		return
@@ -295,7 +232,7 @@
 	action(atom/used_atom,mob/user as mob)
 		return check_all_steps(used_atom,user)
 
-	spawn_result()
+	spawn_result(mob/user as mob)
 		var/obj/item/mecha_parts/chassis/const_holder = holder
 		const_holder.construct = new /datum/construction/reversible/mecha/gygax(const_holder)
 		const_holder.icon = 'icons/mecha/mech_construction.dmi'
@@ -378,7 +315,7 @@
 					 		"backkey"=/obj/item/weapon/screwdriver,
 					 		"desc"="The wiring is added"),
 					 //18
-					 list("key"=/obj/item/stack/cable_coil,
+					 list("key"=/obj/item/weapon/cable_coil,
 					 		"backkey"=/obj/item/weapon/screwdriver,
 					 		"desc"="The hydraulic systems are active."),
 					 //19
@@ -422,7 +359,7 @@
 					holder.icon_state = "gygax4"
 				else
 					user.visible_message("[user] removes the wiring from [holder].", "You remove the wiring from [holder].")
-					var/obj/item/stack/cable_coil/coil = new /obj/item/stack/cable_coil(get_turf(holder))
+					var/obj/item/weapon/cable_coil/coil = new /obj/item/weapon/cable_coil(get_turf(holder))
 					coil.amount = 4
 					holder.icon_state = "gygax2"
 			if(16)
@@ -552,7 +489,7 @@
 					holder.icon_state = "gygax18"
 		return 1
 
-	spawn_result()
+	spawn_result(mob/user as mob)
 		..()
 		feedback_inc("mecha_gygax_created",1)
 		return
@@ -576,7 +513,7 @@
 	action(atom/used_atom,mob/user as mob)
 		return check_all_steps(used_atom,user)
 
-	spawn_result()
+	spawn_result(mob/user as mob)
 		var/obj/item/mecha_parts/chassis/const_holder = holder
 		const_holder.construct = new /datum/construction/reversible/mecha/firefighter(const_holder)
 		const_holder.icon = 'icons/mecha/mech_construction.dmi'
@@ -640,7 +577,7 @@
 					 		"backkey"=/obj/item/weapon/screwdriver,
 					 		"desc"="The wiring is added"),
 					 //13
-					 list("key"=/obj/item/stack/cable_coil,
+					 list("key"=/obj/item/weapon/cable_coil,
 					 		"backkey"=/obj/item/weapon/screwdriver,
 					 		"desc"="The hydraulic systems are active."),
 					 //14
@@ -684,7 +621,7 @@
 					holder.icon_state = "fireripley4"
 				else
 					user.visible_message("[user] removes the wiring from [holder].", "You remove the wiring from [holder].")
-					var/obj/item/stack/cable_coil/coil = new /obj/item/stack/cable_coil(get_turf(holder))
+					var/obj/item/weapon/cable_coil/coil = new /obj/item/weapon/cable_coil(get_turf(holder))
 					coil.amount = 4
 					holder.icon_state = "fireripley2"
 			if(11)
@@ -776,19 +713,98 @@
 					holder.icon_state = "fireripley13"
 		return 1
 
-	spawn_result()
+	spawn_result(mob/user as mob)
 		..()
 		feedback_inc("mecha_firefighter_created",1)
 		return
 
+
+
+/datum/construction/mecha/honker_chassis
+	steps = list(list("key"=/obj/item/mecha_parts/part/honker_torso),//1
+					 list("key"=/obj/item/mecha_parts/part/honker_left_arm),//2
+					 list("key"=/obj/item/mecha_parts/part/honker_right_arm),//3
+					 list("key"=/obj/item/mecha_parts/part/honker_left_leg),//4
+					 list("key"=/obj/item/mecha_parts/part/honker_right_leg),//5
+					 list("key"=/obj/item/mecha_parts/part/honker_head)
+					)
+
+	action(atom/used_atom,mob/user as mob)
+		return check_all_steps(used_atom,user)
+
+	custom_action(step, atom/used_atom, mob/user)
+		user.visible_message("[user] has connected [used_atom] to [holder].", "You connect [used_atom] to [holder]")
+		holder.overlays += used_atom.icon_state+"+o"
+		del used_atom
+		return 1
+
+	spawn_result(mob/user as mob)
+		var/obj/item/mecha_parts/chassis/const_holder = holder
+		const_holder.construct = new /datum/construction/mecha/honker(const_holder)
+		const_holder.density = 1
+		spawn()
+			del src
+		return
+
+
+/datum/construction/mecha/honker
+	result = "/obj/mecha/combat/honker"
+	steps = list(list("key"=/obj/item/weapon/bikehorn),//1
+					 list("key"=/obj/item/clothing/shoes/clown_shoes),//2
+					 list("key"=/obj/item/weapon/bikehorn),//3
+					 list("key"=/obj/item/clothing/mask/gas/clown_hat),//4
+					 list("key"=/obj/item/weapon/bikehorn),//5
+					 list("key"=/obj/item/weapon/circuitboard/mecha/honker/targeting),//6
+					 list("key"=/obj/item/weapon/bikehorn),//7
+					 list("key"=/obj/item/weapon/circuitboard/mecha/honker/peripherals),//8
+					 list("key"=/obj/item/weapon/bikehorn),//9
+					 list("key"=/obj/item/weapon/circuitboard/mecha/honker/main),//10
+					 list("key"=/obj/item/weapon/bikehorn),//11
+					 )
+
+	action(atom/used_atom,mob/user as mob)
+		return check_step(used_atom,user)
+
+	custom_action(step, atom/used_atom, mob/user)
+		if(!..())
+			return 0
+
+		if(istype(used_atom, /obj/item/weapon/bikehorn))
+			playsound(holder, 'sound/items/bikehorn.ogg', 50, 1)
+			user.visible_message("HONK!")
+
+		//TODO: better messages.
+		switch(step)
+			if(10)
+				user.visible_message("[user] installs the central control module into [holder].", "You install the central control module into [holder].")
+				del used_atom
+			if(8)
+				user.visible_message("[user] installs the peripherals control module into [holder].", "You install the peripherals control module into [holder].")
+				del used_atom
+			if(6)
+				user.visible_message("[user] installs the weapon control module into [holder].", "You install the weapon control module into [holder].")
+				del used_atom
+			if(4)
+				user.visible_message("[user] puts clown wig and mask on [holder].", "You put clown wig and mask on [holder].")
+				del used_atom
+			if(2)
+				user.visible_message("[user] puts clown boots on [holder].", "You put clown boots on [holder].")
+				del used_atom
+		return 1
+
+	spawn_result(mob/user as mob)
+		..()
+		feedback_inc("mecha_honker_created",1)
+		return
+
 /datum/construction/mecha/durand_chassis
 	steps = list(list("key"=/obj/item/mecha_parts/part/durand_torso),//1
-					 list("key"=/obj/item/mecha_parts/part/durand_left_arm),//2
-					 list("key"=/obj/item/mecha_parts/part/durand_right_arm),//3
-					 list("key"=/obj/item/mecha_parts/part/durand_left_leg),//4
-					 list("key"=/obj/item/mecha_parts/part/durand_right_leg),//5
-					 list("key"=/obj/item/mecha_parts/part/durand_head)
-					)
+				 list("key"=/obj/item/mecha_parts/part/durand_left_arm),//2
+				 list("key"=/obj/item/mecha_parts/part/durand_right_arm),//3
+				 list("key"=/obj/item/mecha_parts/part/durand_left_leg),//4
+				 list("key"=/obj/item/mecha_parts/part/durand_right_leg),//5
+				 list("key"=/obj/item/mecha_parts/part/durand_head)
+				)
 
 	custom_action(step, atom/used_atom, mob/user)
 		user.visible_message("[user] has connected [used_atom] to [holder].", "You connect [used_atom] to [holder]")
@@ -799,7 +815,7 @@
 	action(atom/used_atom,mob/user as mob)
 		return check_all_steps(used_atom,user)
 
-	spawn_result()
+	spawn_result(mob/user as mob)
 		var/obj/item/mecha_parts/chassis/const_holder = holder
 		const_holder.construct = new /datum/construction/reversible/mecha/durand(const_holder)
 		const_holder.icon = 'icons/mecha/mech_construction.dmi'
@@ -881,7 +897,7 @@
 					 		"backkey"=/obj/item/weapon/screwdriver,
 					 		"desc"="The wiring is added"),
 					 //18
-					 list("key"=/obj/item/stack/cable_coil,
+					 list("key"=/obj/item/weapon/cable_coil,
 					 		"backkey"=/obj/item/weapon/screwdriver,
 					 		"desc"="The hydraulic systems are active."),
 					 //19
@@ -926,7 +942,7 @@
 					holder.icon_state = "durand4"
 				else
 					user.visible_message("[user] removes the wiring from [holder].", "You remove the wiring from [holder].")
-					var/obj/item/stack/cable_coil/coil = new /obj/item/stack/cable_coil(get_turf(holder))
+					var/obj/item/weapon/cable_coil/coil = new /obj/item/weapon/cable_coil(get_turf(holder))
 					coil.amount = 4
 					holder.icon_state = "durand2"
 			if(16)
@@ -1056,30 +1072,10 @@
 					holder.icon_state = "durand18"
 		return 1
 
-	spawn_result()
+	spawn_result(mob/user as mob)
 		..()
 		feedback_inc("mecha_durand_created",1)
 		return
-
-
-/datum/construction/mecha/phazon_chassis
-	result = "/obj/mecha/combat/phazon"
-	steps = list(list("key"=/obj/item/mecha_parts/part/phazon_torso),//1
-					 list("key"=/obj/item/mecha_parts/part/phazon_left_arm),//2
-					 list("key"=/obj/item/mecha_parts/part/phazon_right_arm),//3
-					 list("key"=/obj/item/mecha_parts/part/phazon_left_leg),//4
-					 list("key"=/obj/item/mecha_parts/part/phazon_right_leg),//5
-					 list("key"=/obj/item/mecha_parts/part/phazon_head)
-					)
-
-	custom_action(step, atom/used_atom, mob/user)
-		user.visible_message("[user] has connected [used_atom] to [holder].", "You connect [used_atom] to [holder]")
-		holder.overlays += used_atom.icon_state+"+o"
-		del used_atom
-		return 1
-
-	action(atom/used_atom,mob/user as mob)
-		return check_all_steps(used_atom,user)
 
 
 
@@ -1102,7 +1098,7 @@
 	action(atom/used_atom,mob/user as mob)
 		return check_all_steps(used_atom,user)
 
-	spawn_result()
+	spawn_result(mob/user as mob)
 		var/obj/item/mecha_parts/chassis/const_holder = holder
 		const_holder.construct = new /datum/construction/reversible/mecha/odysseus(const_holder)
 		const_holder.icon = 'icons/mecha/mech_construction.dmi'
@@ -1161,7 +1157,7 @@
 					 		"backkey"=/obj/item/weapon/screwdriver,
 					 		"desc"="The wiring is added"),
 					 //12
-					 list("key"=/obj/item/stack/cable_coil,
+					 list("key"=/obj/item/weapon/cable_coil,
 					 		"backkey"=/obj/item/weapon/screwdriver,
 					 		"desc"="The hydraulic systems are active."),
 					 //13
@@ -1205,7 +1201,7 @@
 					holder.icon_state = "odysseus4"
 				else
 					user.visible_message("[user] removes the wiring from [holder].", "You remove the wiring from [holder].")
-					var/obj/item/stack/cable_coil/coil = new /obj/item/stack/cable_coil(get_turf(holder))
+					var/obj/item/weapon/cable_coil/coil = new /obj/item/weapon/cable_coil(get_turf(holder))
 					coil.amount = 4
 					holder.icon_state = "odysseus2"
 			if(10)
@@ -1271,7 +1267,6 @@
 				else
 					user.visible_message("[user] cuts internal armor layer from [holder].", "You cut the internal armor layer from [holder].")
 					holder.icon_state = "odysseus10"
-			if(2)
 				if(diff==FORWARD)
 					user.visible_message("[user] secures external armor layer.", "You secure external reinforced armor layer.")
 					holder.icon_state = "odysseus13"
@@ -1289,7 +1284,211 @@
 					holder.icon_state = "odysseus12"
 		return 1
 
-	spawn_result()
+	spawn_result(mob/user as mob)
 		..()
 		feedback_inc("mecha_odysseus_created",1)
+		return
+
+
+
+/datum/construction/mecha/phazon_chassis
+	result = "/obj/mecha/combat/phazon"
+	steps = list(list("key"=/obj/item/mecha_parts/part/phazon_torso),//1
+					 list("key"=/obj/item/mecha_parts/part/phazon_left_arm),//2
+					 list("key"=/obj/item/mecha_parts/part/phazon_right_arm),//3
+					 list("key"=/obj/item/mecha_parts/part/phazon_left_leg),//4
+					 list("key"=/obj/item/mecha_parts/part/phazon_right_leg),//5
+					 list("key"=/obj/item/mecha_parts/part/phazon_head)
+					)
+
+	custom_action(step, atom/used_atom, mob/user)
+		user.visible_message("[user] has connected [used_atom] to [holder].", "You connect [used_atom] to [holder]")
+		holder.overlays += used_atom.icon_state+"+o"
+		del used_atom
+		return 1
+
+	action(atom/used_atom,mob/user as mob)
+		return check_all_steps(used_atom,user)
+
+	spawn_result(mob/user as mob)
+		var/obj/item/mecha_parts/chassis/const_holder = holder
+		const_holder.construct = new /datum/construction/reversible/mecha/phazon(const_holder)
+		const_holder.icon = 'icons/mecha/mech_construction.dmi'
+		const_holder.icon_state = "phazon_0"
+		const_holder.density = 1
+		spawn()
+			del src
+		return
+/datum/construction/reversible/mecha/phazon
+	result = "/obj/mecha/combat/phazon"
+	steps = list(
+					//1
+					list("key"=/obj/item/weapon/weldingtool,
+							"backkey"=/obj/item/weapon/wrench,
+							"desc"="External armor is wrenched."),
+					//2
+					 list("key"=/obj/item/weapon/wrench,
+					 		"backkey"=/obj/item/weapon/crowbar,
+					 		"desc"="External armor is installed."),
+					 //3
+					 list("key"=/obj/item/stack/sheet/plasteel,
+					 		"backkey"=/obj/item/weapon/weldingtool,
+					 		"desc"="Internal armor is welded."),
+					 //4
+					 list("key"=/obj/item/weapon/weldingtool,
+					 		"backkey"=/obj/item/weapon/wrench,
+					 		"desc"="Internal armor is wrenched"),
+					 //5
+					 list("key"=/obj/item/weapon/wrench,
+					 		"backkey"=/obj/item/weapon/crowbar,
+					 		"desc"="Internal armor is installed"),
+					 //6
+					 list("key"=/obj/item/stack/sheet/metal,
+					 		"backkey"=/obj/item/weapon/screwdriver,
+					 		"desc"="Phase array is secured"),
+					 //7
+					 list("key"=/obj/item/weapon/screwdriver,
+					 		"backkey"=/obj/item/weapon/crowbar,
+					 		"desc"="Phase array is installed"),
+					 //8
+					 list("key"=/obj/item/mecha_parts/part/phazon_phase_array,
+					 		"backkey"=/obj/item/weapon/screwdriver,
+					 		"desc"="Peripherals control module is secured"),
+					 //9
+					 list("key"=/obj/item/weapon/screwdriver,
+					 		"backkey"=/obj/item/weapon/crowbar,
+					 		"desc"="Peripherals control module is installed"),
+					 //10
+					 list("key"=/obj/item/weapon/circuitboard/mecha/phazon/peripherals,
+					 		"backkey"=/obj/item/weapon/screwdriver,
+					 		"desc"="Central control module is secured"),
+					 //11
+					 list("key"=/obj/item/weapon/screwdriver,
+					 		"backkey"=/obj/item/weapon/crowbar,
+					 		"desc"="Central control module is installed"),
+					 //12
+					 list("key"=/obj/item/weapon/circuitboard/mecha/phazon/main,
+					 		"backkey"=/obj/item/weapon/screwdriver,
+					 		"desc"="The wiring is adjusted"),
+					 //13
+					 list("key"=/obj/item/weapon/wirecutters,
+					 		"backkey"=/obj/item/weapon/screwdriver,
+					 		"desc"="The wiring is added"),
+					 //14
+					 list("key"=/obj/item/weapon/cable_coil,
+					 		"backkey"=/obj/item/weapon/screwdriver,
+					 		"desc"="The hydraulic systems are active."),
+					 //15
+					 list("key"=/obj/item/weapon/screwdriver,
+					 		"backkey"=/obj/item/weapon/wrench,
+					 		"desc"="The hydraulic systems are connected."),
+					 //16
+					 list("key"=/obj/item/weapon/wrench,
+					 		"desc"="The hydraulic systems are disconnected.")
+					)
+
+	action(atom/used_atom,mob/user as mob)
+		return check_step(used_atom,user)
+
+	custom_action(index, diff, atom/used_atom, mob/user)
+		if(!..())
+			return 0
+
+		//TODO: better messages.
+		switch(index)
+			if(16)
+				user.visible_message("[user] connects [holder] hydraulic systems", "You connect [holder] hydraulic systems.")
+			if(15)
+				if(diff==FORWARD)
+					user.visible_message("[user] activates [holder] hydraulic systems.", "You activate [holder] hydraulic systems.")
+				else
+					user.visible_message("[user] disconnects [holder] hydraulic systems", "You disconnect [holder] hydraulic systems.")
+			if(14)
+				if(diff==FORWARD)
+					user.visible_message("[user] adds the wiring to [holder].", "You add the wiring to [holder].")
+				else
+					user.visible_message("[user] deactivates [holder] hydraulic systems.", "You deactivate [holder] hydraulic systems.")
+			if(13)
+				if(diff==FORWARD)
+					user.visible_message("[user] adjusts the wiring of [holder].", "You adjust the wiring of [holder].")
+				else
+					user.visible_message("[user] removes the wiring from [holder].", "You remove the wiring from [holder].")
+					var/obj/item/weapon/cable_coil/coil = new /obj/item/weapon/cable_coil(get_turf(holder))
+					coil.amount = 4
+			if(12)
+				if(diff==FORWARD)
+					user.visible_message("[user] installs the central control module into [holder].", "You install the central computer mainboard into [holder].")
+					del used_atom
+				else
+					user.visible_message("[user] disconnects the wiring of [holder].", "You disconnect the wiring of [holder].")
+			if(11)
+				if(diff==FORWARD)
+					user.visible_message("[user] secures the mainboard.", "You secure the mainboard.")
+				else
+					user.visible_message("[user] removes the central control module from [holder].", "You remove the central computer mainboard from [holder].")
+					new /obj/item/weapon/circuitboard/mecha/phazon/main(get_turf(holder))
+			if(10)
+				if(diff==FORWARD)
+					user.visible_message("[user] installs the peripherals control module into [holder].", "You install the peripherals control module into [holder].")
+					del used_atom
+				else
+					user.visible_message("[user] unfastens the mainboard.", "You unfasten the mainboard.")
+			if(9)
+				if(diff==FORWARD)
+					user.visible_message("[user] secures the peripherals control module.", "You secure the peripherals control module.")
+				else
+					user.visible_message("[user] removes the peripherals control module from [holder].", "You remove the peripherals control module from [holder].")
+					new /obj/item/weapon/circuitboard/mecha/phazon/peripherals(get_turf(holder))
+			if(8)
+				if(diff==FORWARD)
+					user.visible_message("[user] installs the phase array into [holder].", "You install the phase array into [holder].")
+					del used_atom
+				else
+					user.visible_message("[user] unfastens the phase array.", "You unfasten the phase array.")
+			if(7)
+				if(diff==FORWARD)
+					user.visible_message("[user] secures the phase array.", "You secure the phase array.")
+				else
+					user.visible_message("[user] remove the phase array.", "You remove the phase array.")
+					new /obj/item/mecha_parts/part/phazon_phase_array(get_turf(holder))
+			if(6)
+				if(diff==FORWARD)
+					user.visible_message("[user] installs internal armor layer to [holder].", "You install internal armor layer to [holder].")
+				else
+					user.visible_message("[user] unfastens the peripherals control module.", "You unfasten the peripherals control module.")
+			if(5)
+				if(diff==FORWARD)
+					user.visible_message("[user] secures the internal armor layer.", "You secure the internal armor layer.")
+				else
+					user.visible_message("[user] pries the internal armor layer from [holder].", "You pry the internal armor layer from [holder].")
+					var/obj/item/stack/sheet/metal/MS = new /obj/item/stack/sheet/metal(get_turf(holder))
+					MS.amount = 5
+			if(4)
+				if(diff==FORWARD)
+					user.visible_message("[user] welds the internal armor layer to [holder].", "You weld the internal armor layer to [holder].")
+				else
+					user.visible_message("[user] unfastens the internal armor layer.", "You unfasten the internal armor layer.")
+			if(3)
+				if(diff==FORWARD)
+					user.visible_message("[user] installs external armor layer to [holder].", "You install the external armor layer to [holder].")
+				else
+					user.visible_message("[user] unfastens the internal armor layer.", "You unfasten the internal armor layer.")
+			if(2)
+				if(diff==FORWARD)
+					user.visible_message("[user] secures the external armor layer.", "You secure the the external armor layer.")
+				else
+					user.visible_message("[user] pries the external armor layer from [holder].", "You pry the external armor layer from [holder].")
+					var/obj/item/stack/sheet/plasteel/MS = new /obj/item/stack/sheet/plasteel(get_turf(holder))
+					MS.amount = 5
+			if(1)
+				if(diff==FORWARD)
+					user.visible_message("[user] welds the external armor layer to [holder].", "You weld the external armor layer to [holder].")
+				else
+					user.visible_message("[user] unfastens the external armor layer.", "You unfasten the external armor layer.")
+		holder.icon_state="phazon_[16-(index+diff)]"
+		return 1
+
+	spawn_result(mob/user as mob)
+		..()
+		feedback_inc("mecha_phazon_created",1)
 		return

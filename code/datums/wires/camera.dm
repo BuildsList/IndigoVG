@@ -1,7 +1,7 @@
 // Wires for cameras.
 
 /datum/wires/camera
-	random = 1
+	random = 0
 	holder_type = /obj/machinery/camera
 	wire_count = 6
 
@@ -17,7 +17,9 @@
 
 /datum/wires/camera/CanUse(var/mob/living/L)
 	var/obj/machinery/camera/C = holder
-	return C.panel_open
+	if(!C.panel_open)
+		return 0
+	return 1
 
 var/const/CAMERA_WIRE_FOCUS = 1
 var/const/CAMERA_WIRE_POWER = 2
@@ -58,7 +60,7 @@ var/const/CAMERA_WIRE_NOTHING2 = 32
 			C.setViewRange(new_range)
 
 		if(CAMERA_WIRE_POWER)
-			C.kick_viewers() // Kicks anyone watching the camera
+			C.deactivate(null) // Deactivate the camera
 
 		if(CAMERA_WIRE_LIGHT)
 			C.light_disabled = !C.light_disabled

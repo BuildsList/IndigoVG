@@ -5,7 +5,6 @@
 	max_co2 = 0
 	minbodytemp = 0
 	maxbodytemp = 500
-	mob_size = 5
 
 	var/obj/item/device/radio/borg/radio = null
 	var/mob/living/silicon/ai/connected_ai = null
@@ -20,14 +19,12 @@
 	icon_state = "spiderbot-chassis"
 	icon_living = "spiderbot-chassis"
 	icon_dead = "spiderbot-smashed"
-	universal_speak = 1 //Temp until these are rewritten.
-
 	wander = 0
 
 	health = 10
 	maxHealth = 10
 
-	attacktext = "shocked"
+	attacktext = "shocks"
 	melee_damage_lower = 1
 	melee_damage_upper = 3
 
@@ -35,8 +32,9 @@
 	response_disarm = "shoos"
 	response_harm   = "stomps on"
 
-	var/emagged = 0
 	var/obj/item/held_item = null //Storage for single item they can hold.
+	var/emagged = 0               //IS WE EXPLODEN?
+	var/syndie = 0                //IS WE SYNDICAT? (currently unused)
 	speed = -1                    //Spiderbots gotta go fast.
 	//pass_flags = PASSTABLE      //Maybe griefy?
 	small = 1
@@ -44,7 +42,7 @@
 
 /mob/living/simple_animal/spiderbot/attackby(var/obj/item/O as obj, var/mob/user as mob)
 
-	if(istype(O, /obj/item/device/mmi))
+	if(istype(O, /obj/item/device/mmi) || istype(O, /obj/item/device/mmi/posibrain))
 		var/obj/item/device/mmi/B = O
 		if(src.mmi) //There's already a brain in it.
 			user << "\red There's already a brain in [src]!"
@@ -126,8 +124,6 @@
 			user << "\red [src] is already overloaded - better run."
 			return 0
 		else
-			var/obj/item/weapon/card/emag/emag = O
-			emag.uses--
 			emagged = 1
 			user << "\blue You short out the security protocols and overload [src]'s cell, priming it to explode in a short time."
 			spawn(100)	src << "\red Your cell seems to be outputting a lot of power..."
@@ -135,19 +131,7 @@
 			spawn(300)	src.explode()
 
 	else
-		if(O.force)
-			var/damage = O.force
-			if (O.damtype == HALLOSS)
-				damage = 0
-			adjustBruteLoss(damage)
-			for(var/mob/M in viewers(src, null))
-				if ((M.client && !( M.blinded )))
-					M.show_message("\red \b [src] has been attacked with the [O] by [user]. ")
-		else
-			usr << "\red This weapon is ineffective, it does no damage."
-			for(var/mob/M in viewers(src, null))
-				if ((M.client && !( M.blinded )))
-					M.show_message("\red [user] gently taps [src] with the [O]. ")
+		return ..()
 
 /mob/living/simple_animal/spiderbot/proc/transfer_personality(var/obj/item/device/mmi/M as obj)
 
@@ -162,15 +146,17 @@
 			M.show_message("\red [src] makes an odd warbling noise, fizzles, and explodes.")
 	explosion(get_turf(loc), -1, -1, 3, 5)
 	eject_brain()
-	death()
+	Die()
 
 /mob/living/simple_animal/spiderbot/proc/update_icon()
-	if(istype(mmi, /obj/item/device/mmi/digital/posibrain))
-		icon_state = "spiderbot-chassis-posi"
-		icon_living = "spiderbot-chassis-posi"
-	else if(istype(mmi,/obj/item/device/mmi))
-		icon_state = "spiderbot-chassis-mmi"
-		icon_living = "spiderbot-chassis-mmi"
+	if(mmi)
+		if(istype(mmi,/obj/item/device/mmi))
+			icon_state = "spiderbot-chassis-mmi"
+			icon_living = "spiderbot-chassis-mmi"
+		if(istype(mmi, /obj/item/device/mmi/posibrain))
+			icon_state = "spiderbot-chassis-posi"
+			icon_living = "spiderbot-chassis-posi"
+
 	else
 		icon_state = "spiderbot-chassis"
 		icon_living = "spiderbot-chassis"
@@ -185,7 +171,7 @@
 		src.name = "Spider-bot"
 		update_icon()
 
-/mob/living/simple_animal/spiderbot/Del()
+/mob/living/simple_animal/spiderbot/Destroy()
 	eject_brain()
 	..()
 
@@ -194,26 +180,46 @@
 	radio = new /obj/item/device/radio/borg(src)
 	camera = new /obj/machinery/camera(src)
 	camera.c_tag = "Spiderbot-[real_name]"
-	camera.replace_networks(list("SS13"))
+	camera.network = list("SS13")
 
 	..()
 
-/mob/living/simple_animal/spiderbot/death()
+/mob/living/simple_animal/spiderbot/Die()
 
 	living_mob_list -= src
 	dead_mob_list += src
 
 	if(camera)
 		camera.status = 0
+	if(held_item && !isnull(held_item))
+		held_item.loc = src.loc
+		held_item = null
 
-	held_item.loc = src.loc
-	held_item = null
+	robogibs(src.loc, viruses)
+	del(src)
 
-	gibs(loc, viruses, null, null, /obj/effect/gibspawner/robot) //TODO: use gib() or refactor spiderbots into synthetics.
-	src.Del()
-	return
+//copy paste from alien/larva, if that func is updated please update this one also
+/mob/living/simple_animal/spiderbot/verb/ventcrawl()
+	set name = "Crawl through Vent"
+	set desc = "Enter an air vent and crawl through the pipe system."
+	set category = "Spiderbot"
+	handle_ventcrawl()
+
+//copy paste from alien/larva, if that func is updated please update this one alsoghost
+/mob/living/simple_animal/spiderbot/verb/hide()
+	set name = "Hide"
+	set desc = "Allows to hide beneath tables or certain items. Toggled on or off."
+	set category = "Spiderbot"
+
+	if (layer != TURF_LAYER+0.2)
+		layer = TURF_LAYER+0.2
+		src << text("\blue You are now hiding.")
+	else
+		layer = MOB_LAYER
+		src << text("\blue You have stopped hiding.")
 
 //Cannibalized from the parrot mob. ~Zuhayr
+
 /mob/living/simple_animal/spiderbot/verb/drop_held_item()
 	set name = "Drop held item"
 	set category = "Spiderbot"
@@ -256,7 +262,7 @@
 
 	var/list/items = list()
 	for(var/obj/item/I in view(1,src))
-		if(I.loc != src && I.w_class <= 2 && I.Adjacent(src) )
+		if(I.loc != src && I.w_class <= 2)
 			items.Add(I)
 
 	var/obj/selection = input("Select an item.", "Pickup") in items
@@ -275,6 +281,6 @@
 	return 0
 
 /mob/living/simple_animal/spiderbot/examine(mob/user)
-	..(user)
+	..()
 	if(src.held_item)
 		user << "It is carrying \a [src.held_item] \icon[src.held_item]."

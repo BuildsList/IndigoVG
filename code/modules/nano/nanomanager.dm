@@ -14,20 +14,31 @@
   *
   * @return /nanomanager new nanomanager object
   */
+
+  //Uncomment to enable nano file debugging
+  //#define NANO_DEBUG 1
+
 /datum/nanomanager/New()
 	var/list/nano_asset_dirs = list(\
 		"nano/css/",\
 		"nano/images/",\
+		"nano/images/[map.map_dir]/",\
 		"nano/js/",\
 		"nano/templates/"\
 	)
 
 	var/list/filenames = null
 	for (var/path in nano_asset_dirs)
+		#ifdef NANO_DEBUG
+		world.log << "loading [path]"
+		#endif
 		filenames = flist(path)
 		for(var/filename in filenames)
 			if(copytext(filename, length(filename)) != "/") // filenames which end in "/" are actually directories, which we want to ignore
 				if(fexists(path + filename))
+					#ifdef NANO_DEBUG
+					world.log << "Found [path+filename]!"
+					#endif
 					asset_files.Add(fcopy_rsc(path + filename)) // add this file to asset_files for sending to clients when they connect
 
 	return
@@ -99,7 +110,7 @@
 	var/update_count = 0
 	for (var/ui_key in open_uis[src_object_key])
 		for (var/datum/nanoui/ui in open_uis[src_object_key][ui_key])
-			if(ui && ui.src_object && ui.user && ui.src_object.nano_host())
+			if(ui && ui.src_object && ui.user)
 				ui.process(1)
 				update_count++
 	return update_count
@@ -186,8 +197,7 @@
 		return 0 // wasn't open
 
 	processing_uis.Remove(ui)
-	if(ui.user)	// Sanity check in case a user has been deleted (say a blown up borg watching the alarm interface)
-		ui.user.open_uis.Remove(ui)
+	ui.user.open_uis.Remove(ui)
 	var/list/uis = open_uis[src_object_key][ui.ui_key]
 	uis.Remove(ui)
 
@@ -219,8 +229,10 @@
   * @return nothing
   */
 /datum/nanomanager/proc/user_transferred(var/mob/oldMob, var/mob/newMob)
+	if(!istype(oldMob))
+		return 0 // no mob, no uis
 	//testing("nanomanager/user_transferred from mob [oldMob.name] to mob [newMob.name]")
-	if (!oldMob || isnull(oldMob.open_uis) || !istype(oldMob.open_uis, /list) || open_uis.len == 0)
+	if (isnull(oldMob.open_uis) || !istype(oldMob.open_uis, /list) || open_uis.len == 0)
 		//testing("nanomanager/user_transferred mob [oldMob.name] has no open uis")
 		return 0 // has no open uis
 
@@ -231,7 +243,7 @@
 		ui.user = newMob
 		newMob.open_uis.Add(ui)
 
-	oldMob.open_uis.Cut()
+	oldMob.open_uis.len = 0
 
 	return 1 // success
 
@@ -246,5 +258,6 @@
 
 /datum/nanomanager/proc/send_resources(client)
 	for(var/file in asset_files)
+		world.log << file
 		client << browse_rsc(file)	// send the file to the client
 

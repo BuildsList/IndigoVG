@@ -46,14 +46,17 @@
 			if("Power")
 				user << "<B>Your wish is granted, but at a terrible cost...</B>"
 				user << "The Wish Granter punishes you for your selfishness, claiming your soul and warping your body to match the darkness in your heart."
-				if (!(LASER in user.mutations))
-					user.mutations.Add(LASER)
+				if (!(M_LASER in user.mutations))
+					user.mutations.Add(M_LASER)
 					user << "\blue You feel pressure building behind your eyes."
-				if (!(COLD_RESISTANCE in user.mutations))
-					user.mutations.Add(COLD_RESISTANCE)
+				if (!(M_RESIST_COLD in user.mutations))
+					user.mutations.Add(M_RESIST_COLD)
 					user << "\blue Your body feels warm."
-				if (!(XRAY in user.mutations))
-					user.mutations.Add(XRAY)
+				if (!(M_RESIST_HEAT in user.mutations))
+					user.mutations.Add(M_RESIST_HEAT)
+					user << "\blue Your skin feels icy to the touch."
+				if (!(M_XRAY in user.mutations))
+					user.mutations.Add(M_XRAY)
 					user.sight |= (SEE_MOBS|SEE_OBJS|SEE_TURFS)
 					user.see_in_dark = 8
 					user.see_invisible = SEE_INVISIBLE_LEVEL_TWO
@@ -90,7 +93,7 @@
 			if("Peace")
 				user << "<B>Whatever alien sentience that the Wish Granter possesses is satisfied with your wish. There is a distant wailing as the last of the Faithless begin to die, then silence.</B>"
 				user << "You feel as if you just narrowly avoided a terrible fate..."
-				for(var/mob/living/simple_animal/hostile/faithless/F in living_mob_list)
+				for(var/mob/living/simple_animal/hostile/faithless/F in world)
 					F.health = -10
 					F.stat = 2
 					F.icon_state = "faithless_dead"
@@ -113,7 +116,7 @@
 /obj/effect/meatgrinder/New()
 	icon_state = "blob"
 
-/obj/effect/meatgrinder/HasEntered(AM as mob|obj)
+/obj/effect/meatgrinder/Crossed(AM as mob|obj)
 	Bumped(AM)
 
 /obj/effect/meatgrinder/Bumped(mob/M as mob|obj)

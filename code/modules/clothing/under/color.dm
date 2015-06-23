@@ -2,141 +2,178 @@
 	name = "black jumpsuit"
 	icon_state = "black"
 	item_state = "bl_suit"
-	item_color = "black"
+	_color = "black"
+	flags = FPRINT  | ONESIZEFITSALL
 
 /obj/item/clothing/under/color/blackf
 	name = "feminine black jumpsuit"
 	desc = "It's very smart and in a ladies-size!"
 	icon_state = "black"
 	item_state = "bl_suit"
-	item_color = "blackf"
+	_color = "blackf"
+	flags = FPRINT
 
 /obj/item/clothing/under/color/blue
 	name = "blue jumpsuit"
 	icon_state = "blue"
 	item_state = "b_suit"
-	item_color = "blue"
+	_color = "blue"
+	flags = FPRINT  | ONESIZEFITSALL
 
 /obj/item/clothing/under/color/green
 	name = "green jumpsuit"
 	icon_state = "green"
 	item_state = "g_suit"
-	item_color = "green"
+	_color = "green"
+	flags = FPRINT  | ONESIZEFITSALL
 
 /obj/item/clothing/under/color/grey
 	name = "grey jumpsuit"
 	icon_state = "grey"
 	item_state = "gy_suit"
-	item_color = "grey"
+	_color = "grey"
+	flags = FPRINT  | ONESIZEFITSALL
+	species_fit = list("Vox")
 
 /obj/item/clothing/under/color/orange
 	name = "orange jumpsuit"
-	desc = "It's standardised Nanotrasen prisoner-wear. Its suit sensors are stuck in the \"Fully On\" position."
 	icon_state = "orange"
 	item_state = "o_suit"
-	item_color = "orange"
+	_color = "orange"
+	flags = FPRINT  | ONESIZEFITSALL
+
+/obj/item/clothing/under/color/prisoner
+	name = "prison jumpsuit"
+	desc = "It's standardised Nanotrasen prisoner-wear. Its suit sensors are stuck in the \"Fully On\" position."
+	icon_state = "prisoner"
+	item_state = "o_suit"
+	_color = "prisoner"
 	has_sensor = 2
 	sensor_mode = 3
+	flags = FPRINT  | ONESIZEFITSALL
 
 /obj/item/clothing/under/color/pink
 	name = "pink jumpsuit"
 	icon_state = "pink"
 	item_state = "p_suit"
-	item_color = "pink"
+	_color = "pink"
+	flags = FPRINT  | ONESIZEFITSALL
 
 /obj/item/clothing/under/color/red
 	name = "red jumpsuit"
 	icon_state = "red"
 	item_state = "r_suit"
-	item_color = "red"
+	_color = "red"
+	flags = FPRINT  | ONESIZEFITSALL
 
 /obj/item/clothing/under/color/white
 	name = "white jumpsuit"
 	icon_state = "white"
 	item_state = "w_suit"
-	item_color = "white"
+	_color = "white"
+	flags = FPRINT  | ONESIZEFITSALL
 
 /obj/item/clothing/under/color/yellow
 	name = "yellow jumpsuit"
 	icon_state = "yellow"
 	item_state = "y_suit"
-	item_color = "yellow"
+	_color = "yellow"
+	flags = FPRINT  | ONESIZEFITSALL
 
 /obj/item/clothing/under/psyche
 	name = "psychedelic jumpsuit"
 	desc = "Groovy!"
 	icon_state = "psyche"
-	item_color = "psyche"
+	_color = "psyche"
+	flags = FPRINT  | ONESIZEFITSALL
 
 /obj/item/clothing/under/lightblue
 	name = "lightblue jumpsuit"
-	desc = "lightblue"
 	icon_state = "lightblue"
-	item_color = "lightblue"
+	_color = "lightblue"
+	flags = FPRINT  | ONESIZEFITSALL
 
 /obj/item/clothing/under/aqua
 	name = "aqua jumpsuit"
-	desc = "aqua"
 	icon_state = "aqua"
-	item_color = "aqua"
+	_color = "aqua"
+	flags = FPRINT  | ONESIZEFITSALL
 
 /obj/item/clothing/under/purple
 	name = "purple jumpsuit"
-	desc = "purple"
 	icon_state = "purple"
 	item_state = "p_suit"
-	item_color = "purple"
+	_color = "purple"
+	flags = FPRINT  | ONESIZEFITSALL
 
 /obj/item/clothing/under/lightpurple
 	name = "lightpurple jumpsuit"
-	desc = "lightpurple"
 	icon_state = "lightpurple"
-	item_color = "lightpurple"
+	_color = "lightpurple"
+	flags = FPRINT  | ONESIZEFITSALL
 
 /obj/item/clothing/under/lightgreen
 	name = "lightgreen jumpsuit"
-	desc = "lightgreen"
 	icon_state = "lightgreen"
-	item_color = "lightgreen"
-
-/obj/item/clothing/under/lightblue
-	name = "lightblue jumpsuit"
-	desc = "lightblue"
-	icon_state = "lightblue"
-	item_color = "lightblue"
+	_color = "lightgreen"
+	flags = FPRINT  | ONESIZEFITSALL
 
 /obj/item/clothing/under/lightbrown
 	name = "lightbrown jumpsuit"
-	desc = "lightbrown"
 	icon_state = "lightbrown"
-	item_color = "lightbrown"
+	_color = "lightbrown"
+	flags = FPRINT  | ONESIZEFITSALL
 
 /obj/item/clothing/under/brown
 	name = "brown jumpsuit"
-	desc = "brown"
 	icon_state = "brown"
-	item_color = "brown"
+	_color = "brown"
+	flags = FPRINT  | ONESIZEFITSALL
 
 /obj/item/clothing/under/yellowgreen
 	name = "yellowgreen jumpsuit"
-	desc = "yellowgreen"
 	icon_state = "yellowgreen"
-	item_color = "yellowgreen"
+	_color = "yellowgreen"
+	flags = FPRINT  | ONESIZEFITSALL
 
 /obj/item/clothing/under/darkblue
 	name = "darkblue jumpsuit"
-	desc = "darkblue"
 	icon_state = "darkblue"
-	item_color = "darkblue"
+	_color = "darkblue"
+	flags = FPRINT  | ONESIZEFITSALL
 
 /obj/item/clothing/under/lightred
 	name = "lightred jumpsuit"
-	desc = "lightred"
 	icon_state = "lightred"
-	item_color = "lightred"
+	_color = "lightred"
+	flags = FPRINT  | ONESIZEFITSALL
 
 /obj/item/clothing/under/darkred
 	name = "darkred jumpsuit"
-	desc = "darkred"
 	icon_state = "darkred"
-	item_color = "darkred"
+	_color = "darkred"
+	flags = FPRINT  | ONESIZEFITSALL
+
+/obj/item/clothing/under/blackpants
+	name = "black pants"
+	icon_state = "blpants"
+	_color = "blpants"
+	flags = FPRINT  | ONESIZEFITSALL
+
+/obj/item/clothing/under/redpants
+	name = "red pants"
+	icon_state = "rpants"
+	_color = "rpants"
+	flags = FPRINT  | ONESIZEFITSALL
+
+/obj/item/clothing/under/bluepants
+	name = "blue pants"
+	icon_state = "bpants"
+	_color = "bpants"
+	flags = FPRINT  | ONESIZEFITSALL
+
+/obj/item/clothing/under/greypants
+	name = "grey pants"
+	icon_state = "gpants"
+	_color = "gpants"
+	flags = FPRINT  | ONESIZEFITSALL

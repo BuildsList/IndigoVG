@@ -1,205 +1,224 @@
-#define HOLD_CASINGS	0 //do not do anything after firing. Manual action, like pump shotguns, or guns that want to define custom behaviour
-#define EJECT_CASINGS	1 //drop spent casings on the ground after firing
-#define CYCLE_CASINGS 	2 //experimental: cycle casings, like a revolver. Also works for multibarrelled guns
+#define SPEEDLOADER 0 //the gun takes bullets directly
+#define FROM_BOX 1
+#define MAGAZINE 2 //the gun takes a magazine into gun storage
 
 /obj/item/weapon/gun/projectile
-	name = "gun"
-	desc = "A gun that fires bullets."
+	desc = "A classic revolver. Uses 357 ammo"
+	name = "revolver"
 	icon_state = "revolver"
+	caliber = list("357" = 1)
 	origin_tech = "combat=2;materials=2"
-	w_class = 3
-	matter = list("metal" = 1000)
+	w_class = 3.0
+	m_amt = 1000
+	w_type = RECYK_METAL
 	recoil = 1
-
-	var/caliber = "357"		//determines which casings will fit
-	var/handle_casings = EJECT_CASINGS	//determines how spent casings should be handled
-	var/load_method = SINGLE_CASING|SPEEDLOADER //1 = Single shells, 2 = box or quick loader, 3 = magazine
+	var/ammo_type = "/obj/item/ammo_casing/a357"
+	var/list/loaded = list()
+	var/max_shells = 7 //only used by guns with no magazine
+	var/load_method = SPEEDLOADER //0 = Single shells or quick loader, 1 = box, 2 = magazine
+	var/obj/item/ammo_storage/magazine/stored_magazine = null
 	var/obj/item/ammo_casing/chambered = null
+	var/mag_type = ""
 
-	//For SINGLE_CASING or SPEEDLOADER guns
-	var/max_shells = 0			//the number of casings that will fit inside
-	var/ammo_type = null		//the type of ammo that the gun comes preloaded with
-	var/list/loaded = list()	//stored ammo
-
-	//For MAGAZINE guns
-	var/magazine_type = null	//the type of magazine that the gun comes preloaded with
-	var/obj/item/ammo_magazine/ammo_magazine = null //stored magazine
-	var/auto_eject = 0			//if the magazine should automatically eject itself when empty.
-	var/auto_eject_sound = null
-	//TODO generalize ammo icon states for guns
-	//var/magazine_states = 0
-	//var/list/icon_keys = list()		//keys
-	//var/list/ammo_states = list()	//values
+	var/gun_flags = EMPTYCASINGS	//Yay, flags
 
 /obj/item/weapon/gun/projectile/New()
 	..()
-	if(ispath(ammo_type) && (load_method & (SINGLE_CASING|SPEEDLOADER)))
-		for(var/i in 1 to max_shells)
-			loaded += new ammo_type(src)
-	if(ispath(magazine_type) && (load_method & MAGAZINE))
-		ammo_magazine = new magazine_type(src)
-	update_icon()
-
-/obj/item/weapon/gun/projectile/consume_next_projectile()
-	//get the next casing
-	if(loaded.len)
-		chambered = loaded[1] //load next casing.
-		if(handle_casings != HOLD_CASINGS)
-			loaded -= chambered
-	else if(ammo_magazine && ammo_magazine.stored_ammo.len)
-		chambered = ammo_magazine.stored_ammo[1]
-		if(handle_casings != HOLD_CASINGS)
-			ammo_magazine.stored_ammo -= chambered
-	
-	if (chambered)
-		return chambered.BB
-	return null
-
-/obj/item/weapon/gun/projectile/handle_post_fire()
-	..()
-	if(chambered)
-		chambered.expend()
-		process_chambered()
-
-/obj/item/weapon/gun/projectile/handle_click_empty()
-	..()
-	process_chambered()
-
-/obj/item/weapon/gun/projectile/proc/process_chambered()
-	if (!chambered) return
-
-	switch(handle_casings)
-		if(EJECT_CASINGS) //eject casing onto ground.
-			chambered.loc = get_turf(src)
-		if(CYCLE_CASINGS) //cycle the casing back to the end.
-			if(ammo_magazine)
-				ammo_magazine.stored_ammo += chambered
-			else
-				loaded += chambered
-
-	if(handle_casings != HOLD_CASINGS)
-		chambered = null
-
-
-//Attempts to load A into src, depending on the type of thing being loaded and the load_method
-//Maybe this should be broken up into separate procs for each load method?
-/obj/item/weapon/gun/projectile/proc/load_ammo(var/obj/item/A, mob/user)
-	if(istype(A, /obj/item/ammo_magazine))
-		var/obj/item/ammo_magazine/AM = A
-		if(!(load_method & AM.mag_type) || caliber != AM.caliber)
-			return //incompatible
-
-		switch(AM.mag_type)
-			if(MAGAZINE)
-				if(ammo_magazine)
-					user << "<span class='warning'>[src] already has a magazine loaded.</span>" //already a magazine here
-					return
-				user.remove_from_mob(AM)
-				AM.loc = src
-				ammo_magazine = AM
-				user.visible_message("[user] inserts [AM] into [src].", "<span class='notice'>You insert [AM] into [src].</span>")
-				playsound(src.loc, 'sound/weapons/flipblade.ogg', 50, 1)
-			if(SPEEDLOADER)
-				if(loaded.len >= max_shells)
-					user << "<span class='warning'>[src] is full!</span>"
-					return
-				var/count = 0
-				for(var/obj/item/ammo_casing/C in AM.stored_ammo)
-					if(loaded.len >= max_shells)
-						break
-					if(C.caliber == caliber)
-						C.loc = src
-						loaded += C
-						AM.stored_ammo -= C //should probably go inside an ammo_magazine proc, but I guess less proc calls this way...
-						count++
-				if(count)
-					user.visible_message("[user] reloads [src].", "<span class='notice'>You load [count] round\s into [src].</span>")
-					playsound(src.loc, 'sound/weapons/empty.ogg', 50, 1)
-		AM.update_icon()
-	else if(istype(A, /obj/item/ammo_casing))
-		var/obj/item/ammo_casing/C = A
-		if(!(load_method & SINGLE_CASING) || caliber != C.caliber)
-			return //incompatible
-		if(loaded.len >= max_shells)
-			user << "<span class='warning'>[src] is full.</span>"
-			return
-
-		user.remove_from_mob(C)
-		C.loc = src
-		loaded.Insert(1, C) //add to the head of the list
-		user.visible_message("[user] inserts \a [C] into [src].", "<span class='notice'>You insert \a [C] into [src].</span>")
-		playsound(src.loc, 'sound/weapons/empty.ogg', 50, 1)
-
-	update_icon()
-
-//attempts to unload src. If allow_dump is set to 0, the speedloader unloading method will be disabled
-/obj/item/weapon/gun/projectile/proc/unload_ammo(mob/user, var/allow_dump=1)
-	if(ammo_magazine)
-		user.put_in_hands(ammo_magazine)
-		user.visible_message("[user] removes [ammo_magazine] from [src].", "<span class='notice'>You remove [ammo_magazine] from [src].</span>")
-		playsound(src.loc, 'sound/weapons/empty.ogg', 50, 1)
-		ammo_magazine.update_icon()
-		ammo_magazine = null
-	else if(loaded.len)
-		//presumably, if it can be speed-loaded, it can be speed-unloaded.
-		if(allow_dump && (load_method & SPEEDLOADER))
-			var/count = 0
-			var/turf/T = get_turf(user)
-			if(T)
-				for(var/obj/item/ammo_casing/C in loaded)
-					C.loc = T
-					count++
-				loaded.Cut()
-			if(count)
-				user.visible_message("[user] unloads [src].", "<span class='notice'>You unload [count] round\s from [src].</span>")
-		else if(load_method & SINGLE_CASING)
-			var/obj/item/ammo_casing/C = loaded[loaded.len]
-			loaded.len--
-			user.put_in_hands(C)
-			user.visible_message("[user] removes \a [C] from [src].", "<span class='notice'>You remove \a [C] from [src].</span>")
+	if(mag_type && load_method == 2)
+		stored_magazine = new mag_type(src)
+		chamber_round()
 	else
-		user << "<span class='warning'>[src] is empty.</span>"
+		for(var/i = 1, i <= max_shells, i++)
+			loaded += new ammo_type(src)
 	update_icon()
+	return
+
+//loads the argument magazine into the gun
+/obj/item/weapon/gun/projectile/proc/LoadMag(var/obj/item/ammo_storage/magazine/AM, var/mob/user)
+	if(istype(AM, text2path(mag_type)) && !stored_magazine)
+		if(user)
+			user.drop_item(AM)
+			usr << "<span class='notice'>You load the magazine into \the [src].</span>"
+		AM.loc = src
+		stored_magazine = AM
+		chamber_round()
+		AM.update_icon()
+		update_icon()
+		return 1
+	return 0
+
+/obj/item/weapon/gun/projectile/proc/RemoveMag(var/mob/user)
+	if(stored_magazine)
+		stored_magazine.loc = get_turf(src.loc)
+		if(user)
+			user.put_in_hands(stored_magazine)
+			usr << "<span class='notice'>You pull the magazine out of \the [src]!</span>"
+		stored_magazine.update_icon()
+		stored_magazine = null
+		update_icon()
+		return 1
+	return 0
+
+/obj/item/weapon/gun/projectile/verb/force_removeMag()
+	set name = "Remove Magazine"
+	set category = "Object"
+	set src in range(0)
+	if(stored_magazine)
+		RemoveMag()
+	else
+		usr << "<span class='rose'>There is no magazine to remove!</span>"
+
+
+/obj/item/weapon/gun/projectile/proc/chamber_round() //Only used by guns with magazine
+	if(chambered || !stored_magazine)
+		return 0
+	else
+		var/obj/item/ammo_casing/round = stored_magazine.get_round()
+		if(istype(round))
+			chambered = round
+			chambered.loc = src
+			return 1
+	return 0
+
+/obj/item/weapon/gun/projectile/proc/getAC()
+	var/obj/item/ammo_casing/AC = null
+	if(mag_type && load_method == 2)
+		AC = chambered
+	else if(getAmmo())
+		AC = loaded[1] //load next casing.
+	return AC
+
+/obj/item/weapon/gun/projectile/process_chambered()
+	var/obj/item/ammo_casing/AC = getAC()
+	if(in_chamber)
+		return 1 //{R}
+	if(isnull(AC) || !istype(AC))
+		return
+	if(mag_type && load_method == 2)
+		chambered = null //Remove casing from chamber.
+		chamber_round()
+	else
+		loaded -= AC //Remove casing from loaded list.
+	if(gun_flags &EMPTYCASINGS)
+		AC.loc = get_turf(src) //Eject casing onto ground.
+	if(AC.BB)
+		in_chamber = AC.BB //Load projectile into chamber.
+		AC.BB.loc = src //Set projectile loc to gun.
+		AC.BB = null //Empty casings
+		AC.update_icon()
+		return 1
+	return 0
 
 /obj/item/weapon/gun/projectile/attackby(var/obj/item/A as obj, mob/user as mob)
-	load_ammo(A, user)
+	if(istype(A, /obj/item/gun_part/silencer) && src.gun_flags &SILENCECOMP)
+		if(user.l_hand != src && user.r_hand != src)	//if we're not in his hands
+			user << "<span class='notice'>You'll need [src] in your hands to do that.</span>"
+			return
+		user.drop_item()
+		user << "<span class='notice'>You screw [A] onto [src].</span>"
+		silenced = A	//dodgy?
+		w_class = 3
+		A.loc = src		//put the silencer into the gun
+		update_icon()
+		return 1
+
+	var/num_loaded = 0
+	if(istype(A, /obj/item/ammo_storage/magazine))
+		var/obj/item/ammo_storage/magazine/AM = A
+		if(load_method == MAGAZINE)
+			if(!stored_magazine)
+				LoadMag(AM, user)
+			else
+				user << "<span class='rose'>There is already a magazine loaded in \the [src]!</span>"
+		else
+			user << "<span class='rose'>You can't load \the [src] with a magazine, dummy!</span>"
+	if(istype(A, /obj/item/ammo_storage) && load_method != MAGAZINE)
+		var/obj/item/ammo_storage/AS = A
+		var/success_load = AS.LoadInto(AS, src)
+		if(success_load)
+			user << "<span class='notice'>You successfully fill the [src] with [success_load] shell\s from the [AS]</span>"
+	if(istype(A, /obj/item/ammo_casing))
+		var/obj/item/ammo_casing/AC = A
+		//message_admins("Loading the [src], with [AC], [AC.caliber] and [caliber.len]") //Enable this for testing
+		if(AC.BB && caliber[AC.caliber]) // a used bullet can't be fired twice
+			if(load_method == MAGAZINE && !chambered)
+				user.drop_item()
+				AC.loc = src
+				chambered = AC
+				num_loaded++
+			else if(getAmmo() < max_shells)
+				user.drop_item()
+				AC.loc = src
+				loaded += AC
+				num_loaded++
+
+	if(num_loaded)
+		user << "<span class='notice'>You load [num_loaded] shell\s into \the [src]!</span>"
+	A.update_icon()
+	update_icon()
+	return
 
 /obj/item/weapon/gun/projectile/attack_self(mob/user as mob)
-	unload_ammo(user)
-
-/obj/item/weapon/gun/projectile/attack_hand(mob/user as mob)
-	if(user.get_inactive_hand() == src)
-		unload_ammo(user, allow_dump=0)
-	else
+	if (target)
 		return ..()
+	if (loaded.len || stored_magazine)
+		if (load_method == SPEEDLOADER)
+			var/obj/item/ammo_casing/AC = loaded[1]
+			loaded -= AC
+			AC.loc = get_turf(src) //Eject casing onto ground.
+			user << "<span class='notice'>You unload \the [AC] from \the [src]!</span>"
+			update_icon()
+			return
+		if (load_method == MAGAZINE && stored_magazine)
+			RemoveMag(user)
+	else if(loc == user)
+		if(chambered) // So it processing unloading of a bullet first
+			var/obj/item/ammo_casing/AC = chambered
+			AC.loc = get_turf(src) //Eject casing onto ground.
+			chambered = null
+			user << "<span class='notice'>You unload \the [AC] from \the [src]!</span>"
+			update_icon()
+			return
+		if(silenced)
+			if(user.l_hand != src && user.r_hand != src)
+				..()
+				return
+			user << "<span class='notice'>You unscrew [silenced] from [src].</span>"
+			user.put_in_hands(silenced)
+			silenced = 0
+			w_class = 2
+			update_icon()
+			return
+	else
+		user << "<span class='warning'>Nothing loaded in \the [src]!</span>"
 
-/obj/item/weapon/gun/projectile/afterattack(atom/A, mob/living/user)
+/obj/item/weapon/gun/projectile/afterattack(atom/target as mob|obj|turf|area, mob/living/user as mob|obj, flag)
 	..()
-	if(auto_eject && ammo_magazine && ammo_magazine.stored_ammo && !ammo_magazine.stored_ammo.len)
-		ammo_magazine.loc = get_turf(src.loc)
-		user.visible_message(
-			"[ammo_magazine] falls out and clatters on the floor!",
-			"<span class='notice'>[ammo_magazine] falls out and clatters on the floor!</span>"
-			)
-		if(auto_eject_sound)
-			playsound(user, auto_eject_sound, 40, 1)
-		ammo_magazine.update_icon()
-		ammo_magazine = null
-		update_icon() //make sure to do this after unsetting ammo_magazine
+	if(!chambered && stored_magazine && !stored_magazine.ammo_count() && gun_flags &AUTOMAGDROP) //auto_mag_drop decides whether or not the mag is dropped once it empties
+		RemoveMag()
+		playsound(user, 'sound/weapons/smg_empty_alarm.ogg', 40, 1)
+	return
 
 /obj/item/weapon/gun/projectile/examine(mob/user)
-	..(user)
-	user << "Has [getAmmo()] round\s remaining."
-	if(ammo_magazine)
-		user << "It has \a [ammo_magazine] loaded."
-	return
+	..()
+	user << "<span class='info'>Has [getAmmo()] round\s remaining.</span>"
+//		if(in_chamber && !loaded.len)
+//			usr << "However, it has a chambered round."
+//		if(in_chamber && loaded.len)
+//			usr << "It also has a chambered round." {R}
+	if(istype(silenced, /obj/item/gun_part/silencer))
+		user << "<span class='warning'>It has a supressor attached to the barrel.</span>"
 
 /obj/item/weapon/gun/projectile/proc/getAmmo()
 	var/bullets = 0
-	if(loaded)
-		bullets += loaded.len
-	if(ammo_magazine && ammo_magazine.stored_ammo)
-		bullets += ammo_magazine.stored_ammo.len
-	if(chambered)
-		bullets += 1
+	if(mag_type && load_method == 2)
+		if(stored_magazine)
+			bullets += stored_magazine.ammo_count()
+		if(chambered)
+			bullets++
+	else
+		for(var/obj/item/ammo_casing/AC in loaded)
+			if(istype(AC))
+				bullets += 1
 	return bullets
+

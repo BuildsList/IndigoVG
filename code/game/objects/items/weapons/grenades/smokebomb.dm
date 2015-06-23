@@ -5,6 +5,7 @@
 	icon_state = "flashbang"
 	det_time = 20
 	item_state = "flashbang"
+	flags = FPRINT
 	slot_flags = SLOT_BELT
 	var/datum/effect/effect/system/smoke_spread/bad/smoke
 
@@ -14,7 +15,7 @@
 		src.smoke.attach(src)
 
 	prime()
-		playsound(src.loc, 'sound/effects/smoke.ogg', 50, 1, -3)
+		playsound(get_turf(src), 'sound/effects/smoke.ogg', 50, 1, -3)
 		src.smoke.set_up(10, 0, usr.loc)
 		spawn(0)
 			src.smoke.start()

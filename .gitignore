@@ -1,9 +1,36 @@
-#ignore misc BYOND files
 *.log
 *.int
 *.rsc
 *.dmb
 *.lk
-*.backup
-data/
-cfg/
+info.json
+
+# WinMerge backups
+*.bak
+
+# String dumps
+*.str
+
+# Compiled Python doohickies
+*.pyc
+
+# OpenBYOND-generated crap
+/dmis
+/interface-indented
+/code-indented
+*.new.dmi
+
+#zlofenix required
+/DLLSocket
+/Trash
+/bot
+/maptools
+
+.metadata
+/bot/config.yml
+/bot/data
+/analysis
+
+/config/*
+!/config/*/*
+!/config/alienwhitelist.txt

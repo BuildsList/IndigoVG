@@ -3,31 +3,32 @@
 	desc = "Because you really needed another excuse to punch your crewmates."
 	icon_state = "boxing"
 	item_state = "boxing"
-
-/obj/item/clothing/gloves/boxing/attackby(obj/item/weapon/W, mob/user)
-	if(istype(W, /obj/item/weapon/wirecutters) || istype(W, /obj/item/weapon/scalpel))
-		user << "<span class='notice'>That won't work.</span>"	//Nope
-		return
-	..()
+	species_fit = list("Vox")
 
 /obj/item/clothing/gloves/boxing/green
 	icon_state = "boxinggreen"
 	item_state = "boxinggreen"
+	species_fit = list("Vox")
 
 /obj/item/clothing/gloves/boxing/blue
 	icon_state = "boxingblue"
 	item_state = "boxingblue"
+	species_fit = list("Vox")
 
 /obj/item/clothing/gloves/boxing/yellow
 	icon_state = "boxingyellow"
 	item_state = "boxingyellow"
+	species_fit = list("Vox")
 
 /obj/item/clothing/gloves/white
 	name = "white gloves"
 	desc = "These look pretty fancy."
-	icon_state = "latex"
-	item_state = "lgloves"
-	item_color="mime"
+	icon_state = "white"
+	item_state = "whitegloves"
+	_color="mime"
+	species_fit = list("Vox")
 
-	redcoat
-		item_color = "redcoat"		//Exists for washing machines. Is not different from white gloves in any way.
+/obj/item/clothing/gloves/white/stunglove // For Clown Planet's mimes. - N3X
+	New()
+		..()
+		cell = new /obj/item/weapon/cell/crap/empty(src)

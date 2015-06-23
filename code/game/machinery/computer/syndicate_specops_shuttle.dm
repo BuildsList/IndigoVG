@@ -11,13 +11,15 @@ var/syndicate_elite_shuttle_time = 0
 var/syndicate_elite_shuttle_timeleft = 0
 
 /obj/machinery/computer/syndicate_elite_shuttle
-	name = "elite syndicate squad shuttle control console"
+	name = "Elite Syndicate Squad Shuttle Console"
 	icon = 'icons/obj/computer.dmi'
 	icon_state = "syndishuttle"
 	req_access = list(access_cent_specops)
 	var/temp = null
 	var/hacked = 0
 	var/allowedtocall = 0
+
+	l_color = "#B40000"
 
 /proc/syndicate_elite_process()
 	var/area/syndicate_mothership/control/syndicate_ship = locate()//To find announcer. This area should exist for this proc to work.
@@ -28,8 +30,8 @@ var/syndicate_elite_shuttle_timeleft = 0
 	var/message = "THE SYNDICATE ELITE SHUTTLE IS PREPARING FOR LAUNCH"//Initial message shown.
 	if(announcer)
 		announcer.say(message)
-	//	message = "ARMORED SQUAD TAKE YOUR POSITION ON GRAVITY LAUNCH PAD"
-	//	announcer.say(message)
+		message = "ARMORED SQUAD TAKE YOUR POSITION ON GRAVITY LAUNCH PAD"
+		announcer.say(message)
 
 	while(syndicate_elite_shuttle_time - world.timeofday > 0)
 		var/ticksleft = syndicate_elite_shuttle_time - world.timeofday
@@ -162,12 +164,6 @@ var/syndicate_elite_shuttle_timeleft = 0
 		if(istype(T, /turf/simulated))
 			del(T)
 
-	for(var/mob/living/carbon/bug in end_location) // If someone somehow is still in the shuttle's docking area...
-		bug.gib()
-
-	for(var/mob/living/simple_animal/pest in end_location) // And for the other kind of bug...
-		pest.gib()
-
 	start_location.move_contents_to(end_location)
 
 	for(var/turf/T in get_area_turfs(end_location) )
@@ -178,17 +174,16 @@ var/syndicate_elite_shuttle_timeleft = 0
 	if(syndicate_elite_shuttle_moving_to_station || syndicate_elite_shuttle_moving_to_mothership) return 0
 	else return 1
 
-/obj/machinery/computer/syndicate_elite_shuttle/attackby(I as obj, user as mob)
-	return attack_hand(user)
-
 /obj/machinery/computer/syndicate_elite_shuttle/attack_ai(var/mob/user as mob)
+	src.add_hiddenprint(user)
 	return attack_hand(user)
 
-/obj/machinery/computer/syndicate_elite_shuttle/attackby(I as obj, user as mob)
-	if(istype(I,/obj/item/weapon/card/emag))
-		user << "\blue The electronic systems in this console are far too advanced for your primitive hacking peripherals."
-	else
-		return attack_hand(user)
+/obj/machinery/computer/syndicate_elite_shuttle/attack_paw(var/mob/user as mob)
+	return attack_hand(user)
+
+/obj/machinery/computer/syndicate_elite_shuttle/emag(mob/user as mob)
+	user << "\blue The electronic systems in this console are far too advanced for your primitive hacking peripherals."
+	return
 
 /obj/machinery/computer/syndicate_elite_shuttle/attack_hand(var/mob/user as mob)
 	if(!allowed(user))
@@ -218,7 +213,7 @@ var/syndicate_elite_shuttle_timeleft = 0
 
 /obj/machinery/computer/syndicate_elite_shuttle/Topic(href, href_list)
 	if(..())
-		return 1
+		return
 
 	if ((usr.contents.Find(src) || (in_range(src, usr) && istype(loc, /turf))) || (istype(usr, /mob/living/silicon)))
 		usr.set_machine(src)
@@ -243,6 +238,8 @@ var/syndicate_elite_shuttle_timeleft = 0
 
 		var/area/syndicate_mothership/elite_squad/elite_squad = locate()
 		if(elite_squad)
+			if(elite_squad.master)
+				elite_squad=elite_squad.master
 			elite_squad.readyalert()//Trigger alarm for the spec ops area.
 		syndicate_elite_shuttle_moving_to_station = 1
 

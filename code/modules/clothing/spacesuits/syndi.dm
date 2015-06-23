@@ -2,21 +2,23 @@
 /obj/item/clothing/head/helmet/space/syndicate
 	name = "red space helmet"
 	icon_state = "syndicate"
-	item_state = "space_helmet_syndicate"
-	desc = "A crimson helmet sporting clean lines and durable plating. Engineered to look menacing."
+	item_state = "syndicate"
+	species_restricted = list("exclude","Vox")
+	desc = "Has a tag on it: Totally not property of a hostile corporation, honest!"
 	armor = list(melee = 60, bullet = 50, laser = 30,energy = 15, bomb = 30, bio = 30, rad = 30)
-	siemens_coefficient = 0.6
+	siemens_coefficient = 0.8
 
 /obj/item/clothing/suit/space/syndicate
 	name = "red space suit"
 	icon_state = "syndicate"
 	item_state = "space_suit_syndicate"
-	desc = "A crimson spacesuit sporting clean lines and durable plating. Robust, reliable, and slightly suspicious."
+	desc = "Has a tag on it: Totally not property of a hostile corporation, honest!"
 	w_class = 3
-	allowed = list(/obj/item/weapon/gun,/obj/item/ammo_magazine,/obj/item/ammo_casing,/obj/item/weapon/melee/baton,/obj/item/weapon/melee/energy/sword,/obj/item/weapon/handcuffs,/obj/item/weapon/tank/emergency_oxygen)
+	species_restricted = list("exclude","Vox")
+	allowed = list(/obj/item/weapon/gun,/obj/item/ammo_storage,/obj/item/ammo_casing,/obj/item/weapon/melee/baton,/obj/item/weapon/melee/energy/sword,/obj/item/weapon/handcuffs,/obj/item/weapon/tank/jetpack,/obj/item/weapon/tank/jetpack/void,/obj/item/weapon/tank/jetpack/oxygen,/obj/item/weapon/tank/jetpack/nitrogen,/obj/item/weapon/tank/jetpack/carbondioxide,/obj/item/weapon/tank/oxygen,/obj/item/weapon/tank/air)
 	slowdown = 1
 	armor = list(melee = 60, bullet = 50, laser = 30,energy = 15, bomb = 30, bio = 30, rad = 30)
-	siemens_coefficient = 0.6
+	siemens_coefficient = 0.8
 
 
 //Green syndicate space suit
@@ -137,6 +139,7 @@
 	name = "Black and Red Space Suit"
 	icon_state = "syndicate-black-red"
 	item_state = "syndicate-black-red"
+
 
 //Black with yellow/red engineering syndicate space suit
 /obj/item/clothing/head/helmet/space/syndicate/black/engie

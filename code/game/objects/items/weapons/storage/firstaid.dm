@@ -2,6 +2,7 @@
  * Contains:
  *		First Aid Kits
  * 		Pill Bottles
+ *		Dice Pack (in a pill bottle)
  */
 
 /*
@@ -78,7 +79,7 @@
 	name = "oxygen deprivation first aid"
 	desc = "A box full of oxygen goodies."
 	icon_state = "o2"
-	item_state = "firstaid-o2"
+	item_state = "firstaid-oxy"
 
 	New()
 		..()
@@ -109,45 +110,6 @@
 	new /obj/item/stack/medical/advanced/ointment(src)
 	new /obj/item/stack/medical/splint(src)
 	return
-
-/obj/item/weapon/storage/firstaid/combat
-	name = "combat medical kit"
-	desc = "Contains advanced medical treatments."
-	icon_state = "bezerk"
-	item_state = "firstaid-advanced"
-
-/obj/item/weapon/storage/firstaid/combat/New()
-	..()
-	if (empty) return
-	new /obj/item/weapon/storage/pill_bottle/bicaridine(src)
-	new /obj/item/weapon/storage/pill_bottle/dermaline(src)
-	new /obj/item/weapon/storage/pill_bottle/dexalin_plus(src)
-	new /obj/item/weapon/storage/pill_bottle/dylovene(src)
-	new /obj/item/weapon/storage/pill_bottle/tramadol(src)
-	new /obj/item/weapon/storage/pill_bottle/spaceacillin(src)
-	new /obj/item/stack/medical/splint(src)
-	return
-
-/obj/item/weapon/storage/firstaid/surgery
-	name = "surgery kit"
-	desc = "Contains tools for surgery."
-	storage_slots = 10
-
-/obj/item/weapon/storage/firstaid/surgery/New()
-	..()
-	if (empty) return
-	new /obj/item/weapon/bonesetter(src)
-	new /obj/item/weapon/cautery(src)
-	new /obj/item/weapon/circular_saw(src)
-	new /obj/item/weapon/hemostat(src)
-	new /obj/item/weapon/retractor(src)
-	new /obj/item/weapon/scalpel(src)
-	new /obj/item/weapon/surgicaldrill(src)
-	new /obj/item/weapon/bonegel(src)
-	new /obj/item/weapon/FixOVein(src)
-	new /obj/item/stack/medical/advanced/bruise_pack(src)
-	return
-
 /*
  * Pill Bottles
  */
@@ -158,98 +120,38 @@
 	icon = 'icons/obj/chemical.dmi'
 	item_state = "contsolid"
 	w_class = 2.0
-	can_hold = list(/obj/item/weapon/reagent_containers/pill,/obj/item/weapon/dice,/obj/item/weapon/paper)
+	can_hold = list("/obj/item/weapon/reagent_containers/pill","/obj/item/weapon/dice","/obj/item/weapon/paper")
 	allow_quick_gather = 1
 	use_to_pickup = 1
 	storage_slots = 14
-	use_sound = null
+	m_amt = 10
+	g_amt = 60
 
-/obj/item/weapon/storage/pill_bottle/antitox
-	name = "bottle of Dylovene pills"
-	desc = "Contains pills used to counter toxins."
+/obj/item/weapon/storage/pill_bottle/MouseDrop(obj/over_object as obj) //Quick pillbottle fix. -Agouri
 
-	New()
-		..()
-		new /obj/item/weapon/reagent_containers/pill/antitox( src )
-		new /obj/item/weapon/reagent_containers/pill/antitox( src )
-		new /obj/item/weapon/reagent_containers/pill/antitox( src )
-		new /obj/item/weapon/reagent_containers/pill/antitox( src )
-		new /obj/item/weapon/reagent_containers/pill/antitox( src )
-		new /obj/item/weapon/reagent_containers/pill/antitox( src )
-		new /obj/item/weapon/reagent_containers/pill/antitox( src )
-
-/obj/item/weapon/storage/pill_bottle/bicaridine
-	name = "bottle of Bicaridine pills"
-	desc = "Contains pills used to stabilize the severely injured."
-
-/obj/item/weapon/storage/pill_bottle/bicaridine/New()
-    ..()
-    new /obj/item/weapon/reagent_containers/pill/bicaridine(src)
-    new /obj/item/weapon/reagent_containers/pill/bicaridine(src)
-    new /obj/item/weapon/reagent_containers/pill/bicaridine(src)
-    new /obj/item/weapon/reagent_containers/pill/bicaridine(src)
-    new /obj/item/weapon/reagent_containers/pill/bicaridine(src)
-    new /obj/item/weapon/reagent_containers/pill/bicaridine(src)
-    new /obj/item/weapon/reagent_containers/pill/bicaridine(src)
-
-/obj/item/weapon/storage/pill_bottle/dexalin_plus
-	name = "bottle of Dexalin Plus pills"
-	desc = "Contains pills used to treat extreme cases of oxygen deprivation."
-
-/obj/item/weapon/storage/pill_bottle/dexalin_plus/New()
-    ..()
-    new /obj/item/weapon/reagent_containers/pill/dexalin_plus(src)
-    new /obj/item/weapon/reagent_containers/pill/dexalin_plus(src)
-    new /obj/item/weapon/reagent_containers/pill/dexalin_plus(src)
-    new /obj/item/weapon/reagent_containers/pill/dexalin_plus(src)
-    new /obj/item/weapon/reagent_containers/pill/dexalin_plus(src)
-    new /obj/item/weapon/reagent_containers/pill/dexalin_plus(src)
-    new /obj/item/weapon/reagent_containers/pill/dexalin_plus(src)
-
-/obj/item/weapon/storage/pill_bottle/dermaline
-	name = "bottle of Dermaline pills"
-	desc = "Contains pills used to treat burn wounds."
-
-/obj/item/weapon/storage/pill_bottle/dermaline/New()
-    ..()
-    new /obj/item/weapon/reagent_containers/pill/dermaline(src)
-    new /obj/item/weapon/reagent_containers/pill/dermaline(src)
-    new /obj/item/weapon/reagent_containers/pill/dermaline(src)
-    new /obj/item/weapon/reagent_containers/pill/dermaline(src)
-    new /obj/item/weapon/reagent_containers/pill/dermaline(src)
-    new /obj/item/weapon/reagent_containers/pill/dermaline(src)
-    new /obj/item/weapon/reagent_containers/pill/dermaline(src)
-
-/obj/item/weapon/storage/pill_bottle/dylovene
-	name = "bottle of Dylovene pills"
-	desc = "Contains pills used to treat toxic substances in the blood."
-
-/obj/item/weapon/storage/pill_bottle/dylovene/New()
-    ..()
-    new /obj/item/weapon/reagent_containers/pill/dylovene(src)
-    new /obj/item/weapon/reagent_containers/pill/dylovene(src)
-    new /obj/item/weapon/reagent_containers/pill/dylovene(src)
-    new /obj/item/weapon/reagent_containers/pill/dylovene(src)
-    new /obj/item/weapon/reagent_containers/pill/dylovene(src)
-    new /obj/item/weapon/reagent_containers/pill/dylovene(src)
-    new /obj/item/weapon/reagent_containers/pill/dylovene(src)
-
-/obj/item/weapon/storage/pill_bottle/inaprovaline
-	name = "bottle of Inaprovaline pills"
-	desc = "Contains pills used to stabilize patients."
-
-	New()
-		..()
-		new /obj/item/weapon/reagent_containers/pill/inaprovaline( src )
-		new /obj/item/weapon/reagent_containers/pill/inaprovaline( src )
-		new /obj/item/weapon/reagent_containers/pill/inaprovaline( src )
-		new /obj/item/weapon/reagent_containers/pill/inaprovaline( src )
-		new /obj/item/weapon/reagent_containers/pill/inaprovaline( src )
-		new /obj/item/weapon/reagent_containers/pill/inaprovaline( src )
-		new /obj/item/weapon/reagent_containers/pill/inaprovaline( src )
+	if (ishuman(usr) || ismonkey(usr)) //Can monkeys even place items in the pocket slots? Leaving this in just in case~
+		var/mob/M = usr
+		if (!( istype(over_object, /obj/screen) ))
+			return ..()
+		if ((!( M.restrained() ) && !( M.stat ) /*&& M.pocket == src*/))
+			switch(over_object.name)
+				if("r_hand")
+					M.u_equip(src)
+					M.put_in_r_hand(src)
+				if("l_hand")
+					M.u_equip(src)
+					M.put_in_l_hand(src)
+			src.add_fingerprint(usr)
+			return
+		if(over_object == usr && in_range(src, usr) || usr.contents.Find(src))
+			if (usr.s_active)
+				usr.s_active.close(usr)
+			src.show_to(usr)
+			return
+	return
 
 /obj/item/weapon/storage/pill_bottle/kelotane
-	name = "bottle of kelotane pills"
+	name = "Pill bottle (kelotane)"
 	desc = "Contains pills used to treat burns."
 
 	New()
@@ -262,30 +164,47 @@
 		new /obj/item/weapon/reagent_containers/pill/kelotane( src )
 		new /obj/item/weapon/reagent_containers/pill/kelotane( src )
 
-/obj/item/weapon/storage/pill_bottle/spaceacillin
-	name = "bottle of Spaceacillin pills"
-	desc = "A theta-lactam antibiotic. Effective against many diseases likely to be encountered in space."
-
-/obj/item/weapon/storage/pill_bottle/spaceacillin/New()
-    ..()
-    new /obj/item/weapon/reagent_containers/pill/spaceacillin(src)
-    new /obj/item/weapon/reagent_containers/pill/spaceacillin(src)
-    new /obj/item/weapon/reagent_containers/pill/spaceacillin(src)
-    new /obj/item/weapon/reagent_containers/pill/spaceacillin(src)
-    new /obj/item/weapon/reagent_containers/pill/spaceacillin(src)
-    new /obj/item/weapon/reagent_containers/pill/spaceacillin(src)
-    new /obj/item/weapon/reagent_containers/pill/spaceacillin(src)
-
-/obj/item/weapon/storage/pill_bottle/tramadol
-	name = "bottle of Tramadol pills"
-	desc = "Contains pills used to relieve pain."
+/obj/item/weapon/storage/pill_bottle/antitox
+	name = "Pill bottle (Anti-toxin)"
+	desc = "Contains pills used to counter toxins."
 
 	New()
 		..()
-		new /obj/item/weapon/reagent_containers/pill/tramadol( src )
-		new /obj/item/weapon/reagent_containers/pill/tramadol( src )
-		new /obj/item/weapon/reagent_containers/pill/tramadol( src )
-		new /obj/item/weapon/reagent_containers/pill/tramadol( src )
-		new /obj/item/weapon/reagent_containers/pill/tramadol( src )
-		new /obj/item/weapon/reagent_containers/pill/tramadol( src )
-		new /obj/item/weapon/reagent_containers/pill/tramadol( src )
+		new /obj/item/weapon/reagent_containers/pill/antitox( src )
+		new /obj/item/weapon/reagent_containers/pill/antitox( src )
+		new /obj/item/weapon/reagent_containers/pill/antitox( src )
+		new /obj/item/weapon/reagent_containers/pill/antitox( src )
+		new /obj/item/weapon/reagent_containers/pill/antitox( src )
+		new /obj/item/weapon/reagent_containers/pill/antitox( src )
+		new /obj/item/weapon/reagent_containers/pill/antitox( src )
+
+/obj/item/weapon/storage/pill_bottle/inaprovaline
+	name = "Pill bottle (inaprovaline)"
+	desc = "Contains pills used to stabilize patients."
+
+	New()
+		..()
+		new /obj/item/weapon/reagent_containers/pill/inaprovaline( src )
+		new /obj/item/weapon/reagent_containers/pill/inaprovaline( src )
+		new /obj/item/weapon/reagent_containers/pill/inaprovaline( src )
+		new /obj/item/weapon/reagent_containers/pill/inaprovaline( src )
+		new /obj/item/weapon/reagent_containers/pill/inaprovaline( src )
+		new /obj/item/weapon/reagent_containers/pill/inaprovaline( src )
+		new /obj/item/weapon/reagent_containers/pill/inaprovaline( src )
+
+
+/obj/item/weapon/storage/pill_bottle/dice
+	name = "bag of dice"
+	desc = "Contains all the luck you'll ever need."
+	icon = 'icons/obj/dice.dmi'
+	icon_state = "dicebag"
+
+/obj/item/weapon/storage/pill_bottle/dice/New()
+	..()
+	new /obj/item/weapon/dice/d4( src )
+	new /obj/item/weapon/dice( src )
+	new /obj/item/weapon/dice/d8( src )
+	new /obj/item/weapon/dice/d10( src )
+	new /obj/item/weapon/dice/d00( src )
+	new /obj/item/weapon/dice/d12( src )
+	new /obj/item/weapon/dice/d20( src )

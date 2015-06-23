@@ -7,12 +7,15 @@
 */
 
 /mob/living/silicon/robot/ClickOn(var/atom/A, var/params)
-	if(world.time <= next_click)
+	if(click_delayer.blocked())
 		return
-	next_click = world.time + 1
+	click_delayer.setDelay(1)
 
 	if(client.buildmode) // comes after object.Click to allow buildmode gui objects to be clicked
 		build_click(src, client.buildmode, params, A)
+		return
+
+	if(stat || lockcharge || weakened || stunned || paralysis)
 		return
 
 	var/list/modifiers = params2list(params)
@@ -29,21 +32,10 @@
 		CtrlClickOn(A)
 		return
 
-	if(stat || lockcharge || weakened || stunned || paralysis)
-		return
-
-	if(next_move >= world.time)
+	if(attack_delayer.blocked())
 		return
 
 	face_atom(A) // change direction to face what you clicked on
-
-	if(aiCamera.in_camera_mode)
-		aiCamera.camera_mode_off()
-		if(is_component_functioning("camera"))
-			aiCamera.captureimage(A, usr)
-		else
-			src << "<span class='userdanger'>Your camera isn't functional.</span>"
-		return
 
 	/*
 	cyborg restrained() currently does nothing
@@ -65,41 +57,42 @@
 		return
 
 	if(W == A)
-		next_move = world.time + 8
+		/*next_move = world.time + 8
 		if(W.flags&USEDELAY)
 			next_move += 5
-
+		*/
 		W.attack_self(src)
 		return
 
 	// cyborgs are prohibited from using storage items so we can I think safely remove (A.loc in contents)
 	if(A == loc || (A in loc) || (A in contents))
 		// No adjacency checks
-		next_move = world.time + 8
-		if(W.flags&USEDELAY)
+		delayNextAttack(8)
+		/*if(W.flags&USEDELAY)
 			next_move += 5
+		*/
 
 		var/resolved = A.attackby(W,src)
 		if(!resolved && A && W)
 			W.afterattack(A,src,1,params)
 		return
 
-	if(!isturf(loc))
-		return
+
 
 	// cyborgs are prohibited from using storage items so we can I think safely remove (A.loc && isturf(A.loc.loc))
 	if(isturf(A) || isturf(A.loc))
 		if(A.Adjacent(src)) // see adjacent.dm
-			next_move = world.time + 10
+			/*next_move = world.time + 10
 			if(W.flags&USEDELAY)
 				next_move += 5
+			*/
 
 			var/resolved = A.attackby(W, src)
 			if(!resolved && A && W)
 				W.afterattack(A, src, 1, params)
 			return
 		else
-			next_move = world.time + 10
+			//next_move = world.time + 10
 			W.afterattack(A, src, 0, params)
 			return
 	return
@@ -108,6 +101,34 @@
 /mob/living/silicon/robot/MiddleClickOn(var/atom/A)
 	cycle_modules()
 	return
+
+//Middle click cycles through selected modules.
+/mob/living/silicon/robot/AltClickOn(var/atom/A)
+	//Borgs dont need a quick shock hotkey, just in case
+	/*
+	if(istype(A, /obj/machinery/door/airlock))
+		A.AIAltClick(src)
+		return
+	*/
+	if(isturf(A))
+		A.AltClick(src)
+		return
+	A.RobotAltClick(src)
+	return
+
+/mob/living/silicon/robot/ShiftClickOn(var/atom/A)
+	//Borgs can into doors as well
+	if(istype(A, /obj/machinery/door/airlock))
+		A.AIShiftClick(src)
+		return
+	..()
+
+/mob/living/silicon/robot/CtrlClickOn(var/atom/A)
+	//Borgs can into doors as well
+	if(istype(A, /obj/machinery/door/airlock))
+		A.AICtrlClick(src)
+		return
+	..()
 
 /*
 	As with AI, these are not used in click code,
@@ -118,10 +139,26 @@
 	change attack_robot() above to the proper function
 */
 /mob/living/silicon/robot/UnarmedAttack(atom/A)
+	if(ismob(A))
+		delayNextAttack(10)
 	A.attack_robot(src)
+	return
 /mob/living/silicon/robot/RangedAttack(atom/A)
 	A.attack_robot(src)
 
 /atom/proc/attack_robot(mob/user as mob)
 	attack_ai(user)
 	return
+
+
+// /vg/: Alt-click.
+/atom/proc/RobotAltClick()
+	return
+
+// /vg/: Alt-click to open shit
+/* not anymore
+/obj/machinery/door/airlock/RobotAltClick() // Opens doors
+	if(density)
+		Topic("aiEnable=7", list("aiEnable"="7"), 1) // 1 meaning no window (consistency!)
+	else
+		Topic("aiDisable=7", list("aiDisable"="7"), 1)*/

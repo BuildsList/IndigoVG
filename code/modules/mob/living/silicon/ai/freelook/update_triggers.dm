@@ -7,14 +7,11 @@
 /turf
 	var/image/obscured
 
-/turf/drain_power()
-	return -1
-
 /turf/proc/visibilityChanged()
 	if(ticker)
 		cameranet.updateVisibility(src)
 
-/turf/simulated/Del()
+/turf/simulated/Destroy()
 	visibilityChanged()
 	..()
 
@@ -26,7 +23,7 @@
 
 // STRUCTURES
 
-/obj/structure/Del()
+/obj/structure/Destroy()
 	if(ticker)
 		cameranet.updateVisibility(src)
 	..()
@@ -38,7 +35,7 @@
 
 // EFFECTS
 
-/obj/effect/Del()
+/obj/effect/Destroy()
 	if(ticker)
 		cameranet.updateVisibility(src)
 	..()
@@ -52,8 +49,7 @@
 // DOORS
 
 // Simply updates the visibility of the area when it opens/closes/destroyed.
-/obj/machinery/door/update_nearby_tiles(need_rebuild)
-	. = ..(need_rebuild)
+/obj/machinery/door/proc/update_freelok_sight()
 	// Glass door glass = 1
 	// don't check then?
 	if(!glass && cameranet)
@@ -70,7 +66,7 @@
 	var/oldLoc = src.loc
 	. = ..()
 	if(.)
-		if(src.camera && src.camera.network.len)
+		if(src.camera)
 			if(!updating)
 				updating = 1
 				spawn(BORG_CAMERA_BUFFER)
@@ -84,7 +80,6 @@
 
 /obj/machinery/camera/deactivate(user as mob, var/choice = 1)
 	..(user, choice)
-	invalidateCameraCache()
 	if(src.can_use())
 		cameranet.addCamera(src)
 	else
@@ -93,17 +88,12 @@
 
 /obj/machinery/camera/New()
 	..()
-	//Camera must be added to global list of all cameras no matter what...
-	if(cameranet.cameras_unsorted || !ticker)
-		cameranet.cameras += src
-		cameranet.cameras_unsorted = 1
-	else
-		dd_insertObjectList(cameranet.cameras, src)
-	update_coverage(1)
+	cameranet.cameras += src
+	cameranet.addCamera(src)
 
-/obj/machinery/camera/Del()
+/obj/machinery/camera/Destroy()
 	cameranet.cameras -= src
-	clear_all_networks()
+	cameranet.removeCamera(src)
 	..()
 
 #undef BORG_CAMERA_BUFFER

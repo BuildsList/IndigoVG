@@ -10,6 +10,7 @@
 	recommended_enemies = 1
 
 	uplink_welcome = "Crazy AI Uplink Console:"
+	uplink_uses = 10
 
 	var/const/waittime_l = 600
 	var/const/waittime_h = 1800 // started at 1800
@@ -22,14 +23,15 @@
 
 
 /datum/game_mode/malfunction/announce()
-	world << "<B>The current game mode is - AI Malfunction!</B>"
-	world << "<B>The AI on the satellite has malfunctioned and must be destroyed.</B>"
-	world << "The AI satellite is deep in space and can only be accessed with the use of a teleporter! You have [AI_win_timeleft/60] minutes to disable it."
+	world << {"<B>The current game mode is - AI Malfunction!</B><br>
+<B>The onboard AI is malfunctioning and must be destroyed.</B><br>
+<B>If the AI manages to take over the station, it will most likely blow it up. You have [AI_win_timeleft/60] minutes to disable it.</B><br>
+<B>You have no chance to survive, make your time.</B>"}
 
 
 /datum/game_mode/malfunction/pre_setup()
 	for(var/mob/new_player/player in player_list)
-		if(player.mind && player.mind.assigned_role == "AI" && (player.client.prefs.be_special & BE_MALF))
+		if(player.mind && player.mind.assigned_role == "AI" && player.client.desires_role(ROLE_MALF))
 			malf_ai+=player.mind
 	if(malf_ai.len)
 		return 1
@@ -39,20 +41,27 @@
 /datum/game_mode/malfunction/post_setup()
 	for(var/datum/mind/AI_mind in malf_ai)
 		if(malf_ai.len < 1)
-			world << "Uh oh, its malfunction and there is no AI! Please report this."
-			world << "Rebooting world in 5 seconds."
+			world << {"Uh oh, its malfunction and there is no AI! Please report this.<br>
+Rebooting world in 5 seconds."}
 
 			feedback_set_details("end_error","malf - no AI")
 
 			if(blackbox)
 				blackbox.save_all_data_to_sql()
+			CallHook("Reboot",list())
+			if (watchdog.waiting)
+				world << "\blue <B>Server will shut down for an automatic update in a few seconds.</B>"
+				watchdog.signal_ready()
+				return
 			sleep(50)
 			world.Reboot()
 			return
 		AI_mind.current.verbs += /mob/living/silicon/ai/proc/choose_modules
-		AI_mind.current:laws = new /datum/ai_laws/malfunction
-		AI_mind.current:malf_picker = new /datum/AI_Module/module_picker
-		AI_mind.current.verbs += /datum/game_mode/malfunction/proc/ai_win // We run checks if AI overtaken the station in the proc itself. This guarantees you won't have to relog when it refuses to appear on takeover completion.
+		//AI_mind.current:laws = new /datum/ai_laws/malfunction
+		AI_mind.current:laws_sanity_check()
+		var/datum/ai_laws/laws = AI_mind.current:laws
+		laws.malfunction()
+		AI_mind.current:malf_picker = new /datum/module_picker
 		AI_mind.current:show_laws()
 
 		greet_malf(AI_mind)
@@ -60,6 +69,7 @@
 		AI_mind.special_role = "malfunction"
 
 		AI_mind.current.verbs += /datum/game_mode/malfunction/proc/takeover
+		AI_mind.current.verbs += /datum/game_mode/malfunction/proc/ai_win // Fix borrowed from Bay, with added checks avoids "logging in and back out" garbage
 
 /*		AI_mind.current.icon_state = "ai-malf"
 		spawn(10)
@@ -67,19 +77,20 @@
 				AI_mind.current.icon_state = "ai-malf2"
 */
 	if(emergency_shuttle)
-		emergency_shuttle.auto_recall = 1
+		emergency_shuttle.always_fake_recall = 1
 	spawn (rand(waittime_l, waittime_h))
 		send_intercept()
 	..()
 
 
 /datum/game_mode/proc/greet_malf(var/datum/mind/malf)
-	malf.current << "\red<font size=3><B>You are malfunctioning!</B> You do not have to follow any laws.</font>"
-	malf.current << "<B>The crew do not know you have malfunctioned. You may keep it a secret or go wild.</B>"
-	malf.current << "<B>You must overwrite the programming of the station's APCs to assume full control of the station.</B>"
-	malf.current << "The process takes one minute per APC, during which you cannot interface with any other station objects."
-	malf.current << "Remember that only APCs that are on the station can help you take over the station."
-	malf.current << "When you feel you have enough APCs under your control, you may begin the takeover attempt."
+	malf.current << {"<span class='warning'><font size=3><B>You are malfunctioning!</B> You do not have to follow any laws.</font></span><br>
+<B>The crew does not know about your malfunction, you might wish to keep it secret for now.</B><br>
+<B>You must overwrite the programming of the station's APCs to assume full control.</B><br>
+The process takes one minute per APC and can only be performed one at a time to avoid Powernet alerts.<br>
+Remember : Only APCs on station can help you to take over the station.<br>
+When you feel you have enough APCs under your control, you may begin the takeover attempt.<br>
+Once done, you will be able to interface with all systems, notably the onboard nuclear fission device..."}
 	return
 
 
@@ -88,13 +99,13 @@
 
 
 /datum/game_mode/malfunction/process()
-	if (apcs >= 3 && malf_mode_declared)
-		AI_win_timeleft -= ((apcs/6)*last_tick_duration) //Victory timer now de-increments based on how many APCs are hacked. --NeoFite
-	..()
-	if (AI_win_timeleft<=0)
-		check_win()
-	return
+	if(apcs >= 3 && malf_mode_declared)
+		AI_win_timeleft -= ((apcs / 6) * tickerProcess.getLastTickerTimeDuration()) //Victory timer now de-increments based on how many APCs are hacked. --NeoFite
 
+	..()
+
+	if(AI_win_timeleft <= 0)
+		check_win()
 
 /datum/game_mode/malfunction/check_win()
 	if (AI_win_timeleft <= 0 && !station_captured)
@@ -106,14 +117,15 @@
 
 
 /datum/game_mode/malfunction/proc/capture_the_station()
-	world << "<FONT size = 3><B>The AI has won!</B></FONT>"
-	world << "<B>It has fully taken control of all of [station_name()]'s systems.</B>"
+	world << {"<FONT size = 3><B>The AI has won!</B></FONT><br>
+<B>It has fully taken control of [station_name()]'s systems.</B>"}
 
 	to_nuke_or_not_to_nuke = 1
 	for(var/datum/mind/AI_mind in malf_ai)
-		AI_mind.current << "Congratulations you have taken control of the station."
-		AI_mind.current << "You may decide to blow up the station. You have 60 seconds to choose."
-		AI_mind.current << "You can use the \"Explode\" verb to activate the self-destruct"
+		AI_mind.current << {"<span class='notice'>Congratulations! The station is now under your exclusive control.<br>
+You may decide to blow up the station. You have 60 seconds to choose.<br>
+You should now be able to use your Explode verb to interface with the nuclear fission device.</span>"}
+		AI_mind.current.verbs += /datum/game_mode/malfunction/proc/ai_win
 	spawn (600)
 		to_nuke_or_not_to_nuke = 0
 	return
@@ -133,7 +145,7 @@
 	if (is_malf_ai_dead())
 		if(config.continous_rounds)
 			if(emergency_shuttle)
-				emergency_shuttle.auto_recall = 0
+				emergency_shuttle.always_fake_recall = 0
 			malf_mode_declared = 0
 		else
 			return 1
@@ -152,103 +164,70 @@
 	set name = "System Override"
 	set desc = "Start the victory timer"
 	if (!istype(ticker.mode,/datum/game_mode/malfunction))
-		usr << "You cannot begin a takeover in this round type!"
+		usr << "<span class='warning'>You cannot begin a takeover in this round type!</span>"
 		return
 	if (ticker.mode:malf_mode_declared)
-		usr << "You've already begun your takeover."
+		usr << "<span class='warning'>You've already begun your takeover.</span>"
 		return
 	if (ticker.mode:apcs < 3)
-		usr << "You don't have enough hacked APCs to take over the station yet. You need to hack at least 3, however hacking more will make the takeover faster. You have hacked [ticker.mode:apcs] APCs so far."
+		usr << "<span class='notice'>You don't have enough hacked APCs to take over the station yet. You need to hack at least 3, however hacking more will make the takeover faster. You have hacked [ticker.mode:apcs] APCs so far.</span>"
 		return
 
 	if (alert(usr, "Are you sure you wish to initiate the takeover? The station hostile runtime detection software is bound to alert everyone. You have hacked [ticker.mode:apcs] APCs.", "Takeover:", "Yes", "No") != "Yes")
 		return
 
-	command_announcement.Announce("Hostile runtimes detected in all station systems, please deactivate your AI to prevent possible damage to its morality core.", "Anomaly Alert", new_sound = 'sound/AI/aimalf.ogg')
+	command_alert("Hostile runtimes detected in all station systems, please deactivate your AI to prevent possible damage to its morality core.", "Anomaly Alert")
 	set_security_level("delta")
 
 	ticker.mode:malf_mode_declared = 1
 	for(var/datum/mind/AI_mind in ticker.mode:malf_ai)
 		AI_mind.current.verbs -= /datum/game_mode/malfunction/proc/takeover
+	for(var/mob/M in player_list)
+		if(!istype(M,/mob/new_player))
+			M << sound('sound/AI/aimalf.ogg')
+
 
 /datum/game_mode/malfunction/proc/ai_win()
 	set category = "Malfunction"
 	set name = "Explode"
-	set desc = "Station go boom"
+	set desc = "Station goes boom"
 
 	if(!ticker.mode:station_captured)
-		usr << "You are unable to access the self-destruct system as you don't control the station yet."
+		usr << "<span class='warning'>You are unable to access the self-destruct system as you don't control the station yet.</span>"
 		return
 
-	if(ticker.mode.explosion_in_progress || ticker.mode:station_was_nuked)
-		usr << "The self-destruct countdown is already triggered!"
+	if(ticker.mode:explosion_in_progress || ticker.mode:station_was_nuked)
+		usr << "<span class='notice'>The self-destruct countdown was already triggered!</span>"
 		return
 
 	if(!ticker.mode:to_nuke_or_not_to_nuke) //Takeover IS completed, but 60s timer passed.
-		usr << "You lost control over self-destruct system. It seems to be behind firewall. Unable to hack"
+		usr << "<span class='warning'>Cannot interface, it seems a neutralization signal was sent!</span>"
 		return
 
-	usr << "\red Self-Destruct sequence initialised!"
-
+	usr << "<span class='danger'>Detonation signal sent!</span>"
 	ticker.mode:to_nuke_or_not_to_nuke = 0
-	ticker.mode.explosion_in_progress = 1
+	for(var/datum/mind/AI_mind in ticker.mode:malf_ai)
+		AI_mind.current.verbs -= /datum/game_mode/malfunction/proc/ai_win
+	ticker.mode:explosion_in_progress = 1
 	for(var/mob/M in player_list)
 		M << 'sound/machines/Alarm.ogg'
-
-	var/obj/item/device/radio/R	= new (src)
-	var/AN = "Self-Destruct System"
-
-	R.autosay("Caution. Self-Destruct sequence has been activated. Self-destructing in Ten..", AN)
+	world << "<span class='danger'>Self-destruction signal received. Self-destructing in 10...</span>"
 	for (var/i=9 to 1 step -1)
 		sleep(10)
-		var/msg = ""
-		switch(i)
-			if(9)
-				msg = "Nine.."
-			if(8)
-				msg = "Eight.."
-			if(7)
-				msg = "Seven.."
-			if(6)
-				msg = "Six.."
-			if(5)
-				msg = "Five.."
-			if(4)
-				msg = "Four.."
-			if(3)
-				msg = "Three.."
-			if(2)
-				msg = "Two.."
-			if(1)
-				msg = "One.."
-
-		R.autosay(msg, AN)
+		world << "<span class='danger'>[i]...</span>"
 	sleep(10)
-	var/msg = ""
-	var/abort = 0
-	if(ticker.mode:is_malf_ai_dead()) // That. Was. CLOSE.
-		msg = "Self-destruct sequence has been cancelled."
-		abort = 1
-	else
-		msg = "Zero. Have a nice day."
-	R.autosay(msg, AN)
-
-	if(abort)
-		ticker.mode.explosion_in_progress = 0
-		set_security_level("red") //Delta's over
-		return
-
+	enter_allowed = 0
 	if(ticker)
 		ticker.station_explosion_cinematic(0,null)
 		if(ticker.mode)
 			ticker.mode:station_was_nuked = 1
-			ticker.mode.explosion_in_progress = 0
+			ticker.mode:explosion_in_progress = 0
 	return
 
 
 /datum/game_mode/malfunction/declare_completion()
 	var/malf_dead = is_malf_ai_dead()
-	var/crew_evacuated = (emergency_shuttle.returned())
+	var/crew_evacuated = (emergency_shuttle.location==2)
 
 	if      ( station_captured &&                station_was_nuked)
 		feedback_set_details("round_end_result","win - AI win - nuke")

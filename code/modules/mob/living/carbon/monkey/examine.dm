@@ -1,7 +1,7 @@
 /mob/living/carbon/monkey/examine(mob/user)
-	..(user)
 
-	var/msg = ""
+	var/msg = "<span class='info'>*---------*\nThis is \icon[src] \a <EM>[src]</EM>!\n"
+
 	if (src.handcuffed)
 		msg += "It is \icon[src.handcuffed] handcuffed!\n"
 	if (src.wear_mask)
@@ -12,7 +12,7 @@
 		msg += "It has \icon[src.r_hand] \a [src.r_hand] in its right hand.\n"
 	if (src.back)
 		msg += "It has \icon[src.back] \a [src.back] on its back.\n"
-	if (src.stat == DEAD)
+	if (src.stat == DEAD || status_flags & FAKEDEATH)
 		msg += "<span class='deadsay'>It is limp and unresponsive, with no signs of life.</span>\n"
 	else
 		msg += "<span class='warning'>"
@@ -36,4 +36,3 @@
 	msg += "*---------*</span>"
 
 	user << msg
-	return

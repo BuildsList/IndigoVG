@@ -1,6 +1,73 @@
 /*
  * False Walls
  */
+
+// Minimum pressure difference to fail building falsewalls.
+// Also affects admin alerts.
+#define FALSEDOOR_MAX_PRESSURE_DIFF 25.0
+
+/**
+* Gets the highest and lowest pressures from the tiles in cardinal directions
+* around us, then checks the difference.
+*/
+/proc/getOPressureDifferential(var/turf/loc)
+	var/minp=16777216;
+	var/maxp=0;
+	for(var/dir in cardinal)
+		var/turf/simulated/T=get_turf(get_step(loc,dir))
+		var/cp=0
+		if(T && istype(T) && T.zone)
+			var/datum/gas_mixture/environment = T.return_air()
+			cp = environment.return_pressure()
+		else
+			if(istype(T,/turf/simulated))
+				continue
+		if(cp<minp)minp=cp
+		if(cp>maxp)maxp=cp
+	return abs(minp-maxp)
+
+// Checks pressure here vs. around us.
+/proc/performFalseWallPressureCheck(var/turf/loc)
+	var/turf/simulated/lT=loc
+	if(!istype(lT) || !lT.zone)
+		return 0
+	var/datum/gas_mixture/myenv=lT.return_air()
+	var/pressure=myenv.return_pressure()
+
+	for(var/dir in cardinal)
+		var/turf/simulated/T=get_turf(get_step(loc,dir))
+		if(T && istype(T) && T.zone)
+			var/datum/gas_mixture/environment = T.return_air()
+			var/pdiff = abs(pressure - environment.return_pressure())
+			if(pdiff > FALSEDOOR_MAX_PRESSURE_DIFF)
+				return pdiff
+	return 0
+
+/proc/performWallPressureCheck(var/turf/loc)
+	var/pdiff = getOPressureDifferential(loc)
+	if(pdiff > FALSEDOOR_MAX_PRESSURE_DIFF)
+		return pdiff
+	return 0
+
+/client/proc/pdiff()
+	set name = "Get PDiff"
+	set category = "Debug"
+
+	if(!mob || !holder)
+		return
+	var/turf/T = mob.loc
+
+	if (!( istype(T, /turf) ))
+		return
+
+	var/pdiff = getOPressureDifferential(T)
+	var/fwpcheck=performFalseWallPressureCheck(T)
+	var/wpcheck=performWallPressureCheck(T)
+
+	src << "Pressure Differential (cardinals): [pdiff]"
+	src << "FWPCheck: [fwpcheck]"
+	src << "WPCheck: [wpcheck]"
+
 /obj/structure/falsewall
 	name = "wall"
 	desc = "A huge chunk of metal used to seperate rooms."
@@ -9,11 +76,15 @@
 	var/mineral = "metal"
 	var/opening = 0
 
-/obj/structure/falsewall/New()
-	relativewall_neighbours()
-	..()
+	// WHY DO WE SMOOTH WITH FALSE R-WALLS WHEN WE DON'T SMOOTH WITH REAL R-WALLS.
+	canSmoothWith = "/turf/simulated/wall=0&/obj/structure/falsewall=0&/obj/structure/falserwall=0"
 
-/obj/structure/falsewall/Del()
+/obj/structure/falsewall/New()
+	..()
+	relativewall()
+	relativewall_neighbours()
+
+/obj/structure/falsewall/Destroy()
 
 	var/temploc = src.loc
 
@@ -35,22 +106,13 @@
 		icon_state = "[mineral]fwall_open"
 		return
 
-	var/junction = 0 //will be used to determine from which side the wall is connected to other walls
-
-	for(var/turf/simulated/wall/W in orange(src,1))
-		if(abs(src.x-W.x)-abs(src.y-W.y)) //doesn't count diagonal walls
-			if(src.mineral == W.mineral)//Only 'like' walls connect -Sieve
-				junction |= get_dir(src,W)
-	for(var/obj/structure/falsewall/W in orange(src,1))
-		if(abs(src.x-W.x)-abs(src.y-W.y)) //doesn't count diagonal walls
-			if(src.mineral == W.mineral)
-				junction |= get_dir(src,W)
-	for(var/obj/structure/falserwall/W in orange(src,1))
-		if(abs(src.x-W.x)-abs(src.y-W.y)) //doesn't count diagonal walls
-			if(src.mineral == W.mineral)
-				junction |= get_dir(src,W)
+	var/junction=findSmoothingNeighbors()
 	icon_state = "[mineral][junction]"
-	return
+
+/obj/structure/falsewall/attack_ai(mob/user as mob)
+	if(isMoMMI(user))
+		src.add_hiddenprint(user)
+		attack_hand(user)
 
 /obj/structure/falsewall/attack_hand(mob/user as mob)
 	if(opening)
@@ -107,33 +169,25 @@
 					T.ChangeTurf(/turf/simulated/wall)
 				else
 					T.ChangeTurf(text2path("/turf/simulated/wall/mineral/[mineral]"))
-				if(mineral != "phoron")//Stupid shit keeps me from pushing the attackby() to phoron walls -Sieve
+				if(mineral != "plasma")//Stupid shit keeps me from pushing the attackby() to plasma walls -Sieve
 					T = get_turf(src)
 					T.attackby(W,user)
 				del(src)
 	else
 		user << "\blue You can't reach, close it first!"
 
-	if( istype(W, /obj/item/weapon/pickaxe/plasmacutter) )
+	if( istype(W, /obj/item/weapon/pickaxe) )
+		var/obj/item/weapon/pickaxe/used_pick = W
+		if(!(used_pick.diggables & DIG_WALLS))
+			return
 		var/turf/T = get_turf(src)
 		if(!mineral)
 			T.ChangeTurf(/turf/simulated/wall)
 		else
 			T.ChangeTurf(text2path("/turf/simulated/wall/mineral/[mineral]"))
-		if(mineral != "phoron")
+		if(mineral != "plasma")
 			T = get_turf(src)
 			T.attackby(W,user)
-		del(src)
-
-	//DRILLING
-	else if (istype(W, /obj/item/weapon/pickaxe/diamonddrill))
-		var/turf/T = get_turf(src)
-		if(!mineral)
-			T.ChangeTurf(/turf/simulated/wall)
-		else
-			T.ChangeTurf(text2path("/turf/simulated/wall/mineral/[mineral]"))
-		T = get_turf(src)
-		T.attackby(W,user)
 		del(src)
 
 	else if( istype(W, /obj/item/weapon/melee/energy/blade) )
@@ -142,7 +196,7 @@
 			T.ChangeTurf(/turf/simulated/wall)
 		else
 			T.ChangeTurf(text2path("/turf/simulated/wall/mineral/[mineral]"))
-		if(mineral != "phoron")
+		if(mineral != "plasma")
 			T = get_turf(src)
 			T.attackby(W,user)
 		del(src)
@@ -170,10 +224,18 @@
 	var/mineral = "metal"
 	var/opening = 0
 
+	// WHY DO WE SMOOTH WITH FALSE R-WALLS WHEN WE DON'T SMOOTH WITH REAL R-WALLS.
+	canSmoothWith = "/turf/simulated/wall=0&/obj/structure/falsewall=0&/obj/structure/falserwall=0"
+
 /obj/structure/falserwall/New()
 	relativewall_neighbours()
 	..()
 
+
+/obj/structure/falserwall/attack_ai(mob/user as mob)
+	if(isMoMMI(user))
+		src.add_hiddenprint(user)
+		attack_hand(user)
 
 /obj/structure/falserwall/attack_hand(mob/user as mob)
 	if(opening)
@@ -203,25 +265,8 @@
 	if(!density)
 		icon_state = "frwall_open"
 		return
-
-	var/junction = 0 //will be used to determine from which side the wall is connected to other walls
-
-	for(var/turf/simulated/wall/W in orange(src,1))
-		if(abs(src.x-W.x)-abs(src.y-W.y)) //doesn't count diagonal walls
-			if(src.mineral == W.mineral)//Only 'like' walls connect -Sieve
-				junction |= get_dir(src,W)
-	for(var/obj/structure/falsewall/W in orange(src,1))
-		if(abs(src.x-W.x)-abs(src.y-W.y)) //doesn't count diagonal walls
-			if(src.mineral == W.mineral)
-				junction |= get_dir(src,W)
-	for(var/obj/structure/falserwall/W in orange(src,1))
-		if(abs(src.x-W.x)-abs(src.y-W.y)) //doesn't count diagonal walls
-			if(src.mineral == W.mineral)
-				junction |= get_dir(src,W)
+	var/junction=findSmoothingNeighbors()
 	icon_state = "rwall[junction]"
-	return
-
-
 
 /obj/structure/falserwall/attackby(obj/item/weapon/W as obj, mob/user as mob)
 	if(opening)
@@ -231,7 +276,7 @@
 	if(istype(W, /obj/item/weapon/screwdriver))
 		var/turf/T = get_turf(src)
 		user.visible_message("[user] tightens some bolts on the r wall.", "You tighten the bolts on the wall.")
-		T.ChangeTurf(/turf/simulated/wall) //Intentionally makes a regular wall instead of an r-wall (no cheap r-walls for you).
+		T.ChangeTurf(/turf/simulated/wall/r_wall) //Why not make rwall?
 		del(src)
 
 	if( istype(W, /obj/item/weapon/weldingtool) )
@@ -243,15 +288,10 @@
 			T.attackby(W,user)
 			del(src)
 
-	else if( istype(W, /obj/item/weapon/pickaxe/plasmacutter) )
-		var/turf/T = get_turf(src)
-		T.ChangeTurf(/turf/simulated/wall)
-		T = get_turf(src)
-		T.attackby(W,user)
-		del(src)
-
-	//DRILLING
-	else if (istype(W, /obj/item/weapon/pickaxe/diamonddrill))
+	else if( istype(W, /obj/item/weapon/pickaxe) )
+		var/obj/item/weapon/pickaxe/used_pick = W
+		if(!(used_pick.diggables & DIG_WALLS))
+			return
 		var/turf/T = get_turf(src)
 		T.ChangeTurf(/turf/simulated/wall)
 		T = get_turf(src)
@@ -320,14 +360,22 @@
 	icon_state = ""
 	mineral = "diamond"
 
-/obj/structure/falsewall/phoron
-	name = "phoron wall"
-	desc = "A wall with phoron plating. This is definately a bad idea."
+/obj/structure/falsewall/plasma
+	name = "plasma wall"
+	desc = "A wall with plasma plating. This is definately a bad idea."
 	icon_state = ""
-	mineral = "phoron"
+	mineral = "plasma"
+
+//-----------wtf?-----------start
+/obj/structure/falsewall/clown
+	name = "bananium wall"
+	desc = "A wall with bananium plating. Honk!"
+	icon_state = ""
+	mineral = "clown"
 
 /obj/structure/falsewall/sandstone
 	name = "sandstone wall"
 	desc = "A wall with sandstone plating."
 	icon_state = ""
 	mineral = "sandstone"
+//------------wtf?------------end

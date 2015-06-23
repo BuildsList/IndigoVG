@@ -16,11 +16,11 @@
 
 	New(ateleatom, adestination, aprecision=0, afteleport=1, aeffectin=null, aeffectout=null, asoundin=null, asoundout=null)
 		..()
-		if(!initTeleport(arglist(args)))
+		if(!Init(arglist(args)))
 			return 0
 		return 1
 
-	proc/initTeleport(ateleatom,adestination,aprecision,afteleport,aeffectin,aeffectout,asoundin,asoundout)
+	proc/Init(ateleatom,adestination,aprecision,afteleport,aeffectin,aeffectout,asoundin,asoundout)
 		if(!setTeleatom(ateleatom))
 			return 0
 		if(!setDestination(adestination))
@@ -49,7 +49,7 @@
 	//must succeed in most cases
 	proc/setTeleatom(atom/movable/ateleatom)
 		if(istype(ateleatom, /obj/effect) && !istype(ateleatom, /obj/effect/dummy/chameleon))
-			del(ateleatom)
+			qdel(ateleatom)
 			return 0
 		if(istype(ateleatom))
 			teleatom = ateleatom
@@ -108,19 +108,12 @@
 
 		playSpecials(curturf,effectin,soundin)
 
-		var/obj/structure/bed/chair/C = null
-		if(isliving(teleatom))
-			var/mob/living/L = teleatom
-			if(L.buckled)
-				C = L.buckled
 		if(force_teleport)
 			teleatom.forceMove(destturf)
 			playSpecials(destturf,effectout,soundout)
 		else
 			if(teleatom.Move(destturf))
 				playSpecials(destturf,effectout,soundout)
-		if(C)
-			C.forceMove(destturf)
 
 		destarea.Entered(teleatom)
 
@@ -189,4 +182,10 @@
 
 		if(destination.z > 7) //Away mission z-levels
 			return 0
+
+		if(istype(teleatom, /mob/living))
+			var/mob/living/MM = teleatom
+			if(MM.locked_to_z != 0 && destination.z != MM.locked_to_z)
+				MM.visible_message("\red <b>[MM] bounces off the portal!</b>","\red You're unable to go to that destination!")
+				return 0
 		return 1

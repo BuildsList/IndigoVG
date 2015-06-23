@@ -11,24 +11,49 @@
 	active_power_usage = 100
 	flags = OPENCONTAINER | NOREACT
 	var/operating = 0 // Is it on?
+	var/opened = 0.0
 	var/dirty = 0 // = {0..100} Does it need cleaning?
 	var/broken = 0 // ={0,1,2} How broken is it???
 	var/global/list/datum/recipe/available_recipes // List of the recipes you can use
 	var/global/list/acceptable_items // List of the items you can put in
 	var/global/list/acceptable_reagents // List of the reagents you can put in
 	var/global/max_n_of_items = 0
+	var/list/holdingitems = list()
+	var/limit = 100
 
+	machine_flags = SCREWTOGGLE | CROWDESTROY | WRENCHMOVE
 
 // see code/modules/food/recipes_microwave.dm for recipes
-
+//Cannot use tools - screwdriver and crowbar for recipes. Or at least fix things before you do
+//TODO - Get a maint panel sprite and J-J-Jam it in.
+//Biiiig Thanks to Kaze_Espada, SuperSayu, Jordie, MrPerson, and HUUUUGE thank you to Arancalos from #coderbus for patiently helping for hours, and practically doing it themselves, to get the microwaves to not have their stock parts as ingredients upon construction. May they enjoy their hard earned plunder.
+//HUUUUUUUGE thanks to D3athrow for getting it to the finish line
+/********************************************************************
+**   Adding Stock Parts to VV so preconstructed shit has its candy **
+********************************************************************/
 /*******************
 *   Initialising
 ********************/
 
 /obj/machinery/microwave/New()
-	..()
-	reagents = new/datum/reagents(100)
-	reagents.my_atom = src
+	. = ..()
+
+	component_parts = newlist(\
+		/obj/item/weapon/circuitboard/microwave,\
+		/obj/item/weapon/stock_parts/matter_bin,\
+		/obj/item/weapon/stock_parts/matter_bin,\
+		/obj/item/weapon/stock_parts/matter_bin,\
+		/obj/item/weapon/stock_parts/micro_laser,\
+		/obj/item/weapon/stock_parts/micro_laser,\
+		/obj/item/weapon/stock_parts/micro_laser,\
+		/obj/item/weapon/stock_parts/scanning_module,\
+		/obj/item/weapon/stock_parts/scanning_module,\
+		/obj/item/weapon/stock_parts/console_screen\
+	)
+
+	RefreshParts()
+	create_reagents(100)
+
 	if (!available_recipes)
 		available_recipes = new
 		for (var/type in (typesof(/datum/recipe)-/datum/recipe))
@@ -42,16 +67,10 @@
 				acceptable_reagents |= reagent
 			if (recipe.items)
 				max_n_of_items = max(max_n_of_items,recipe.items.len)
-		// This will do until I can think of a fun recipe to use dionaea in -
-		// will also allow anything using the holder item to be microwaved into
-		// impure carbon. ~Z
-		acceptable_items |= /obj/item/weapon/holder
-		acceptable_items |= /obj/item/weapon/reagent_containers/food/snacks/grown
 
 /*******************
 *   Item Adding
 ********************/
-
 /obj/machinery/microwave/attackby(var/obj/item/O as obj, var/mob/user as mob)
 	if(src.broken > 0)
 		if(src.broken == 2 && istype(O, /obj/item/weapon/screwdriver)) // If it's broken and they're using a screwdriver
@@ -100,14 +119,43 @@
 		else //Otherwise bad luck!!
 			user << "\red It's dirty!"
 			return 1
+
+	if(..())
+		return 1
+
+	if(holdingitems && holdingitems.len >= limit)
+		usr << "The machine cannot hold anymore items."
+		return 1
+	else if(istype(O, /obj/item/weapon/storage/bag/plants))
+
+		for (var/obj/item/weapon/reagent_containers/food/snacks/grown/G in O.contents)
+			O.contents -= G
+			G.loc = src
+			contents += G
+			if(contents && contents.len >= limit) //Sanity checking so the microwave doesn't overfill
+				user << "You fill the Microwave to the brim."
+				break
+
+		if(!O.contents.len)
+			user << "You empty the plant bag into the Microwave."
+			src.updateUsrDialog()
+			return 0
+			if (!is_type_in_list(O.contents))
+				user << "\red Your [O] contains components unsuitable for cookery."
+				return 1
+
+		user.before_take_item(O)
+		O.loc = src
+		holdingitems += O
+		src.updateUsrDialog()
+		return 1
 	else if(is_type_in_list(O,acceptable_items))
 		if (contents.len>=max_n_of_items)
 			user << "\red This [src] is full of ingredients, you cannot put more."
 			return 1
-		if(istype(O, /obj/item/stack) && O:get_amount() > 1) // This is bad, but I can't think of how to change it
-			var/obj/item/stack/S = O
+		if (istype(O,/obj/item/stack) && O:amount>1)
 			new O.type (src)
-			S.use(1)
+			O:use(1)
 			user.visible_message( \
 				"\blue [user] has added one of [O] to \the [src].", \
 				"\blue You add one of [O] to \the [src].")
@@ -115,6 +163,7 @@
 		//	user.before_take_item(O)	//This just causes problems so far as I can tell. -Pete
 			user.drop_item()
 			O.loc = src
+			contents += O
 			user.visible_message( \
 				"\blue [user] has added \the [O] to \the [src].", \
 				"\blue You add \the [O] to \the [src].")
@@ -137,6 +186,9 @@
 		user << "\red You have no idea what you can cook with this [O]."
 		return 1
 	src.updateUsrDialog()
+
+/obj/machinery/microwave/attack_paw(mob/user as mob)
+	return src.attack_hand(user)
 
 /obj/machinery/microwave/attack_ai(mob/user as mob)
 	return 0
@@ -274,7 +326,7 @@
 			cooked.loc = src.loc
 		return
 
-/obj/machinery/microwave/proc/wzhzhzh(var/seconds as num) // Whoever named this proc is fucking literally Satan. ~ Z
+/obj/machinery/microwave/proc/wzhzhzh(var/seconds as num)
 	for (var/i=1 to seconds)
 		if (stat & (NOPOWER|BROKEN))
 			return 0
@@ -303,7 +355,7 @@
 	src.updateUsrDialog()
 
 /obj/machinery/microwave/proc/stop()
-	playsound(src.loc, 'sound/machines/ding.ogg', 50, 1)
+	playsound(get_turf(src), 'sound/machines/ding.ogg', 50, 1)
 	src.operating = 0 // Turn it off again aferwards
 	src.icon_state = "mw"
 	src.updateUsrDialog()
@@ -318,14 +370,14 @@
 	src.updateUsrDialog()
 
 /obj/machinery/microwave/proc/muck_start()
-	playsound(src.loc, 'sound/effects/splat.ogg', 50, 1) // Play a splat sound
+	playsound(get_turf(src), 'sound/effects/splat.ogg', 50, 1) // Play a splat sound
 	src.icon_state = "mwbloody1" // Make it look dirty!!
 
 /obj/machinery/microwave/proc/muck_finish()
-	playsound(src.loc, 'sound/machines/ding.ogg', 50, 1)
+	playsound(get_turf(src), 'sound/machines/ding.ogg', 50, 1)
 	src.visible_message("\red The microwave gets covered in muck!")
 	src.dirty = 100 // Make it dirty so it can't be used util cleaned
-	src.flags = null //So you can't add condiments
+	src.flags = 0 //So you can't add condiments
 	src.icon_state = "mwbloody" // Make it look dirty too
 	src.operating = 0 // Turn it off again aferwards
 	src.updateUsrDialog()
@@ -337,7 +389,7 @@
 	src.icon_state = "mwb" // Make it look all busted up and shit
 	src.visible_message("\red The microwave breaks!") //Let them know they're stupid
 	src.broken = 2 // Make it broken so it can't be used util fixed
-	src.flags = null //So you can't add condiments
+	src.flags = 0 //So you can't add condiments
 	src.operating = 0 // Turn it off again aferwards
 	src.updateUsrDialog()
 

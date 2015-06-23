@@ -122,12 +122,13 @@ research holder datum.
 	return
 
 /datum/research/proc/AddDesign2Known(var/datum/design/D)
-	for(var/datum/design/known in known_designs)
-		if(D.id == known.id)
-			if(D.reliability_mod > known.reliability_mod)
-				known.reliability_mod = D.reliability_mod
-			return
-	known_designs += D
+	if(!(D in known_designs))
+		for(var/datum/design/known in known_designs)
+			if(D.id == known.id)
+				if(D.reliability_mod > known.reliability_mod)
+					known.reliability_mod = D.reliability_mod
+				return
+		known_designs += D
 	return
 
 //Refreshes known_tech and known_designs list. Then updates the reliability vars of the designs in the known_designs list.
@@ -140,7 +141,7 @@ research holder datum.
 		if(DesignHasReqs(PD))
 			AddDesign2Known(PD)
 	for(var/datum/tech/T in known_tech)
-		T = between(1,T.level,20)
+		T = Clamp(T.level, 1, 20)
 	for(var/datum/design/D in known_designs)
 		D.CalcReliability(known_tech)
 	return
@@ -160,21 +161,24 @@ research holder datum.
 			break
 	return
 
-
-
-
 /***************************************************************
-**						Technology Datums					  **
-**	Includes all the various technoliges and what they make.  **
-***************************************************************/
+ **						Technology Datums					  **
+ **	Includes all the various technoliges and what they make.  **
+ ***************************************************************/
 
 datum/tech	//Datum of individual technologies.
 	var/name = "name"					//Name of the technology.
 	var/desc = "description"			//General description of what it does and what it makes.
 	var/id = "id"						//An easily referenced ID. Must be alphanumeric, lower-case, and no symbols.
-	var/level = 1						//A simple number scale of the research level. Level 0 = Secret tech.
+	var/level      = 1					//A simple number scale of the research level. Level 0 = Secret tech.
+	var/max_level  = 1					// Maximum level this can be at (for admin hax)
+	var/goal_level =-1					// Used for job objectives.  Set to max_level unless max_level is unobtainable.
 	var/list/req_tech = list()			//List of ids associated values of techs required to research this tech. "id" = #
 
+/datum/tech/New()
+	if(goal_level==-1)
+		goal_level=max_level
+	..()
 
 //Trunk Technologies (don't require any other techs and you start knowning them).
 
@@ -182,51 +186,66 @@ datum/tech/materials
 	name = "Materials Research"
 	desc = "Development of new and improved materials."
 	id = "materials"
+	max_level=9
+	goal_level=8 // 9 is Phazon.
 
 datum/tech/engineering
 	name = "Engineering Research"
-	desc = "Development of new and improved engineering parts."
+	desc = "Development of new and improved engineering parts and."
 	id = "engineering"
+	max_level=5
 
-datum/tech/phorontech
-	name = "Phoron Research"
-	desc = "Research into the mysterious substance colloqually known as 'phoron'."
-	id = "phorontech"
+datum/tech/plasmatech
+	name = "Plasma Research"
+	desc = "Research into the mysterious substance colloqually known as 'plasma'."
+	id = "plasmatech"
+	max_level=4
 
 datum/tech/powerstorage
 	name = "Power Manipulation Technology"
 	desc = "The various technologies behind the storage and generation of electicity."
 	id = "powerstorage"
+	max_level=6
 
 datum/tech/bluespace
 	name = "'Blue-space' Research"
 	desc = "Research into the sub-reality known as 'blue-space'"
 	id = "bluespace"
+	max_level =10
+	goal_level=4 // Without phazon.
 
 datum/tech/biotech
 	name = "Biological Technology"
 	desc = "Research into the deeper mysteries of life and organic substances."
 	id = "biotech"
+	max_level=5 // Max USABLE level.
 
 datum/tech/combat
 	name = "Combat Systems Research"
 	desc = "The development of offensive and defensive systems."
 	id = "combat"
+	goal_level=5 // Pulse rifles don't count.
+	max_level=6
 
 datum/tech/magnets
 	name = "Electromagnetic Spectrum Research"
 	desc = "Research into the electromagnetic spectrum. No clue how they actually work, though."
 	id = "magnets"
+	goal_level=5 // No phazon
+	max_level=8
 
 datum/tech/programming
 	name = "Data Theory Research"
 	desc = "The development of new computer and artificial intelligence and data storage systems."
 	id = "programming"
+	max_level=5
 
 datum/tech/syndicate
 	name = "Illegal Technologies Research"
 	desc = "The study of technologies that violate standard Nanotrasen regulations."
 	id = "syndicate"
+	goal_level=0 // Don't count towards maxed research, since it's illegal.
+	max_level=8
 
 /*
 datum/tech/arcane
@@ -257,29 +276,17 @@ datum/tech/robotics
 
 
 /obj/item/weapon/disk/tech_disk
-	name = "technology disk"
+	name = "Technology Disk"
 	desc = "A disk for storing technology data for further research."
 	icon = 'icons/obj/cloning.dmi'
 	icon_state = "datadisk2"
 	item_state = "card-id"
-	w_class = 2.0
-	matter = list("metal" = 30, "glass" = 10)
+	w_class = 1.0
+	m_amt = 30
+	g_amt = 10
+	w_type = RECYK_ELECTRONIC
 	var/datum/tech/stored
 
 /obj/item/weapon/disk/tech_disk/New()
-	src.pixel_x = rand(-5.0, 5)
-	src.pixel_y = rand(-5.0, 5)
-
-/obj/item/weapon/disk/design_disk
-	name = "component design disk"
-	desc = "A disk for storing device design data for construction in lathes."
-	icon = 'icons/obj/cloning.dmi'
-	icon_state = "datadisk2"
-	item_state = "card-id"
-	w_class = 2.0
-	matter = list("metal" = 30,"glass" = 10)
-	var/datum/design/blueprint
-
-/obj/item/weapon/disk/design_disk/New()
 	src.pixel_x = rand(-5.0, 5)
 	src.pixel_y = rand(-5.0, 5)

@@ -9,9 +9,11 @@
 	throw_range = 10
 	var/obj/item/weapon/pen/haspen		//The stored pen.
 	var/obj/item/weapon/toppaper	//The topmost piece of paper.
+	flags = FPRINT
 	slot_flags = SLOT_BELT
 
 /obj/item/weapon/clipboard/New()
+	. = ..()
 	update_icon()
 
 /obj/item/weapon/clipboard/MouseDrop(obj/over_object as obj) //Quick clipboard fix. -Agouri
@@ -33,7 +35,7 @@
 			return
 
 /obj/item/weapon/clipboard/update_icon()
-	overlays.Cut()
+	overlays.len = 0
 	if(toppaper)
 		overlays += toppaper.icon_state
 		overlays += toppaper.overlays
@@ -43,7 +45,6 @@
 	return
 
 /obj/item/weapon/clipboard/attackby(obj/item/weapon/W as obj, mob/user as mob)
-	
 	if(istype(W, /obj/item/weapon/paper) || istype(W, /obj/item/weapon/photo))
 		user.drop_item()
 		W.loc = src
@@ -51,11 +52,9 @@
 			toppaper = W
 		user << "<span class='notice'>You clip the [W] onto \the [src].</span>"
 		update_icon()
-
-	else if(istype(toppaper) && istype(W, /obj/item/weapon/pen))
-		toppaper.attackby(W, usr)
+	else if(toppaper)
+		toppaper.attackby(usr.get_active_hand(), usr)
 		update_icon()
-
 	return
 
 /obj/item/weapon/clipboard/attack_self(mob/user as mob)
@@ -87,39 +86,39 @@
 	if((usr.stat || usr.restrained()))
 		return
 
-	if(src.loc == usr)
+	if(usr.contents.Find(src))
 
 		if(href_list["pen"])
-			if(istype(haspen) && (haspen.loc == src))
+			if(haspen)
 				haspen.loc = usr.loc
 				usr.put_in_hands(haspen)
 				haspen = null
 
-		else if(href_list["addpen"])
+		if(href_list["addpen"])
 			if(!haspen)
-				var/obj/item/weapon/pen/W = usr.get_active_hand()
-				if(istype(W, /obj/item/weapon/pen))
+				if(istype(usr.get_active_hand(), /obj/item/weapon/pen))
+					var/obj/item/weapon/pen/W = usr.get_active_hand()
 					usr.drop_item()
 					W.loc = src
 					haspen = W
 					usr << "<span class='notice'>You slot the pen into \the [src].</span>"
 
-		else if(href_list["write"])
-			var/obj/item/weapon/P = locate(href_list["write"])
-			
-			if(P && (P.loc == src) && istype(P, /obj/item/weapon/paper) && (P == toppaper) )
-				
-				var/obj/item/I = usr.get_active_hand()
-				
-				if(istype(I, /obj/item/weapon/pen))
-				
-					P.attackby(I, usr)
+		if(href_list["write"])
+			var/obj/item/P = locate(href_list["write"])
+			if(P && P.loc == src)
+				if(usr.get_active_hand())
+					P.attackby(usr.get_active_hand(), usr)
 
-		else if(href_list["remove"])
+		if(href_list["remove"])
 			var/obj/item/P = locate(href_list["remove"])
-			
-			if(P && (P.loc == src) && (istype(P, /obj/item/weapon/paper) || istype(P, /obj/item/weapon/photo)) )
-			
+			if(!(P.loc == src))
+				var/message = "<span class='warning'>[usr]([usr.key]) has tried to remove something it shouldn't from the clipboard<span>"
+				message_admins(message)
+				message += "[P]"
+				log_game(message)
+				admin_log.Add(message)
+				return
+			if(P)
 				P.loc = usr.loc
 				usr.put_in_hands(P)
 				if(P == toppaper)
@@ -130,11 +129,9 @@
 					else
 						toppaper = null
 
-		else if(href_list["read"])
+		if(href_list["read"])
 			var/obj/item/weapon/paper/P = locate(href_list["read"])
-			
-			if(P && (P.loc == src) && istype(P, /obj/item/weapon/paper) )
-			
+			if(P)
 				if(!(istype(usr, /mob/living/carbon/human) || istype(usr, /mob/dead/observer) || istype(usr, /mob/living/silicon)))
 					usr << browse("<HTML><HEAD><TITLE>[P.name]</TITLE></HEAD><BODY>[stars(P.info)][P.stamps]</BODY></HTML>", "window=[P.name]")
 					onclose(usr, "[P.name]")
@@ -142,14 +139,14 @@
 					usr << browse("<HTML><HEAD><TITLE>[P.name]</TITLE></HEAD><BODY>[P.info][P.stamps]</BODY></HTML>", "window=[P.name]")
 					onclose(usr, "[P.name]")
 
-		else if(href_list["look"])
+		if(href_list["look"])
 			var/obj/item/weapon/photo/P = locate(href_list["look"])
-			if(P && (P.loc == src) && istype(P, /obj/item/weapon/photo) )
+			if(P)
 				P.show(usr)
 
-		else if(href_list["top"]) // currently unused
+		if(href_list["top"])
 			var/obj/item/P = locate(href_list["top"])
-			if(P && (P.loc == src) && istype(P, /obj/item/weapon/paper) )
+			if(P && (P.loc == src))
 				toppaper = P
 				usr << "<span class='notice'>You move [P.name] to the top.</span>"
 

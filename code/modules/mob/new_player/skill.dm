@@ -62,7 +62,7 @@ datum/skill/management
 datum/skill/knowledge/law
     ID = "law"
     name = "NanoTrasen Law"
-    desc = "Your knowledge of NanoTrasen law and procedures. This includes Corporate Regulations, as well as general station rulings and procedures. A low level in this skill is typical for security officers, a high level in this skill is typical for captains."
+    desc = "Your knowledge of NanoTrasen law and procedures. This includes Space Law, as well as general station rulings and procedures. A low level in this skill is typical for security officers, a high level in this skill is typical for captains."
     field = "Security"
     secondary = 1
 
@@ -168,7 +168,30 @@ proc/setup_skills()
 
 
 mob/living/carbon/human/proc/GetSkillClass(points)
-	return CalculateSkillClass(points, age)
+	// skill classes describe how your character compares in total points
+	var/original_points = points
+	points -= min(round((age - 20) / 2.5), 4) // every 2.5 years after 20, one extra skillpoint
+	if(age > 30)
+		points -= round((age - 30) / 5) // every 5 years after 30, one extra skillpoint
+	if(original_points > 0 && points <= 0) points = 1
+	switch(points)
+		if(0)
+			return "Unconfigured"
+		if(1 to 3)
+			return "Terrifying"
+		if(4 to 6)
+			return "Below Average"
+		if(7 to 10)
+			return "Average"
+		if(11 to 14)
+			return "Above Average"
+		if(15 to 18)
+			return "Exceptional"
+		if(19 to 24)
+			return "Genius"
+		if(24 to 1000)
+			return "God"
+
 
 proc/show_skill_window(var/mob/user, var/mob/living/carbon/human/M)
 	if(!istype(M)) return
@@ -180,25 +203,41 @@ proc/show_skill_window(var/mob/user, var/mob/living/carbon/human/M)
 		return
 
 	var/HTML = "<body>"
-	HTML += "<b>Select your Skills</b><br>"
-	HTML += "Current skill level: <b>[M.GetSkillClass(M.used_skillpoints)]</b> ([M.used_skillpoints])<br>"
-	HTML += "<table>"
+
+	// AUTOFIXED BY fix_string_idiocy.py
+	// C:\Users\Rob\Documents\Projects\vgstation13\code\modules\mob\new_player\skill.dm:206: HTML += "<b>Select your Skills</b><br>"
+	HTML += {"<b>Select your Skills</b><br>
+		Current skill level: <b>[M.GetSkillClass(M.used_skillpoints)]</b> ([M.used_skillpoints])<br>
+		<table>"}
+	// END AUTOFIX
 	for(var/V in SKILLS)
-		HTML += "<tr><th colspan = 5><b>[V]</b>"
-		HTML += "</th></tr>"
+
+		// AUTOFIXED BY fix_string_idiocy.py
+		// C:\Users\Rob\Documents\Projects\vgstation13\code\modules\mob\new_player\skill.dm:210: HTML += "<tr><th colspan = 5><b>[V]</b>"
+		HTML += {"<tr><th colspan = 5><b>[V]</b>
+			</th></tr>"}
+		// END AUTOFIX
 		for(var/datum/skill/S in SKILLS[V])
 			var/level = M.skills[S.ID]
-			HTML += "<tr style='text-align:left;'>"
-			HTML += "<th>[S.name]</th>"
-			HTML += "<th><font color=[(level == SKILL_NONE) ? "red" : "black"]>\[Untrained\]</font></th>"
+
+			// AUTOFIXED BY fix_string_idiocy.py
+			// C:\Users\Rob\Documents\Projects\vgstation13\code\modules\mob\new_player\skill.dm:214: HTML += "<tr style='text-align:left;'>"
+			HTML += {"<tr style='text-align:left;'>
+				<th>[S.name]</th>
+				<th><font color=[(level == SKILL_NONE) ? "red" : "black"]>\[Untrained\]</font></th>"}
+			// END AUTOFIX
 			// secondary skills don't have an amateur level
 			if(S.secondary)
 				HTML += "<th></th>"
 			else
 				HTML += "<th><font color=[(level == SKILL_BASIC) ? "red" : "black"]>\[Amateur\]</font></th>"
-			HTML += "<th><font color=[(level == SKILL_ADEPT) ? "red" : "black"]>\[Trained\]</font></th>"
-			HTML += "<th><font color=[(level == SKILL_EXPERT) ? "red" : "black"]>\[Professional\]</font></th>"
-			HTML += "</tr>"
+
+			// AUTOFIXED BY fix_string_idiocy.py
+			// C:\Users\Rob\Documents\Projects\vgstation13\code\modules\mob\new_player\skill.dm:222: HTML += "<th><font color=[(level == SKILL_ADEPT) ? "red" : "black"]>\[Trained\]</font></th>"
+			HTML += {"<th><font color=[(level == SKILL_ADEPT) ? "red" : "black"]>\[Trained\]</font></th>
+				<th><font color=[(level == SKILL_EXPERT) ? "red" : "black"]>\[Professional\]</font></th>
+				</tr>"}
+			// END AUTOFIX
 	HTML += "</table>"
 
 	user << browse(null, "window=preferences")

@@ -9,79 +9,83 @@
 	icon_state = "backpack"
 	item_state = "backpack"
 	w_class = 4.0
+	flags = FPRINT
 	slot_flags = SLOT_BACK	//ERROOOOO
 	max_w_class = 3
 	max_combined_w_class = 21
 
 /obj/item/weapon/storage/backpack/attackby(obj/item/weapon/W as obj, mob/user as mob)
-	if (src.use_sound)
-		playsound(src.loc, src.use_sound, 50, 1, -5)
+	playsound(get_turf(src), "rustle", 50, 1, -5)
 	..()
-
-/obj/item/weapon/storage/backpack/equipped(var/mob/user, var/slot)
-	if (slot == slot_back && src.use_sound)
-		playsound(src.loc, src.use_sound, 50, 1, -5)
-	..(user, slot)
-
-/*
-/obj/item/weapon/storage/backpack/dropped(mob/user as mob)
-	if (loc == user && src.use_sound)
-		playsound(src.loc, src.use_sound, 50, 1, -5)
-	..(user)
-*/
 
 /*
  * Backpack Types
  */
 
+
+
+
 /obj/item/weapon/storage/backpack/holding
-	name = "bag of holding"
+	name = "Bag of Holding"
 	desc = "A backpack that opens into a localized pocket of Blue Space."
 	origin_tech = "bluespace=4"
+	item_state = "holdingpack"
 	icon_state = "holdingpack"
 	max_w_class = 4
 	max_combined_w_class = 28
 
-	New()
-		..()
+/obj/item/weapon/storage/backpack/holding/suicide_act(mob/user)
+		viewers(user) << "<span class = 'danger'><b>[user] puts the [src.name] on \his head and stretches the bag around \himself. With a sudden snapping sound, the bag shrinks to it's original size, leaving no trace of [user] </b></span>"
+		loc = get_turf(user)
+		qdel(user)
+
+/obj/item/weapon/storage/backpack/holding/New()
+	..()
+	return
+
+/obj/item/weapon/storage/backpack/holding/attackby(obj/item/weapon/W as obj, mob/user as mob)
+	if(W == src)
+		return // HOLY FUCKING SHIT WHY STORAGE CODE, WHY - pomf
+	if(crit_fail)
+		user << "<span class = 'warning'>The Bluespace generator isn't working.</span>"
 		return
+	if(istype(W, /obj/item/weapon/storage/backpack/holding) && !W.crit_fail)
+		user << "<span class = 'warning'>The Bluespace interfaces of the two devices conflict and malfunction.</span>"
+		del(W)
+		return
+	//BoH+BoH=Singularity, WAS commented out
+	if(istype(W, /obj/item/weapon/storage/backpack/holding) && !W.crit_fail)
+		investigation_log(I_SINGULO,"has become a singularity. Caused by [user.key]")
+		message_admins("[src] has become a singularity. Caused by [user.key]")
+		user << "<span class = 'danger'>The Bluespace interfaces of the two devices catastrophically malfunction!</span>"
+		del(W)
+		var/obj/machinery/singularity/singulo = new /obj/machinery/singularity (get_turf(src))
+		singulo.energy = 300 //should make it a bit bigger~
+		message_admins("[key_name_admin(user)] detonated a bag of holding")
+		log_game("[key_name(user)] detonated a bag of holding")
+		del(src)
+		return
+	..()
 
-	attackby(obj/item/weapon/W as obj, mob/user as mob)
-		if(crit_fail)
-			user << "\red The Bluespace generator isn't working."
-			return
-		if(istype(W, /obj/item/weapon/storage/backpack/holding) && !W.crit_fail)
-			user << "\red The Bluespace interfaces of the two devices conflict and malfunction."
-			del(W)
-			return
-			/* //BoH+BoH=Singularity, commented out.
-		if(istype(W, /obj/item/weapon/storage/backpack/holding) && !W.crit_fail)
-			investigate_log("has become a singularity. Caused by [user.key]","singulo")
-			user << "\red The Bluespace interfaces of the two devices catastrophically malfunction!"
-			del(W)
-			var/obj/machinery/singularity/singulo = new /obj/machinery/singularity (get_turf(src))
-			singulo.energy = 300 //should make it a bit bigger~
-			message_admins("[key_name_admin(user)] detonated a bag of holding")
-			log_game("[key_name(user)] detonated a bag of holding")
-			del(src)
-			return
-			*/
-		..()
+/obj/item/weapon/storage/backpack/holding/proc/failcheck(mob/user as mob)
+	if (prob(src.reliability)) return 1 //No failure
+	if (prob(src.reliability))
+		user << "<span class = 'warning'>The Bluespace portal resists your attempt to add another item.</span>" //light failure
+	else
+		user << "<span class = 'danger'>The Bluespace generator malfunctions!</span>"
+		for (var/obj/O in src.contents) //it broke, delete what was in it
+			del(O)
+		crit_fail = 1
+		icon_state = "brokenpack"
 
-	proc/failcheck(mob/user as mob)
-		if (prob(src.reliability)) return 1 //No failure
-		if (prob(src.reliability))
-			user << "\red The Bluespace portal resists your attempt to add another item." //light failure
-		else
-			user << "\red The Bluespace generator malfunctions!"
-			for (var/obj/O in src.contents) //it broke, delete what was in it
-				del(O)
-			crit_fail = 1
-			icon_state = "brokenpack"
+/obj/item/weapon/storage/backpack/holding/singularity_act(current_size)
+//	var/dist = max((current_size - 2), 1)
+//	explosion(src.loc,(dist),(dist*2),(dist*4))
+	return
 
 
 /obj/item/weapon/storage/backpack/santabag
-	name = "\improper Santa's gift bag"
+	name = "Santa's Gift Bag"
 	desc = "Space Santa uses this to deliver toys to all the nice children in space in Christmas! Wow, it's pretty big!"
 	icon_state = "giftbag0"
 	item_state = "giftbag"
@@ -94,9 +98,17 @@
 	name = "trophy rack"
 	desc = "It's useful for both carrying extra gear and proudly declaring your insanity."
 	icon_state = "cultpack"
+	item_state = "cultpacknew"
+
+/obj/item/weapon/storage/backpack/cultify()
+	new /obj/item/weapon/storage/backpack/cultpack(loc)
+	..()
+
+/obj/item/weapon/storage/backpack/cultpack/cultify()
+	return
 
 /obj/item/weapon/storage/backpack/clown
-	name = "Giggles von Honkerton"
+	name = "Giggles Von Honkerton"
 	desc = "It's a backpack made by Honk! Co."
 	icon_state = "clownpack"
 	item_state = "clownpack"
@@ -124,36 +136,6 @@
 	desc = "It's a tough backpack for the daily grind of station life."
 	icon_state = "engiepack"
 	item_state = "engiepack"
-
-/obj/item/weapon/storage/backpack/toxins
-	name = "laboratory backpack"
-	desc = "It's a light backpack modeled for use in laboratories and other scientific institutions."
-	icon_state = "toxpack"
-	item_state = "toxpack"
-
-/obj/item/weapon/storage/backpack/hydroponics
-	name = "herbalist's backpack"
-	desc = "It's a green backpack with many pockets to store plants and tools in."
-	icon_state = "hydpack"
-	item_state = "hydpack"
-
-/obj/item/weapon/storage/backpack/genetics
-	name = "geneticist backpack"
-	desc = "It's a backpack fitted with slots for diskettes and other workplace tools."
-	icon_state = "genpack"
-	item_state = "genpack"
-
-/obj/item/weapon/storage/backpack/virology
-	name = "sterile backpack"
-	desc = "It's a sterile backpack able to withstand different pathogens from entering its fabric."
-	icon_state = "viropack"
-	item_state = "viropack"
-
-/obj/item/weapon/storage/backpack/chemistry
-	name = "chemistry backpack"
-	desc = "It's an orange backpack which was designed to hold beakers, pill bottles and bottles."
-	icon_state = "chempack"
-	item_state = "chempack"
 
 /*
  * Satchel Types
@@ -222,33 +204,3 @@
 	desc = "An exclusive satchel for Nanotrasen officers."
 	icon_state = "satchel-cap"
 	item_state = "captainpack"
-
-//ERT backpacks.
-/obj/item/weapon/storage/backpack/ert
-	name = "emergency response team backpack"
-	desc = "A spacious backpack with lots of pockets, used by members of the Nanotrasen Emergency Response Team."
-	icon_state = "ert_commander"
-	item_state = "backpack"
-
-//Commander
-/obj/item/weapon/storage/backpack/ert/commander
-	name = "emergency response team commander backpack"
-	desc = "A spacious backpack with lots of pockets, worn by the commander of a Nanotrasen Emergency Response Team."
-
-//Security
-/obj/item/weapon/storage/backpack/ert/security
-	name = "emergency response team security backpack"
-	desc = "A spacious backpack with lots of pockets, worn by security members of a Nanotrasen Emergency Response Team."
-	icon_state = "ert_security"
-
-//Engineering
-/obj/item/weapon/storage/backpack/ert/engineer
-	name = "emergency response team engineer backpack"
-	desc = "A spacious backpack with lots of pockets, worn by engineering members of a Nanotrasen Emergency Response Team."
-	icon_state = "ert_engineering"
-
-//Medical
-/obj/item/weapon/storage/backpack/ert/medical
-	name = "emergency response team medical backpack"
-	desc = "A spacious backpack with lots of pockets, worn by medical members of a Nanotrasen Emergency Response Team."
-	icon_state = "ert_medical"

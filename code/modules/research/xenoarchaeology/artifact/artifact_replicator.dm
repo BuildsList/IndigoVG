@@ -10,15 +10,10 @@
 	active_power_usage = 1000
 	use_power = 1
 
-	var/spawn_progress_time = 0
-	var/max_spawn_time = 50
-	var/last_process_time = 0
-
+	var/spawn_progress = 0
+	var/max_spawn_ticks = 5
 	var/list/construction = list()
 	var/list/spawning_types = list()
-	var/list/stored_materials = list()
-
-	var/fail_message
 
 /obj/machinery/replicator/New()
 	..()
@@ -54,11 +49,12 @@
 	/obj/item/weapon/handcuffs,\
 	/obj/item/weapon/hemostat,\
 	/obj/item/weapon/kitchenknife,\
-	/obj/item/weapon/flame/lighter,\
+	/obj/item/weapon/lighter,\
+	/obj/item/weapon/lighter,\
 	/obj/item/weapon/light/bulb,\
 	/obj/item/weapon/light/tube,\
 	/obj/item/weapon/pickaxe,\
-	/obj/item/weapon/shovel,\
+	/obj/item/weapon/pickaxe/shovel,\
 	/obj/item/weapon/table_parts,\
 	/obj/item/weapon/weldingtool,\
 	/obj/item/weapon/wirecutters,\
@@ -70,51 +66,31 @@
 
 	var/quantity = rand(5,15)
 	for(var/i=0, i<quantity, i++)
-		var/button_desc = "a [pick("yellow","purple","green","blue","red","orange","white")], "
+		var/button_desc = "[pick("a yellow","a purple","a green","a blue","a red","an orange","a white")], "
 		button_desc += "[pick("round","square","diamond","heart","dog","human")] shaped "
 		button_desc += "[pick("toggle","switch","lever","button","pad","hole")]"
 		var/type = pick(viables)
 		viables.Remove(type)
 		construction[button_desc] = type
 
-	fail_message = "\blue \icon[src] a [pick("loud","soft","sinister","eery","triumphant","depressing","cheerful","angry")] \
-		[pick("horn","beep","bing","bleep","blat","honk","hrumph","ding")] sounds and a \
-		[pick("yellow","purple","green","blue","red","orange","white")] \
-		[pick("light","dial","meter","window","protrusion","knob","antenna","swirly thing")] \
-		[pick("swirls","flashes","whirrs","goes schwing","blinks","flickers","strobes","lights up")] on the \
-		[pick("front","side","top","bottom","rear","inside")] of [src]. A [pick("slot","funnel","chute","tube")] opens up in the \
-		[pick("front","side","top","bottom","rear","inside")]."
-
 /obj/machinery/replicator/process()
 	if(spawning_types.len && powered())
-		spawn_progress_time += world.time - last_process_time
-		if(spawn_progress_time > max_spawn_time)
+		spawn_progress++
+		if(spawn_progress > max_spawn_ticks)
 			src.visible_message("\blue \icon[src] [src] pings!")
+			var/spawn_type = spawning_types[1]
+			new spawn_type(src.loc)
 
-			var/obj/source_material = pop(stored_materials)
-			var/spawn_type = pop(spawning_types)
-			var/obj/spawned_obj = new spawn_type(src.loc)
-			if(source_material)
-				if(lentext(source_material.name) < MAX_MESSAGE_LEN)
-					spawned_obj.name = "[source_material] " +  spawned_obj.name
-				if(lentext(source_material.desc) < MAX_MESSAGE_LEN * 2)
-					if(spawned_obj.desc)
-						spawned_obj.desc += " It is made of [source_material]."
-					else
-						spawned_obj.desc = "It is made of [source_material]."
-				del(source_material)
+			spawning_types.Remove(spawning_types[1])
+			spawn_progress = 0
+			max_spawn_ticks = rand(5,30)
 
-			spawn_progress_time = 0
-			max_spawn_time = rand(30,100)
-
-			if(!spawning_types.len || !stored_materials.len)
+			if(!spawning_types.len)
 				use_power = 1
 				icon_state = "borgcharger0(old)"
 
 		else if(prob(5))
 			src.visible_message("\blue \icon[src] [src] [pick("clicks","whizzes","whirrs","whooshes","clanks","clongs","clonks","bangs")].")
-
-	last_process_time = world.time
 
 /obj/machinery/replicator/attack_hand(mob/user as mob)
 	interact(user)
@@ -127,26 +103,17 @@
 
 	user << browse(dat, "window=alien_replicator")
 
-/obj/machinery/replicator/attackby(obj/item/weapon/W as obj, mob/living/user as mob)
-	user.drop_item()
-	W.loc = src
-	stored_materials.Add(W)
-	src.visible_message("\blue [user] inserts [W] into [src].")
-
 /obj/machinery/replicator/Topic(href, href_list)
 
 	if(href_list["activate"])
 		var/index = text2num(href_list["activate"])
 		if(index > 0 && index <= construction.len)
-			if(stored_materials.len > spawning_types.len)
-				if(spawning_types.len)
-					src.visible_message("\blue \icon[src] a [pick("light","dial","display","meter","pad")] on [src]'s front [pick("blinks","flashes")] [pick("red","yellow","blue","orange","purple","green","white")].")
-				else
-					src.visible_message("\blue \icon[src] [src]'s front compartment slides shut.")
-
-				spawning_types.Add(construction[construction[index]])
-				spawn_progress_time = 0
-				use_power = 2
-				icon_state = "borgcharger1(old)"
+			if(spawning_types.len)
+				src.visible_message("\blue \icon[src] a [pick("light","dial","display","meter","pad")] on [src]'s front [pick("blinks","flashes")] [pick("red","yellow","blue","orange","purple","green","white")].")
 			else
-				src.visible_message(fail_message)
+				src.visible_message("\blue \icon[src] [src]'s front compartment slides shut.")
+
+			spawning_types.Add(construction[construction[index]])
+			spawn_progress = 0
+			use_power = 2
+			icon_state = "borgcharger1(old)"

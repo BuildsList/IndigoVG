@@ -1,5 +1,6 @@
 var/CMinutes = null
 var/savefile/Banlist
+var/list/bwhitelist
 
 
 /proc/CheckBan(var/ckey, var/id, var/address)
@@ -57,9 +58,6 @@ var/savefile/Banlist
 /proc/UpdateTime() //No idea why i made this a proc.
 	CMinutes = (world.realtime / 10) / 60
 	return 1
-
-/hook/startup/proc/loadBans()
-	return LoadBans()
 
 /proc/LoadBans()
 
@@ -187,9 +185,39 @@ var/savefile/Banlist
 
 		dat += text("<tr><td><A href='?src=[ref];unbanf=[key][id]'>(U)</A><A href='?src=[ref];unbane=[key][id]'>(E)</A> Key: <B>[key]</B></td><td>ComputerID: <B>[id]</B></td><td>IP: <B>[ip]</B></td><td> [expiry]</td><td>(By: [by])</td><td>(Reason: [reason])</td></tr>")
 
-	dat += "</table>"
-	dat = "<HR><B>Bans:</B> <FONT COLOR=blue>(U) = Unban , (E) = Edit Ban</FONT> - <FONT COLOR=green>([count] Bans)</FONT><HR><table border=1 rules=all frame=void cellspacing=0 cellpadding=3 >[dat]"
+
+	// AUTOFIXED BY fix_string_idiocy.py
+	// C:\Users\Rob\Documents\Projects\vgstation13\code\modules\admin\NewBan.dm:187: dat += "</table>"
+	dat += {"</table>
+		<HR><B>Bans:</B> <FONT COLOR=blue>(U) = Unban , (E) = Edit Ban</FONT> - <FONT COLOR=green>([count] Bans)</FONT><HR><table border=1 rules=all frame=void cellspacing=0 cellpadding=3 >[dat]"}
+	// END AUTOFIX
 	usr << browse(dat, "window=unbanp;size=875x400")
+
+/proc/load_bwhitelist()
+	log_admin("Loading whitelist")
+	bwhitelist = list()
+	establish_db_connection()
+	if(!dbcon.IsConnected())
+		log_admin("Failed to load bwhitelist. Error: [dbcon.ErrorMsg()]")
+		return
+	var/DBQuery/query = dbcon.NewQuery("SELECT byond FROM whitelist ORDER BY byond ASC")
+	query.Execute()
+	while(query.NextRow())
+		bwhitelist += "[query.item[1]]"
+	if (bwhitelist==list(  ))
+		log_admin("Failed to load bwhitelist or its empty")
+		return
+
+/proc/check_bwhitelist(var/K)
+	if (!bwhitelist)
+		load_bwhitelist()
+		if (!bwhitelist)
+			return 0
+	if (K in bwhitelist)
+		return 1
+	return 0
+
+
 
 //////////////////////////////////// DEBUG ////////////////////////////////////
 
@@ -226,4 +254,3 @@ var/savefile/Banlist
 	Banlist.cd = "/base"
 	for (var/A in Banlist.dir)
 		RemoveBan(A)
-

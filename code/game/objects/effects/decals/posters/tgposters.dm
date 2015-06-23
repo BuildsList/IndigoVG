@@ -20,7 +20,7 @@
 	icon_state="poster4"
 
 /datum/poster/tg_5
-	name = "Mercenary Recruitment Poster"
+	name = "Syndicate Recruitment Poster"
 	desc = "See the galaxy! Shatter corrupt megacorporations! Join today!"
 	icon_state="poster5"
 
@@ -48,3 +48,8 @@
 	name = "Hacking Guide"
 	desc = "This poster details the internal workings of the common Nanotrasen airlock."
 	icon_state="poster10"
+
+/datum/poster/goldstar
+	name = "Award of Sufficiency"
+	desc = "The mere sight of it makes you very proud."
+	icon_state = "goldstar"

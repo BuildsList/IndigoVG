@@ -22,8 +22,7 @@
 
 /datum/artifact_effect/sleepy/DoEffectAura()
 	if(holder)
-		var/turf/T = get_turf(holder)
-		for (var/mob/living/carbon/human/H in range(src.effectrange,T))
+		for (var/mob/living/carbon/human/H in range(src.effectrange,holder))
 			var/weakness = GetAnomalySusceptibility(H)
 			if(prob(weakness * 100))
 				if(prob(10))
@@ -36,8 +35,7 @@
 
 /datum/artifact_effect/sleepy/DoEffectPulse()
 	if(holder)
-		var/turf/T = get_turf(holder)
-		for(var/mob/living/carbon/human/H in range(src.effectrange, T))
+		for(var/mob/living/carbon/human/H in range(src.effectrange, holder))
 			var/weakness = GetAnomalySusceptibility(H)
 			if(prob(weakness * 100))
 				H << pick("\blue You feel like taking a nap.","\blue You feel a yawn coming on.","\blue You feel a little tired.")

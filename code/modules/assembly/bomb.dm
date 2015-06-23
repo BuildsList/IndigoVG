@@ -6,14 +6,15 @@
 	w_class = 3.0
 	throw_speed = 2
 	throw_range = 4
-	flags = CONDUCT //Copied this from old code, so this may or may not be necessary
+	flags = FPRINT  //Copied this from old code, so this may or may not be necessary
+	siemens_coefficient = 1
 	var/status = 0   //0 - not readied //1 - bomb finished with welder
 	var/obj/item/device/assembly_holder/bombassembly = null   //The first part of the bomb is an assembly holder, holding an igniter+some device
-	var/obj/item/weapon/tank/bombtank = null //the second part of the bomb is a phoron tank
+	var/obj/item/weapon/tank/bombtank = null //the second part of the bomb is a plasma tank
 
 /obj/item/device/onetankbomb/examine(mob/user)
-	..(user)
-	user.examinate(bombtank)
+	..()
+	user.examination(bombtank)
 
 /obj/item/device/onetankbomb/update_icon()
 	if(bombtank)
@@ -65,13 +66,21 @@
 	if(!src)
 		return
 	if(status)
-		bombtank.ignite()	//if its not a dud, boom (or not boom if you made shitty mix) the ignite proc is below, in this file
+		bombtank.detonate()	//if its not a dud, boom (or not boom if you made shitty mix) the ignite proc is below, in this file
 	else
 		bombtank.release()
 
 /obj/item/device/onetankbomb/HasProximity(atom/movable/AM as mob|obj)
 	if(bombassembly)
 		bombassembly.HasProximity(AM)
+
+/obj/item/device/onetankbomb/Crossed(AM as mob|obj)
+	if(bombassembly)
+		bombassembly.Crossed(AM)
+
+/obj/item/device/onetankbomb/on_found(mob/finder as mob)
+	if(bombassembly)
+		bombassembly.on_found(finder)
 
 // ---------- Procs below are for tanks that are used exclusively in 1-tank bombs ----------
 
@@ -99,8 +108,8 @@
 	R.update_icon()
 	return
 
-/obj/item/weapon/tank/proc/ignite()	//This happens when a bomb is told to explode
-	var/fuel_moles = air_contents.gas["phoron"] + air_contents.gas["oxygen"] / 6
+/obj/item/weapon/tank/proc/detonate()	//This happens when a bomb is told to explode
+	var/fuel_moles = air_contents.toxins + air_contents.oxygen/6
 	var/strength = 1
 
 	var/turf/ground_zero = get_turf(loc)
@@ -117,7 +126,7 @@
 			explosion(ground_zero, -1, 0, 1, 2)
 		else
 			ground_zero.assume_air(air_contents)
-			ground_zero.hotspot_expose(1000, 125)
+			ground_zero.hotspot_expose(1000, 125,surfaces=1)
 
 	else if(air_contents.temperature > (T0C + 250))
 		strength = (fuel_moles/20)
@@ -128,7 +137,7 @@
 			explosion(ground_zero, -1, 0, 1, 2)
 		else
 			ground_zero.assume_air(air_contents)
-			ground_zero.hotspot_expose(1000, 125)
+			ground_zero.hotspot_expose(1000, 125,surfaces=1)
 
 	else if(air_contents.temperature > (T0C + 100))
 		strength = (fuel_moles/25)
@@ -137,18 +146,18 @@
 			explosion(ground_zero, -1, 0, round(strength,1), round(strength*3,1))
 		else
 			ground_zero.assume_air(air_contents)
-			ground_zero.hotspot_expose(1000, 125)
+			ground_zero.hotspot_expose(1000, 125,1)
 
 	else
 		ground_zero.assume_air(air_contents)
-		ground_zero.hotspot_expose(1000, 125)
+		ground_zero.hotspot_expose(1000, 125,surfaces=1)
 
 	if(master)
 		del(master)
 	del(src)
 
 /obj/item/weapon/tank/proc/release()	//This happens when the bomb is not welded. Tank contents are just spat out.
-	var/datum/gas_mixture/removed = air_contents.remove(air_contents.total_moles)
+	var/datum/gas_mixture/removed = air_contents.remove(air_contents.total_moles())
 	var/turf/simulated/T = get_turf(src)
 	if(!T)
 		return

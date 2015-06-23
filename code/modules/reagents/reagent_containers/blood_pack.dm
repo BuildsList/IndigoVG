@@ -1,17 +1,3 @@
-/obj/item/weapon/storage/box/bloodpacks
-	name = "blood packs bags"
-	desc = "This box contains blood packs."
-	icon_state = "sterile"
-	New()
-		..()
-		new /obj/item/weapon/reagent_containers/blood/empty(src)
-		new /obj/item/weapon/reagent_containers/blood/empty(src)
-		new /obj/item/weapon/reagent_containers/blood/empty(src)
-		new /obj/item/weapon/reagent_containers/blood/empty(src)
-		new /obj/item/weapon/reagent_containers/blood/empty(src)
-		new /obj/item/weapon/reagent_containers/blood/empty(src)
-		new /obj/item/weapon/reagent_containers/blood/empty(src)
-
 /obj/item/weapon/reagent_containers/blood
 	name = "BloodPack"
 	desc = "Contains blood used for transfusion."
@@ -60,3 +46,12 @@
 	name = "Empty BloodPack"
 	desc = "Seems pretty useless... Maybe if there were a way to fill it?"
 	icon_state = "empty"
+
+/obj/item/weapon/reagent_containers/blood/chemo
+	name = "Phalanximine IV kit"
+	desc = "IV kit for chemotherapy."
+	icon = 'icons/obj/chemopack.dmi'
+	New()
+		..()
+		reagents.add_reagent("phalanximine", 200)
+		update_icon()

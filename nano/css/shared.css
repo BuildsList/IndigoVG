@@ -30,7 +30,7 @@ hr {
     height: 1px;
 }
 
-.link, .linkOn, .linkOff, .selected, .disabled, .yellowButton, .redButton {
+.link, .linkOn, .linkOff, .selected, .disabled {
     float: left;
     min-width: 15px;
     height: 16px;
@@ -128,7 +128,7 @@ img, a img {
 h1, h2, h3, h4, h5, h6 {
     margin: 0;
     padding: 12px 0 6px 0;
-    color: #FFFFFF;
+    color: #517087;
     clear: both;
 }
 
@@ -173,11 +173,11 @@ h4 {
     font-weight: bold;
 }
 
-.redButton {
+.redBackground {
     background: #ea0000;
 }
 
-.yellowButton {
+.yellowBackground {
     background: #cacc00;
 }
 
@@ -187,16 +187,6 @@ h4 {
 
 .dark {
     color: #272727;
-}
-
-.caption {
-    font-size: 10px;
-    font-weight: bold;
-	padding: 5px;
-}
-
-.footer {
-	font-size: 10px;
 }
 
 .noticePlaceholder {
@@ -268,12 +258,6 @@ div.notice {
 .itemLabelWide {
     float: left;
     width: 45%;
-    color: #e9c183;
-}
-
-.itemLabelWidest {
-    float: left;
-    width: 100%;
     color: #e9c183;
 }
 
@@ -428,12 +412,6 @@ div.notice {
     float: left;
 }
 
-.fixedLeftWiderRed {
-    width: 220px;
-    float: left;
-	background: #ee0000;
-}
-
 .floatRight {
     float: right;
 }
@@ -495,14 +473,6 @@ div.notice {
     height: 200px;
     margin: 200px 0;
     text-align: center;
-}
-
-table.fixed { 
-	table-layout:fixed;
-}
-
-table.fixed td {
-	overflow: hidden;
 }
 
 /* Table stuffs for power monitor */
@@ -573,11 +543,28 @@ th.misc {
     color: green;
 }
 
+.toxin_light {
+    color: #3ADF00;
+}
+
 .oxyloss {
     color: blue;
 }
 
-/* 75px width used in power monitoring console buttons */
-.width75btn {
-    width: 75px;
+.oxyloss_light {
+    color: #6698FF;
+}
+
+/* Comms console alert colors */
+
+.green {
+	color: #3ADF00;
+}
+
+.blue {
+	color: #6698FF;
+}
+
+.red {
+	color: red;
 }

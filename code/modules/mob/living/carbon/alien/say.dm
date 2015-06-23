@@ -1,28 +1,29 @@
 /mob/living/carbon/alien/say(var/message)
-	var/verb = "says"
-	var/message_range = world.view
+	. = ..(message, "A")
+	if(.)
+		playsound(loc, "hiss", 25, 1, 1)
 
-	if(client)
-		if(client.prefs.muted & MUTE_IC)
-			src << "\red You cannot speak in IC (Muted)."
-			return
+/mob/living/proc/alien_talk(var/message)
 
-	message = trim_strip_html_properly(message)
-
-	if(stat == 2)
-		return say_dead(message)
-
-	if(copytext(message,1,2) == "*")
-		return emote(copytext(message,2))
-
-	var/datum/language/speaking = parse_language(message)
-
-	if(speaking)
-		message = copytext(message, 2+length(speaking.key))
-
+	log_say("[key_name(src)] (@[src.x],[src.y],[src.z]): [message]")
 	message = trim(message)
 
-	if(!message || stat)
+	if (!message)
 		return
 
-	..(message, speaking, verb, null, null, message_range, null)
+	var/message_a = say_quote(message)
+	var/rendered = "<i><span class='game say'>Hivemind, <span class='name'>[name]</span> <span class='message'>[message_a]</span></span></i>"
+	for (var/mob/living/S in player_list)
+		if((!S.stat && (S.hivecheck())) || (S in dead_mob_list && !istype(S, /mob/new_player)))
+			S << rendered
+
+/mob/living/carbon/alien/handle_inherent_channels(message, message_mode)
+	if(!..())
+		if(message_mode == MODE_ALIEN)
+			if(hivecheck())
+				alien_talk(message)
+			return 1
+		return 0
+
+/mob/living/carbon/alien/hivecheck()
+	return 1

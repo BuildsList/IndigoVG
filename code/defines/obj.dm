@@ -25,11 +25,6 @@
 		mouse_opacity = 0
 		unacidable = 1//Just to be sure.
 
-/obj/effect/beam
-	name = "beam"
-	unacidable = 1//Just to be sure.
-	var/def_zone
-	pass_flags = PASSTABLE
 
 
 /obj/effect/begin
@@ -83,11 +78,16 @@
 		var/real_rank = t.fields["real_rank"]
 		if(OOC)
 			var/active = 0
+			var/SSD = 0
 			for(var/mob/M in player_list)
-				if(M.real_name == name && M.client && M.client.inactivity <= 10 * 60 * 10)
-					active = 1
-					break
-			isactive[name] = active ? "Active" : "Inactive"
+				if(M.real_name == name)
+					if(!M.client)
+						SSD = 1
+						break
+					if(M.client && M.client.inactivity <= 10 * 60 * 10)
+						active = 1
+						break
+			isactive[name] = (SSD ? "SSD" : (active ? "Active" : "Inactive"))
 		else
 			isactive[name] = t.fields["p_stat"]
 			//world << "[name]: [rank]"
@@ -173,11 +173,10 @@ using /obj/effect/datacore/proc/manifest_inject( ), or manifest_insert( )
 */
 
 var/global/list/PDA_Manifest = list()
-var/global/ManifestJSON
 
 /obj/effect/datacore/proc/get_manifest_json()
 	if(PDA_Manifest.len)
-		return
+		return PDA_Manifest
 	var/heads[0]
 	var/sec[0]
 	var/eng[0]
@@ -248,8 +247,7 @@ var/global/ManifestJSON
 		"bot" = bot,\
 		"misc" = misc\
 		)
-	ManifestJSON = list2json(PDA_Manifest)
-	return
+	return PDA_Manifest
 
 
 
@@ -299,16 +297,17 @@ var/global/ManifestJSON
 	item_state = "beachball"
 	density = 0
 	anchored = 0
-	w_class = 2.0
+	w_class = 1.0
 	force = 0.0
 	throwforce = 0.0
 	throw_speed = 1
 	throw_range = 20
-	flags = CONDUCT
+	flags = FPRINT
+	siemens_coefficient = 1
 
-	afterattack(atom/target as mob|obj|turf|area, mob/user as mob)
-		user.drop_item()
-		src.throw_at(target, throw_range, throw_speed, user)
+/obj/item/weapon/beach_ball/afterattack(atom/target as mob|obj|turf|area, mob/user as mob)
+	user.drop_item()
+	src.throw_at(target, throw_range, throw_speed)
 
 /obj/effect/stop
 	var/victim = null
@@ -319,3 +318,6 @@ var/global/ManifestJSON
 
 /obj/effect/spawner
 	name = "object spawner"
+
+/obj/proc/cultify()
+	qdel(src)

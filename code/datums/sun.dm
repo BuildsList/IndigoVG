@@ -1,58 +1,93 @@
-#define SOLAR_UPDATE_TIME 600 //duration between two updates of the whole sun/solars positions
+var/global/datum/sun/sun
 
 /datum/sun
 	var/angle
 	var/dx
 	var/dy
-	var/rate
-	var/list/solars			// for debugging purposes, references solars_list at the constructor
-	var/solar_next_update	// last time the sun position was checked and adjusted
+	var/list/solars // For debugging purposes, references solars_list at the constructor.
+
+	// Replacement for var/counter to force the sun to move every X IC minutes.
+	// To prevent excess server load the server only updates the sun's sight lines by minute(s).
+	// 300 is 30 seconds.
+	var/updatePer = 600
+
+	var/nextTime
+	var/lastAngle = 0
+	var/rotationRate = 1 //A pretty average way of setting up station rotation direction AND absolute speed
 
 /datum/sun/New()
 
 	solars = solars_list
-	rate = rand(50,200)/100			// 50% - 200% of standard rotation
-	if(prob(50))					// same chance to rotate clockwise than counter-clockwise
-		rate = -rate
-	solar_next_update = world.time	// init the timer
-	angle = rand (0,360)			// the station position to the sun is randomised at round start
+	nextTime = updatePer
 
-/hook/startup/proc/createSun()
-	sun = new /datum/sun()
-	return 1
+	rotationRate = rand(850, 1150) / 1000 //Slight deviation, no more than 15 %, budget orbital stabilization system
+	if(prob(50))
+		rotationRate = -rotationRate
 
-// calculate the sun's position given the time of day
-// at the standard rate (100%) the angle is increase/decreased by 6 degrees every minute.
-// a full rotation thus take a game hour in that case
+/*
+ * Calculate the sun's position given the time of day.
+ */
 /datum/sun/proc/calc_position()
+	var/time = world.time
+	angle = ((rotationRate * time / 100) % 360 + 360) % 360
 
-	if(world.time < solar_next_update) //if less than 60 game secondes have passed, do nothing
-		return;
+	if(angle != lastAngle)
+		var/obj/machinery/power/solar/panel/tracker/T
+		for(T in solars_list)
+			if(!T.powernet)
+				solars_list.Remove(T)
+				continue
 
-	angle = (360 + angle + rate * 6) % 360	 // increase/decrease the angle to the sun, adjusted by the rate
+			T.set_angle(angle)
+		lastAngle = angle
 
-	solar_next_update += SOLAR_UPDATE_TIME // since we updated the angle, set the proper time for the next loop
+	if(world.time < nextTime)
+		return
 
-	// now calculate and cache the (dx,dy) increments for line drawing
+	nextTime += updatePer
 
-	var/s = sin(angle)
-	var/c = cos(angle)
+	// Now calculate and cache the (dx,dy) increments for line drawing.
+	var/si = sin(angle)
+	var/co = cos(angle)
 
-	// Either "abs(s) < abs(c)" or "abs(s) >= abs(c)"
-	// In both cases, the greater is greater than 0, so, no "if 0" check is needed for the divisions
-
-	if( abs(s) < abs(c))
-
-		dx = s / abs(c)
-		dy = c / abs(c)
-
+	if(!co)
+		dx = 0
+		dy = si
+	else if (abs(si) < abs(co))
+		dx = si / abs(co)
+		dy = co / abs(co)
 	else
-		dx = s/abs(s)
-		dy = c / abs(s)
+		dx = si / abs(si)
+		dy = co / abs(si)
 
-	//now tell the solar control computers to update their status and linked devices
-	for(var/obj/machinery/power/solar_control/SC in solars_list)
-		if(!SC.powernet)
-			solars_list.Remove(SC)
-			continue
-		SC.update()
+	var/obj/machinery/power/solar/panel/S
+
+	for(S in solars_list)
+		if(!S.powernet)
+			solars_list.Remove(S)
+
+		if(S.control)
+			occlusion(S)
+
+//For a solar panel, trace towards sun to see if we're in shadow.
+
+/datum/sun/proc/occlusion(const/obj/machinery/power/solar/panel/S)
+	var/ax = S.x //Start at the solar panel.
+	var/ay = S.y
+	var/i
+	var/turf/T
+
+	for(i = 1 to 256) //No tiles shall stay unchecked. Since the loop stops when it hit level boundaries or opaque blocks, this can't cause too much problems
+		ax += dx //Do step
+		ay += dy
+
+		T = locate(round(ax, 0.5), round(ay, 0.5), S.z)
+
+		if(T.x == 1 || T.x == world.maxx || T.y == 1 || T.y == world.maxy) // Not obscured if we reach the edge.
+			break
+		if(T.opacity) //Opaque objects block light.
+			S.obscured = 1
+			return
+
+	S.obscured = 0 //If hit the edge or stepped 20 times, not obscured.
+	S.update_solar_exposure()

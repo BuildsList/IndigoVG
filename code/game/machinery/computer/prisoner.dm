@@ -1,7 +1,7 @@
 //This file was auto-corrected by findeclaration.exe on 25.5.2012 20:42:31
 
 /obj/machinery/computer/prisoner
-	name = "prisoner management console"
+	name = "Prisoner Management"
 	icon = 'icons/obj/computer.dmi'
 	icon_state = "explosive"
 	req_access = list(access_armory)
@@ -13,9 +13,16 @@
 	var/stop = 0.0
 	var/screen = 0 // 0 - No Access Denied, 1 - Access allowed
 
+	l_color = "#B40000"
 
 	attack_ai(var/mob/user as mob)
+		src.add_hiddenprint(user)
 		return src.attack_hand(user)
+
+
+	attack_paw(var/mob/user as mob)
+		return
+
 
 	attack_hand(var/mob/user as mob)
 		if(..())
@@ -32,11 +39,15 @@
 				Tr = get_turf(C)
 				if((Tr) && (Tr.z != src.z))	continue//Out of range
 				if(!C.implanted) continue
-				dat += "[C.imp_in.name] | Remaining Units: [C.reagents.total_volume] | Inject: "
-				dat += "<A href='?src=\ref[src];inject1=\ref[C]'>(<font color=red>(1)</font>)</A>"
-				dat += "<A href='?src=\ref[src];inject5=\ref[C]'>(<font color=red>(5)</font>)</A>"
-				dat += "<A href='?src=\ref[src];inject10=\ref[C]'>(<font color=red>(10)</font>)</A><BR>"
-				dat += "********************************<BR>"
+
+				// AUTOFIXED BY fix_string_idiocy.py
+				// C:\Users\Rob\Documents\Projects\vgstation13\code\game\machinery\computer\prisoner.dm:41: dat += "[C.imp_in.name] | Remaining Units: [C.reagents.total_volume] | Inject: "
+				dat += {"[C.imp_in.name] | Remaining Units: [C.reagents.total_volume] | Inject:
+					<A href='?src=\ref[src];inject1=\ref[C]'>(<font color=red>(1)</font>)</A>
+					<A href='?src=\ref[src];inject5=\ref[C]'>(<font color=red>(5)</font>)</A>
+					<A href='?src=\ref[src];inject10=\ref[C]'>(<font color=red>(10)</font>)</A><BR>
+					********************************<BR>"}
+				// END AUTOFIX
 			dat += "<HR>Tracking Implants<BR>"
 			for(var/obj/item/weapon/implant/tracking/T in world)
 				Tr = get_turf(T)
@@ -44,14 +55,18 @@
 				if(!T.implanted) continue
 				var/loc_display = "Unknown"
 				var/mob/living/carbon/M = T.imp_in
-				if(M.z in config.station_levels && !istype(M.loc, /turf/space))
-					var/turf/mob_loc = get_turf(M)
+				if(M.z == 1 && !istype(M.loc, /turf/space))
+					var/turf/mob_loc = get_turf_loc(M)
 					loc_display = mob_loc.loc
 				if(T.malfunction)
 					loc_display = pick(teleportlocs)
-				dat += "ID: [T.id] | Location: [loc_display]<BR>"
-				dat += "<A href='?src=\ref[src];warn=\ref[T]'>(<font color=red><i>Message Holder</i></font>)</A> |<BR>"
-				dat += "********************************<BR>"
+
+				// AUTOFIXED BY fix_string_idiocy.py
+				// C:\Users\Rob\Documents\Projects\vgstation13\code\game\machinery\computer\prisoner.dm:58: dat += "ID: [T.id] | Location: [loc_display]<BR>"
+				dat += {"ID: [T.id] | Location: [loc_display]<BR>
+					<A href='?src=\ref[src];warn=\ref[T]'>(<font color=red><i>Message Holder</i></font>)</A> |<BR>
+					********************************<BR>"}
+				// END AUTOFIX
 			dat += "<HR><A href='?src=\ref[src];lock=1'>Lock Console</A>"
 
 		user << browse(dat, "window=computer;size=400x500")
@@ -90,7 +105,7 @@
 					usr << "Unauthorized Access."
 
 			else if(href_list["warn"])
-				var/warning = sanitize(copytext(input(usr,"Message:","Enter your message here!",""),1,MAX_MESSAGE_LEN))
+				var/warning = copytext(sanitize(input(usr,"Message:","Enter your message here!","")),1,MAX_MESSAGE_LEN)
 				if(!warning) return
 				var/obj/item/weapon/implant/I = locate(href_list["warn"])
 				if((I)&&(I.imp_in))

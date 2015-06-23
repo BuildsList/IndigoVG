@@ -1,3 +1,62 @@
+#define XENOARCH_SPAWN_CHANCE 0.5
+#define XENOARCH_SPREAD_CHANCE 15
+#define ARTIFACT_SPAWN_CHANCE 20
+
+proc/SetupXenoarch()
+	for(var/turf/unsimulated/mineral/M in block(locate(1,1,1), locate(world.maxx, world.maxy, world.maxz)))
+		if(!prob(XENOARCH_SPAWN_CHANCE))
+			continue
+
+		var/digsite = get_random_digsite_type()
+		var/list/processed_turfs = list()
+		var/list/turfs_to_process = list(M)
+
+		while(turfs_to_process.len)
+			var/turf/unsimulated/mineral/archeo_turf = turfs_to_process[1]
+
+			for(var/turf/unsimulated/mineral/T in orange(1, archeo_turf))
+				if(T.finds.len)
+					continue
+
+				if(T in processed_turfs)
+					continue
+
+				if(prob(XENOARCH_SPREAD_CHANCE))
+					turfs_to_process.Add(T)
+
+			turfs_to_process.Remove(archeo_turf)
+			processed_turfs.Add(archeo_turf)
+
+			if(!archeo_turf.finds || !archeo_turf.finds.len)
+
+				if(prob(50))
+					archeo_turf.finds.Add(new /datum/find(digsite, rand(5,95)))
+				else if(prob(75))
+					archeo_turf.finds.Add(new /datum/find(digsite, rand(5,45)))
+					archeo_turf.finds.Add(new /datum/find(digsite, rand(55,95)))
+				else
+					archeo_turf.finds.Add(new /datum/find(digsite, rand(5,30)))
+					archeo_turf.finds.Add(new /datum/find(digsite, rand(35,75)))
+					archeo_turf.finds.Add(new /datum/find(digsite, rand(75,95)))
+
+				//sometimes a find will be close enough to the surface to show
+				var/datum/find/F = archeo_turf.finds[1]
+
+				if(F.excavation_required <= F.view_range)
+					archeo_turf.archaeo_overlay = "overlay_archaeo[rand(1,3)]"
+					archeo_turf.overlays += archeo_turf.archaeo_overlay
+
+		//dont create artifact machinery in animal or plant digsites, or if we already have one
+		if(!M.artifact_find && digsite != 1 && digsite != 2 && prob(ARTIFACT_SPAWN_CHANCE))
+			M.artifact_find = new()
+			master_controller.artifact_spawning_turfs.Add(M)
+
+		if(isnull(M.geologic_data))
+			M.geologic_data = new/datum/geosample(M)
+
+#undef XENOARCH_SPAWN_CHANCE
+#undef XENOARCH_SPREAD_CHANCE
+#undef ARTIFACT_SPAWN_CHANCE
 
 //---- Noticeboard
 
@@ -93,7 +152,6 @@
 		new /obj/item/weapon/storage/belt/archaeology(src)
 		new /obj/item/weapon/storage/box/excavation(src)
 		new /obj/item/device/flashlight/lantern(src)
-		new /obj/item/device/ano_scanner(src)
 		new /obj/item/device/depth_scanner(src)
 		new /obj/item/device/core_sampler(src)
 		new /obj/item/device/gps(src)
@@ -103,14 +161,10 @@
 		new /obj/item/weapon/pickaxe(src)
 		new /obj/item/device/measuring_tape(src)
 		new /obj/item/weapon/pickaxe/hand(src)
-		new /obj/item/weapon/storage/bag/fossils(src)
-		new /obj/item/weapon/hand_labeler(src)
 		return
 
 //---- Isolation room air alarms
 
 /obj/machinery/alarm/isolation
-	req_one_access = list(access_research, access_atmospherics, access_engine_equip)
-
-/obj/machinery/alarm/monitor/isolation
-	req_one_access = list(access_research, access_atmospherics, access_engine_equip)
+	name = "Isolation room air control"
+	req_access = list(access_research)

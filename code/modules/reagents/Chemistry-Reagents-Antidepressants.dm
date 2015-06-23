@@ -1,3 +1,5 @@
+Methylphenidate
+
 #define ANTIDEPRESSANT_MESSAGE_DELAY 5*60*10
 
 /datum/reagent/antidepressant/methylphenidate
@@ -5,7 +7,7 @@
 	id = "methylphenidate"
 	description = "Improves the ability to concentrate."
 	reagent_state = LIQUID
-	color = "#BF80BF"
+	color = "#C8A5DC"
 	custom_metabolism = 0.01
 	data = 0
 
@@ -33,7 +35,7 @@
 	id = "citalopram"
 	description = "Stabilizes the mind a little."
 	reagent_state = LIQUID
-	color = "#FF80FF"
+	color = "#C8A5DC"
 	custom_metabolism = 0.01
 	data = 0
 
@@ -62,7 +64,7 @@
 	id = "paroxetine"
 	description = "Stabilizes the mind greatly, but has a chance of adverse effects."
 	reagent_state = LIQUID
-	color = "#FF80BF"
+	color = "#C8A5DC"
 	custom_metabolism = 0.01
 	data = 0
 

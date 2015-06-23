@@ -76,15 +76,11 @@ Class Procs:
 		edge.add_connection(src)
 
 /connection/proc/mark_direct()
-	if(!direct())
-		state |= CONNECTION_DIRECT
-		edge.direct++
+	state |= CONNECTION_DIRECT
 	//world << "Marked direct."
 
 /connection/proc/mark_indirect()
-	if(direct())
-		state &= ~CONNECTION_DIRECT
-		edge.direct--
+	state &= ~CONNECTION_DIRECT
 	//world << "Marked indirect."
 
 /connection/proc/mark_space()
@@ -114,9 +110,10 @@ Class Procs:
 		erase()
 		return
 	else if(block_status & ZONE_BLOCKED)
-		mark_indirect()
-	else
-		mark_direct()
+		if(direct())
+			mark_indirect()
+		else
+			mark_direct()
 
 	var/b_is_space = !istype(B,/turf/simulated)
 

@@ -1,28 +1,134 @@
 /atom/movable
+	// Recycling shit
+	var/m_amt = 0	         // metal (CC)
+	var/g_amt = 0	         // glass (CC)
+	var/w_type = NOT_RECYCLABLE  // Waste category for sorters. See setup.dm
+
 	layer = 3
 	var/last_move = null
+	var/languages = ALL
 	var/anchored = 0
-	// var/elevation = 2    - not used anywhere
 	var/move_speed = 10
 	var/l_move_time = 1
 	var/m_flag = 1
 	var/throwing = 0
-	var/thrower
-	var/turf/throw_source = null
 	var/throw_speed = 2
 	var/throw_range = 7
 	var/moved_recently = 0
 	var/mob/pulledby = null
 
-/atom/movable/Bump(var/atom/A as mob|obj|turf|area, yes)
-	if(src.throwing)
-		src.throw_impact(A)
+	var/area/areaMaster
 
-	spawn( 0 )
-		if ((A && yes))
-			A.last_bumped = world.time
-			A.Bumped(src)
+	// Garbage collection (controller).
+	var/gcDestroyed
+	var/timeDestroyed
+
+	var/sound_override = 0 //Do we make a sound when bumping into something?
+	//glide_size = 8
+
+/atom/movable/New()
+	. = ..()
+	areaMaster = get_area_master(src)
+
+/atom/movable/Destroy()
+	gcDestroyed = "bye world!"
+	tag = null
+	loc = null
+	if(istype(beams) && beams.len)
+		for(var/obj/effect/beam/B in beams)
+			if(B && B.target == src)
+				B.target = null
+			if(B.master && B.master.target == src)
+				B.master.target = null
+		beams.len = 0
+	..()
+
+/atom/movable/Del()
+	if(!ticker || ticker.current_state != 3) return ..()
+	// Pass to Destroy().
+	if(!gcDestroyed)
+		Destroy()
+		if(!("[type]" in del_profiling))
+			del_profiling["[type]"] = 0
+
+		del_profiling["[type]"] += 1
+	else
+		if(!("[type]" in gdel_profiling))
+			gdel_profiling["[type]"] = 0
+
+		gdel_profiling["[type]"] += 1
+	..()
+
+
+// Used in shuttle movement and AI eye stuff.
+// Primarily used to notify objects being moved by a shuttle/bluespace fuckup.
+/atom/movable/proc/setLoc(var/T, var/teleported=0)
+	loc = T
+
+	// Update on_moved listeners.
+	INVOKE_EVENT(on_moved,list("loc"=loc))
+
+/atom/movable/Move(newLoc,Dir=0,step_x=0,step_y=0)
+	if(!loc || !newLoc)
+		return 0
+	var/atom/oldloc = loc
+	if((bound_height != 32 || bound_width != 32) && (loc == newLoc))
+		return ..()
+	if(loc != newLoc)
+		if (!(Dir & (Dir - 1))) //Cardinal move
+			. = ..()
+		else //Diagonal move, split it into cardinal moves
+			if (Dir & 1)
+				if (Dir & 4)
+					if (step(src, NORTH))
+						. = step(src, EAST)
+					else if (step(src, EAST))
+						. = step(src, NORTH)
+				else if (Dir & 8)
+					if (step(src, NORTH))
+						. = step(src, WEST)
+					else if (step(src, WEST))
+						. = step(src, NORTH)
+			else if (Dir & 2)
+				if (Dir & 4)
+					if (step(src, SOUTH))
+						. = step(src, EAST)
+					else if (step(src, EAST))
+						. = step(src, SOUTH)
+				else if (Dir & 8)
+					if (step(src, SOUTH))
+						. = step(src, WEST)
+					else if (step(src, WEST))
+						. = step(src, SOUTH)
+
+	if(!loc || (loc == oldloc && oldloc != newLoc))
+		last_move = 0
 		return
+
+	last_move = Dir
+	src.move_speed = world.timeofday - src.l_move_time
+	src.l_move_time = world.timeofday
+	// Update on_moved listeners.
+	INVOKE_EVENT(on_moved,list("loc"=newLoc))
+	return .
+
+/atom/movable/proc/recycle(var/datum/materials/rec)
+	return 0
+
+// Previously known as HasEntered()
+// This is automatically called when something enters your square
+/atom/movable/Crossed(atom/movable/AM)
+	return
+
+/atom/movable/Bump(atom/Obstacle, yes)
+	if(src.throwing)
+		src.throw_impact(Obstacle)
+		src.throwing = 0
+
+	if ((Obstacle && yes))
+		Obstacle.last_bumped = world.time
+		Obstacle.Bumped(src)
+	return
 	..()
 	return
 
@@ -30,34 +136,18 @@
 	if(destination)
 		if(loc)
 			loc.Exited(src)
+
 		loc = destination
 		loc.Entered(src)
+
+		for(var/atom/movable/AM in loc)
+			AM.Crossed(src)
+
+		// Update on_moved listeners.
+		INVOKE_EVENT(on_moved,list("loc"=loc))
 		return 1
 	return 0
 
-//called when src is thrown into hit_atom
-/atom/movable/proc/throw_impact(atom/hit_atom, var/speed)
-	if(istype(hit_atom,/mob/living))
-		var/mob/living/M = hit_atom
-		M.hitby(src,speed)
-
-	else if(isobj(hit_atom))
-		var/obj/O = hit_atom
-		if(!O.anchored)
-			step(O, src.dir)
-		O.hitby(src,speed)
-
-	else if(isturf(hit_atom))
-		src.throwing = 0
-		var/turf/T = hit_atom
-		if(T.density)
-			spawn(2)
-				step(src, turn(src.dir, 180))
-			if(istype(src,/mob/living))
-				var/mob/living/M = src
-				M.turf_collision(T, speed)
-
-//decided whether a movable atom being thrown can pass through the turf it is in.
 /atom/movable/proc/hit_check(var/speed)
 	if(src.throwing)
 		for(var/atom/A in get_turf(src))
@@ -65,20 +155,24 @@
 			if(istype(A,/mob/living))
 				if(A:lying) continue
 				src.throw_impact(A,speed)
+				if(src.throwing == 1)
+					src.throwing = 0
 			if(isobj(A))
 				if(A.density && !A.throwpass)	// **TODO: Better behaviour for windows which are dense, but shouldn't always stop movement
 					src.throw_impact(A,speed)
+					src.throwing = 0
 
-/atom/movable/proc/throw_at(atom/target, range, speed, thrower)
+/atom/movable/proc/throw_at(atom/target, range, speed, override = 1)
 	if(!target || !src)	return 0
+	if(override)
+		sound_override = 1
 	//use a modified version of Bresenham's algorithm to get from the atom's current position to that of the target
 
-	src.throwing = 1
-	src.thrower = thrower
-	src.throw_source = get_turf(src)	//store the origin turf
+	throwing = 1
+	throw_speed = speed
 
 	if(usr)
-		if(HULK in usr.mutations)
+		if(M_HULK in usr.mutations)
 			src.throwing = 2 // really strong throw!
 
 	var/dist_x = abs(target.x - src.x)
@@ -110,11 +204,11 @@
 				if(!step) // going off the edge of the map makes get_step return null, don't let things go off the edge
 					break
 				src.Move(step)
-				hit_check(speed)
+				hit_check(throw_speed)
 				error += dist_x
 				dist_travelled++
 				dist_since_sleep++
-				if(dist_since_sleep >= speed)
+				if(dist_since_sleep >= throw_speed)
 					dist_since_sleep = 0
 					sleep(1)
 			else
@@ -122,28 +216,28 @@
 				if(!step) // going off the edge of the map makes get_step return null, don't let things go off the edge
 					break
 				src.Move(step)
-				hit_check(speed)
+				hit_check(throw_speed)
 				error -= dist_y
 				dist_travelled++
 				dist_since_sleep++
-				if(dist_since_sleep >= speed)
+				if(dist_since_sleep >= throw_speed)
 					dist_since_sleep = 0
 					sleep(1)
 			a = get_area(src.loc)
 	else
 		var/error = dist_y/2 - dist_x
-		while(src && target &&((((src.y < target.y && dy == NORTH) || (src.y > target.y && dy == SOUTH)) && dist_travelled < range) || (a.has_gravity == 0)  || istype(src.loc, /turf/space)) && src.throwing && istype(src.loc, /turf))
+		while(src && target &&((((src.y < target.y && dy == NORTH) || (src.y > target.y && dy == SOUTH)) && dist_travelled < range) || (a && a.has_gravity == 0)  || istype(src.loc, /turf/space)) && src.throwing && istype(src.loc, /turf))
 			// only stop when we've gone the whole distance (or max throw range) and are on a non-space tile, or hit something, or hit the end of the map, or someone picks it up
 			if(error < 0)
 				var/atom/step = get_step(src, dx)
 				if(!step) // going off the edge of the map makes get_step return null, don't let things go off the edge
 					break
 				src.Move(step)
-				hit_check(speed)
+				hit_check(throw_speed)
 				error += dist_y
 				dist_travelled++
 				dist_since_sleep++
-				if(dist_since_sleep >= speed)
+				if(dist_since_sleep >= throw_speed)
 					dist_since_sleep = 0
 					sleep(1)
 			else
@@ -151,21 +245,19 @@
 				if(!step) // going off the edge of the map makes get_step return null, don't let things go off the edge
 					break
 				src.Move(step)
-				hit_check(speed)
+				hit_check(throw_speed)
 				error -= dist_x
 				dist_travelled++
 				dist_since_sleep++
-				if(dist_since_sleep >= speed)
+				if(dist_since_sleep >= throw_speed)
 					dist_since_sleep = 0
 					sleep(1)
 
 			a = get_area(src.loc)
 
 	//done throwing, either because it hit something or it finished moving
-	if(isobj(src)) src.throw_impact(get_turf(src),speed)
 	src.throwing = 0
-	src.thrower = null
-	src.throw_source = null
+	if(isobj(src)) src.throw_impact(get_turf(src),throw_speed)
 
 
 //Overlays
@@ -174,16 +266,26 @@
 	anchored = 1
 
 /atom/movable/overlay/New()
-	for(var/x in src.verbs)
-		src.verbs -= x
-	return
+	. = ..()
+	verbs.len = 0
 
 /atom/movable/overlay/attackby(a, b)
 	if (src.master)
 		return src.master.attackby(a, b)
 	return
 
+/atom/movable/overlay/attack_paw(a, b, c)
+	if (src.master)
+		return src.master.attack_paw(a, b, c)
+	return
+
 /atom/movable/overlay/attack_hand(a, b, c)
 	if (src.master)
 		return src.master.attack_hand(a, b, c)
 	return
+
+/////////////////////////////
+// SINGULOTH PULL REFACTOR
+/////////////////////////////
+/atom/movable/proc/canSingulothPull(var/obj/machinery/singularity/singulo)
+	return 1

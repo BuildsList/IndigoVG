@@ -16,20 +16,6 @@
 	icon_state = "ash"
 	anchored = 1
 
-/obj/effect/decal/cleanable/ash/attack_hand(mob/user as mob)
-	user << "<span class='notice'>[src] sifts through your fingers.</span>"
-	var/turf/simulated/floor/F = get_turf(src)
-	if (istype(F))
-		F.dirt += 4
-	del(src)
-
-/obj/effect/decal/cleanable/greenglow
-
-	New()
-		..()
-		spawn(1200)// 2 minutes
-			del(src)
-
 /obj/effect/decal/cleanable/dirt
 	name = "dirt"
 	desc = "Someone should clean that up."
@@ -97,15 +83,43 @@
 	density = 0
 	anchored = 1
 	layer = 2
+	var/basecolor="#FFFF99"
 	icon = 'icons/effects/blood.dmi'
 	icon_state = "vomit_1"
+	var/amount = 2
 	random_icon_states = list("vomit_1", "vomit_2", "vomit_3", "vomit_4")
 	var/list/viruses = list()
 
-	Del()
+	Destroy()
 		for(var/datum/disease/D in viruses)
 			D.cure(0)
+			D.holder = null
 		..()
+
+/obj/effect/decal/cleanable/vomit/Crossed(mob/living/carbon/human/perp)
+	if (!istype(perp))
+		return
+	if(amount < 1)
+		return
+
+	if(perp.shoes)
+		perp.shoes:track_blood = max(amount,perp.shoes:track_blood)		//Adding vomit to shoes
+		if(!perp.shoes.blood_overlay)
+			perp.shoes.generate_blood_overlay()
+		if(!perp.shoes.blood_DNA)
+			perp.shoes.blood_DNA = list()
+		perp.shoes.overlays -= perp.shoes.blood_overlay
+		perp.shoes.blood_overlay.color = basecolor
+		perp.shoes.overlays += perp.shoes.blood_overlay
+		perp.shoes.blood_color=basecolor
+		perp.update_inv_shoes(1)
+	else
+		perp.track_blood = max(amount,perp.track_blood)				//Or feet
+		if(!perp.feet_blood_DNA)
+			perp.feet_blood_DNA = list()
+		perp.feet_blood_color=basecolor
+
+	amount--
 
 /obj/effect/decal/cleanable/tomato_smudge
 	name = "tomato smudge"
@@ -134,12 +148,15 @@
 	icon = 'icons/effects/tomatodecal.dmi'
 	random_icon_states = list("smashed_pie")
 
-/obj/effect/decal/cleanable/fruit_smudge
-	name = "smudge"
-	desc = "Some kind of fruit smear."
-	density = 0
+/obj/effect/decal/cleanable/soot
+	name = "soot"
+	desc = "One hell of a party..."
+	gender = PLURAL
+	icon = 'icons/effects/tile_effects.dmi'
+	icon_state = "tile_soot"
 	anchored = 1
-	layer = 2
-	icon = 'icons/effects/blood.dmi'
-	icon_state = "mfloor1"
-	random_icon_states = list("mfloor1", "mfloor2", "mfloor3", "mfloor4", "mfloor5", "mfloor6", "mfloor7")
+	layer=2
+
+/obj/effect/decal/cleanable/soot/New()
+	..()
+	dir = pick(cardinal)

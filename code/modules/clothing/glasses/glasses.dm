@@ -1,96 +1,63 @@
-
-/obj/item/clothing/glasses
-	name = "glasses"
-	icon = 'icons/obj/clothing/glasses.dmi'
-	//w_class = 2.0
-	//flags = GLASSESCOVERSEYES
-	//slot_flags = SLOT_EYES
-	//var/vision_flags = 0
-	//var/darkness_view = 0//Base human is 2
-	//var/invisa_view = 0
-	var/prescription = 0
-	var/toggleable = 0
-	var/active = 1
-	var/obj/screen/overlay = null
-	body_parts_covered = EYES
-
-/obj/item/clothing/glasses/attack_self(mob/user)
-	if(toggleable)
-		if(active)
-			active = 0
-			icon_state = "degoggles"
-			user.update_inv_glasses()
-			usr << "You deactivate the optical matrix on the [src]."
-		else
-			active = 1
-			icon_state = initial(icon_state)
-			user.update_inv_glasses()
-			usr << "You activate the optical matrix on the [src]."
+//the basic glasses can be found in clothing.dm
 
 /obj/item/clothing/glasses/meson
 	name = "Optical Meson Scanner"
 	desc = "Used for seeing walls, floors, and stuff through anything."
 	icon_state = "meson"
 	item_state = "glasses"
-	icon_action_button = "action_meson" //This doesn't actually matter, the action button is generated from the current icon_state. But, this is the only way to get it to show up.
 	origin_tech = "magnets=2;engineering=2"
-	toggleable = 1
 	vision_flags = SEE_TURFS
-
-/obj/item/clothing/glasses/meson/New()
-	..()
-	overlay = global_hud.meson
+	species_fit = list("Vox")
 
 /obj/item/clothing/glasses/meson/prescription
 	name = "prescription mesons"
 	desc = "Optical Meson Scanner with prescription lenses."
 	prescription = 1
+	species_fit = list("Vox")
 
 /obj/item/clothing/glasses/science
 	name = "Science Goggles"
-	desc = "The goggles do nothing!"
+	desc = "nothing"
 	icon_state = "purple"
 	item_state = "glasses"
 
-/obj/item/clothing/glasses/science/New()
-	..()
-	overlay = global_hud.science
-
 /obj/item/clothing/glasses/night
 	name = "Night Vision Goggles"
-	desc = "You can totally see in the dark now!"
+	desc = "You can totally see in the dark now!."
 	icon_state = "night"
 	item_state = "glasses"
 	origin_tech = "magnets=2"
-	darkness_view = 7
+	see_invisible = SEE_INVISIBLE_OBSERVER_NOLIGHTING
+	see_in_dark = 8
+	species_fit = list("Vox")
 
-/obj/item/clothing/glasses/night/New()
-	..()
-	overlay = global_hud.nvg
+/obj/item/clothing/glasses/night/cloaker
+	name = "Spec Ops NV-Goggles"
+	desc = "You can totally see in the dark now! With GenSec style!"
+	icon_state = "clok_glass"
+	flags_inv = HIDEEYES
 
 /obj/item/clothing/glasses/eyepatch
 	name = "eyepatch"
 	desc = "Yarr."
 	icon_state = "eyepatch"
 	item_state = "eyepatch"
-	body_parts_covered = 0
 
 /obj/item/clothing/glasses/monocle
 	name = "monocle"
 	desc = "Such a dapper eyepiece!"
 	icon_state = "monocle"
 	item_state = "headset" // lol
-	body_parts_covered = 0
+	species_fit = list("Vox")
 
 /obj/item/clothing/glasses/material
 	name = "Optical Material Scanner"
 	desc = "Very confusing glasses."
 	icon_state = "material"
 	item_state = "glasses"
-	icon_action_button = "action_material"
 	origin_tech = "magnets=3;engineering=3"
-	toggleable = 1
 	vision_flags = SEE_OBJS
+	species_fit = list("Vox")
 
 /obj/item/clothing/glasses/regular
 	name = "Prescription Glasses"
@@ -98,7 +65,6 @@
 	icon_state = "glasses"
 	item_state = "glasses"
 	prescription = 1
-	body_parts_covered = 0
 
 /obj/item/clothing/glasses/regular/hipster
 	name = "Prescription Glasses"
@@ -106,19 +72,11 @@
 	icon_state = "hipster_glasses"
 	item_state = "hipster_glasses"
 
-/obj/item/clothing/glasses/threedglasses
-	desc = "A long time ago, people used these glasses to makes images from screens threedimensional."
-	name = "3D glasses"
-	icon_state = "3d"
-	item_state = "3d"
-	body_parts_covered = 0
-
 /obj/item/clothing/glasses/gglasses
 	name = "Green Glasses"
 	desc = "Forest green glasses, like the kind you'd wear when hatching a nasty scheme."
 	icon_state = "gglasses"
 	item_state = "gglasses"
-	body_parts_covered = 0
 
 /obj/item/clothing/glasses/sunglasses
 	desc = "Strangely ancient technology used to help provide rudimentary eye cover. Enhanced shielding blocks many flashes."
@@ -126,14 +84,27 @@
 	icon_state = "sun"
 	item_state = "sunglasses"
 	darkness_view = -1
+	species_fit = list("Vox")
+
+/obj/item/clothing/glasses/virussunglasses
+	desc = "Strangely ancient technology used to help provide rudimentary eye cover. Enhanced shielding blocks many flashes."
+	name = "sunglasses"
+	icon_state = "sun"
+	item_state = "sunglasses"
+	darkness_view = -1
+	species_fit = list("Vox")
 
 /obj/item/clothing/glasses/welding
 	name = "welding goggles"
 	desc = "Protects the eyes from welders, approved by the mad scientist association."
 	icon_state = "welding-g"
 	item_state = "welding-g"
-	icon_action_button = "action_welding_g"
+	action_button_name = "Toggle Welding Goggles"
 	var/up = 0
+	species_fit = list("Vox")
+
+/obj/item/clothing/glasses/welding/proc/getMask()
+	return global_hud.darkMask
 
 /obj/item/clothing/glasses/welding/attack_self()
 	toggle()
@@ -143,63 +114,66 @@
 	set category = "Object"
 	set name = "Adjust welding goggles"
 	set src in usr
-
-	if(usr.canmove && !usr.stat && !usr.restrained())
+	var/mob/C = usr
+	if(!usr)
+		if(!ismob(loc))
+			return
+		C = loc
+	if(C.canmove && !C.stat && !C.restrained())
 		if(src.up)
 			src.up = !src.up
-			src.flags |= GLASSESCOVERSEYES
-			flags_inv |= HIDEEYES
 			body_parts_covered |= EYES
+			flags_inv |= HIDEEYES
 			icon_state = initial(icon_state)
-			usr << "You flip \the [src] down to protect your eyes."
+			C << "You flip the [src] down to protect your eyes."
 		else
 			src.up = !src.up
-			src.flags &= ~HEADCOVERSEYES
+			src.body_parts_covered &= ~EYES
 			flags_inv &= ~HIDEEYES
-			body_parts_covered &= ~EYES
 			icon_state = "[initial(icon_state)]up"
-			usr << "You push \the [src] up out of your face."
+			C << "You push the [src] up out of your face."
 
-		update_clothing_icon()
+		C.update_inv_glasses()
 
 /obj/item/clothing/glasses/welding/superior
 	name = "superior welding goggles"
-	desc = "Welding goggles made from more expensive materials, strangely smells like potatoes."
+	desc = "Welding goggles made from more expensive materials, strangely smells like potatoes. Allows for better vision than normal goggles.."
 	icon_state = "rwelding-g"
 	item_state = "rwelding-g"
-	icon_action_button = "action_welding_g"
+
+/obj/item/clothing/glasses/welding/superior/getMask()
+	return null
 
 /obj/item/clothing/glasses/sunglasses/blindfold
 	name = "blindfold"
 	desc = "Covers the eyes, preventing sight."
 	icon_state = "blindfold"
 	item_state = "blindfold"
-	//vision_flags = BLIND  	// This flag is only supposed to be used if it causes permanent blindness, not temporary because of glasses
+	vision_flags = BLIND
+	species_fit = list("Vox")
 
 /obj/item/clothing/glasses/sunglasses/prescription
 	name = "prescription sunglasses"
 	prescription = 1
+	species_fit = list("Vox")
 
 /obj/item/clothing/glasses/sunglasses/big
 	desc = "Strangely ancient technology used to help provide rudimentary eye cover. Larger than average enhanced shielding blocks many flashes."
 	icon_state = "bigsunglasses"
 	item_state = "bigsunglasses"
+	species_fit = list("Vox")
 
 /obj/item/clothing/glasses/sunglasses/sechud
 	name = "HUDSunglasses"
 	desc = "Sunglasses with a HUD."
 	icon_state = "sunhud"
 	var/obj/item/clothing/glasses/hud/security/hud = null
+	species_fit = list("Vox")
 
 	New()
 		..()
 		src.hud = new/obj/item/clothing/glasses/hud/security(src)
 		return
-
-/obj/item/clothing/glasses/sunglasses/sechud/tactical
-	name = "tactical HUD"
-	desc = "Flash-resistant goggles with inbuilt combat and security information."
-	icon_state = "swatgoggles"
 
 /obj/item/clothing/glasses/thermal
 	name = "Optical Thermal Scanner"
@@ -207,7 +181,6 @@
 	icon_state = "thermal"
 	item_state = "glasses"
 	origin_tech = "magnets=3"
-	toggleable = 1
 	vision_flags = SEE_MOBS
 	invisa_view = 2
 
@@ -223,36 +196,42 @@
 					M.disabilities &= ~NEARSIGHTED
 		..()
 
-/obj/item/clothing/glasses/thermal/New()
-	..()
-	overlay = global_hud.thermal
-
 /obj/item/clothing/glasses/thermal/syndi	//These are now a traitor item, concealed as mesons.	-Pete
 	name = "Optical Meson Scanner"
 	desc = "Used for seeing walls, floors, and stuff through anything."
 	icon_state = "meson"
-	icon_action_button = "action_meson"
 	origin_tech = "magnets=3;syndicate=4"
+	species_fit = list("Vox")
 
 /obj/item/clothing/glasses/thermal/monocle
-	name = "Thermoncle"
+	name = "Thermonocle"
 	desc = "A monocle thermal."
 	icon_state = "thermoncle"
-	flags = null //doesn't protect eyes because it's a monocle, duh
-	toggleable = 0
-	body_parts_covered = 0
+	flags = 0 //doesn't protect eyes because it's a monocle, duh
 
 /obj/item/clothing/glasses/thermal/eyepatch
 	name = "Optical Thermal Eyepatch"
 	desc = "An eyepatch with built-in thermal optics"
 	icon_state = "eyepatch"
 	item_state = "eyepatch"
-	toggleable = 0
-	body_parts_covered = 0
 
 /obj/item/clothing/glasses/thermal/jensen
 	name = "Optical Thermal Implants"
 	desc = "A set of implantable lenses designed to augment your vision"
 	icon_state = "thermalimplants"
 	item_state = "syringe_kit"
-	toggleable = 0
+	species_fit = list("Vox")
+
+/obj/item/clothing/glasses/simonglasses
+	name = "Simon's Glasses"
+	desc = "Just who the hell do you think I am?"
+	icon_state = "simonglasses"
+	item_state = "simonglasses"
+	cover_hair = 1
+
+/obj/item/clothing/glasses/kaminaglasses
+	name = "Kamina's Glasses"
+	desc = "I'm going to tell you something important now, so you better dig the wax out of those huge ears of yours and listen! The reputation of Team Gurren echoes far and wide. When they talk about its badass leader - the man of indomitable spirit and masculinity - they're talking about me! The mighty Kamina!"
+	icon_state = "kaminaglasses"
+	item_state = "kaminaglasses"
+	cover_hair = 1

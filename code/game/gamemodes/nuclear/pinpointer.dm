@@ -2,37 +2,47 @@
 	name = "pinpointer"
 	icon = 'icons/obj/device.dmi'
 	icon_state = "pinoff"
-	flags = CONDUCT
+	flags = FPRINT
+	siemens_coefficient = 1
 	slot_flags = SLOT_BELT
 	w_class = 2.0
 	item_state = "electronic"
 	throw_speed = 4
 	throw_range = 20
-	matter = list("metal" = 500)
+	m_amt = 500
+	w_type = RECYK_ELECTRONIC
+	melt_temperature = MELTPOINT_STEEL
 	var/obj/item/weapon/disk/nuclear/the_disk = null
 	var/active = 0
 
 
-	attack_self()
-		if(!active)
-			active = 1
-			workdisk()
-			usr << "\blue You activate the pinpointer"
-		else
-			active = 0
-			icon_state = "pinoff"
-			usr << "\blue You deactivate the pinpointer"
+/obj/item/weapon/pinpointer/attack_self()
+	if(!active)
+		active = 1
+		workdisk()
+		usr << "<span class='notice'>You activate \the [src]</span>"
+		playsound(get_turf(src), 'sound/items/healthanalyzer.ogg', 30, 1)
+	else
+		active = 0
+		icon_state = "pinoff"
+		usr << "<span class='notice'>You deactivate \the [src]</span>"
 
-	proc/workdisk()
-		if(!active) return
-		if(!the_disk)
-			the_disk = locate()
-			if(!the_disk)
-				icon_state = "pinonnull"
-				return
-		set_dir(get_dir(src,the_disk))
-		switch(get_dist(src,the_disk))
-			if(0)
+/obj/item/weapon/pinpointer/proc/point_at(atom/target)
+	if(!active)
+		return
+	if(!target)
+		icon_state = "pinonnull"
+		return
+
+	var/turf/T = get_turf(target)
+	var/turf/L = get_turf(src)
+
+	if(T.z != L.z)
+		icon_state = "pinonnull"
+	else
+		dir = get_dir(L, T)
+		switch(get_dist(L, T))
+			if(-1)
 				icon_state = "pinondirect"
 			if(1 to 8)
 				icon_state = "pinonclose"
@@ -40,13 +50,19 @@
 				icon_state = "pinonmedium"
 			if(16 to INFINITY)
 				icon_state = "pinonfar"
-		spawn(5) .()
+	spawn(5)
+		.()
 
-	examine(mob/user)
-		..(user)
-		for(var/obj/machinery/nuclearbomb/bomb in world)
-			if(bomb.timing)
-				user << "Extreme danger.  Arming signal detected.   Time remaining: [bomb.timeleft]"
+/obj/item/weapon/pinpointer/proc/workdisk()
+	if(!the_disk)
+		the_disk = locate()
+	point_at(the_disk)
+
+/obj/item/weapon/pinpointer/examine(mob/user)
+	..()
+	for(var/obj/machinery/nuclearbomb/bomb in world)
+		if(bomb.timing)
+			user << "<span class='danger'>Extreme danger. Arming signal detected. Time remaining: [bomb.timeleft]</span>"
 
 
 /obj/item/weapon/pinpointer/advpinpointer
@@ -57,58 +73,21 @@
 	var/turf/location = null
 	var/obj/target = null
 
-	attack_self()
-		if(!active)
-			active = 1
-			if(mode == 0)
-				workdisk()
-			if(mode == 1)
-				worklocation()
-			if(mode == 2)
-				workobj()
-			usr << "\blue You activate the pinpointer"
-		else
-			active = 0
-			icon_state = "pinoff"
-			usr << "\blue You deactivate the pinpointer"
+/obj/item/weapon/pinpointer/advpinpointer/attack_self()
+	if(!active)
+		active = 1
+		if(mode == 0)
+			workdisk()
+		if(mode == 1)
+			point_at(location)
+		if(mode == 2)
+			point_at(target)
+		usr << "<span class='notice'>You activate the pinpointer</span>"
+	else
+		active = 0
+		icon_state = "pinoff"
+		usr << "<span class='notice'>You deactivate the pinpointer</span>"
 
-
-	proc/worklocation()
-		if(!active)
-			return
-		if(!location)
-			icon_state = "pinonnull"
-			return
-		set_dir(get_dir(src,location))
-		switch(get_dist(src,location))
-			if(0)
-				icon_state = "pinondirect"
-			if(1 to 8)
-				icon_state = "pinonclose"
-			if(9 to 16)
-				icon_state = "pinonmedium"
-			if(16 to INFINITY)
-				icon_state = "pinonfar"
-		spawn(5) .()
-
-
-	proc/workobj()
-		if(!active)
-			return
-		if(!target)
-			icon_state = "pinonnull"
-			return
-		set_dir(get_dir(src,target))
-		switch(get_dist(src,target))
-			if(0)
-				icon_state = "pinondirect"
-			if(1 to 8)
-				icon_state = "pinonclose"
-			if(9 to 16)
-				icon_state = "pinonmedium"
-			if(16 to INFINITY)
-				icon_state = "pinonfar"
-		spawn(5) .()
 
 /obj/item/weapon/pinpointer/advpinpointer/verb/toggle_mode()
 	set category = "Object"
@@ -148,12 +127,18 @@
 			mode = 2
 			switch(alert("Search for item signature or DNA fragment?" , "Signature Mode Select" , "" , "Item" , "DNA"))
 				if("Item")
-					var/datum/objective/steal/itemlist
-					itemlist = itemlist // To supress a 'variable defined but not used' error.
-					var/targetitem = input("Select item to search for.", "Item Mode Select","") as null|anything in itemlist.possible_items
+					var/list/item_names[0]
+					var/list/item_paths[0]
+					for(var/typepath in potential_theft_objectives)
+						var/obj/item/tmp_object=new typepath
+						var/n="[tmp_object]"
+						item_names+=n
+						item_paths[n]=typepath
+						qdel(tmp_object)
+					var/targetitem = input("Select item to search for.", "Item Mode Select","") as null|anything in potential_theft_objectives
 					if(!targetitem)
 						return
-					target=locate(itemlist.possible_items[targetitem])
+					target=locate(item_paths[targetitem])
 					if(!target)
 						usr << "Failed to locate [targetitem]!"
 						return
@@ -179,7 +164,8 @@
 
 /obj/item/weapon/pinpointer/nukeop
 	var/mode = 0	//Mode 0 locates disk, mode 1 locates the shuttle
-	var/obj/machinery/computer/shuttle_control/multi/syndicate/home = null
+	var/obj/machinery/computer/syndicate_station/home = null
+
 
 /obj/item/weapon/pinpointer/nukeop/attack_self(mob/user as mob)
 	if(!active)
@@ -215,7 +201,7 @@
 //	if(loc.z != the_disk.z)	//If you are on a different z-level from the disk
 //		icon_state = "pinonnull"
 //	else
-	set_dir(get_dir(src, the_disk))
+	dir = get_dir(src, the_disk)
 	switch(get_dist(src, the_disk))
 		if(0)
 			icon_state = "pinondirect"
@@ -230,7 +216,8 @@
 
 
 /obj/item/weapon/pinpointer/nukeop/proc/worklocation()
-	if(!active)	return
+	if(!active)
+		return
 	if(!mode)
 		workdisk()
 		return
@@ -248,7 +235,7 @@
 	if(loc.z != home.z)	//If you are on a different z-level from the shuttle
 		icon_state = "pinonnull"
 	else
-		set_dir(get_dir(src, home))
+		dir = get_dir(src, home)
 		switch(get_dist(src, home))
 			if(0)
 				icon_state = "pinondirect"
@@ -260,3 +247,54 @@
 				icon_state = "pinonfar"
 
 	spawn(5) .()
+
+/obj/item/weapon/pinpointer/pdapinpointer
+	name = "pda pinpointer"
+	desc = "A pinpointer that has been illegally modified to track the PDA of a crewmember for malicious reasons."
+	var/obj/target = null
+	var/used = 0
+
+/obj/item/weapon/pinpointer/pdapinpointer/attack_self()
+	if(!active)
+		active = 1
+		point_at(target)
+		usr << "<span class='notice'>You activate the pinpointer</span>"
+	else
+		active = 0
+		icon_state = "pinoff"
+		usr << "<span class='notice'>You deactivate the pinpointer</span>"
+
+/obj/item/weapon/pinpointer/pdapinpointer/verb/select_pda()
+	set category = "Object"
+	set name = "Select pinpointer target"
+	set src in view(1)
+
+	if(used)
+		usr << "Target has already been set!"
+		return
+
+	var/list/L = list()
+	L["Cancel"] = "Cancel"
+	var/length = 1
+	for (var/obj/item/device/pda/P in world)
+		if(P.name != "\improper PDA")
+			L[text("([length]) [P.name]")] = P
+			length++
+
+	var/t = input("Select pinpointer target. WARNING: Can only set once.") as null|anything in L
+	if(t == "Cancel")
+		return
+	target = L[t]
+	if(!target)
+		usr << "Failed to locate [target]!"
+		return
+	active = 1
+	point_at(target)
+	usr << "You set the pinpointer to locate [target]"
+	used = 1
+
+
+/obj/item/weapon/pinpointer/pdapinpointer/examine(mob/user)
+	..()
+	if (target)
+		user << "<span class='notice'>Tracking [target]</span>"

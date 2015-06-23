@@ -1,34 +1,21 @@
-/proc/send2irc(var/channel, var/msg)
-	if(config.use_irc_bot && config.irc_bot_host)
-		if(config.irc_bot_export)
-			world.Export("http://[config.irc_bot_host]:45678?[list2params(list(pwd=config.comms_password, chan=channel, mesg=msg))]")
-		else
-			if(config.use_lib_nudge)
-				var/nudge_lib
-				if(world.system_type == MS_WINDOWS)
-					nudge_lib = "lib\\nudge.dll"
-				else
-					nudge_lib = "lib/nudge.so"
+#define IRC_FLAG_GENERAL "nudges"
+#define IRC_FLAG_ADMINHELP "ahelps"
 
-				spawn(0)
-					call(nudge_lib, "nudge")("[config.comms_password]","[config.irc_bot_host]","[channel]","[msg]")
-			else
-				spawn(0)
-					ext_python("ircbot_message.py", "[config.comms_password] [config.irc_bot_host] [channel] [msg]")
+/proc/send2irc(var/flag, var/msg)
+	if(config.use_irc_bot)
+		var/a=" --key=\"[config.comms_password]\""
+		a += " --id=\"[config.irc_bot_server_id]\""
+		a += " --channel=\"[flag]\""
+		if(config.irc_bot_host)
+			a+=" --host=\"[config.irc_bot_host]\""
+		if(config.irc_bot_port)
+			a+=" --port=\"[config.irc_bot_port]\""
+			msg=replacetext(msg,"\"","\\\"")
+		ext_python("ircbot_message.py", "[a] [msg]")
 	return
 
 /proc/send2mainirc(var/msg)
-	if(config.main_irc)
-		send2irc(config.main_irc, msg)
-	return
+	send2irc(IRC_FLAG_GENERAL,msg)
 
 /proc/send2adminirc(var/msg)
-	if(config.admin_irc)
-		send2irc(config.admin_irc, msg)
-	return
-
-
-/hook/startup/proc/ircNotify()
-	send2mainirc("Server starting up on byond://[config.serverurl ? config.serverurl : (config.server ? config.server : "[world.address]:[world.port]")]")
-	return 1
-
+	send2irc(IRC_FLAG_ADMINHELP,msg)

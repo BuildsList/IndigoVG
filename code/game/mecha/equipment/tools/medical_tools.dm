@@ -1,19 +1,23 @@
 /obj/item/mecha_parts/mecha_equipment/tool/sleeper
-	name = "mounted sleeper"
-	desc = "A sleeper. Mountable to an exosuit. (Can be attached to: Medical Exosuits)"
+	name = "Mounted Sleeper"
+	desc = "Mounted Sleeper. (Can be attached to: Medical Exosuits)"
 	icon = 'icons/obj/Cryogenic2.dmi'
 	icon_state = "sleeper_0"
 	origin_tech = "programming=2;biotech=3"
 	energy_drain = 20
 	range = MELEE
-	construction_cost = list("metal"=5000,"glass"=10000)
 	reliability = 1000
 	equip_cooldown = 20
 	var/mob/living/carbon/occupant = null
 	var/datum/global_iterator/pr_mech_sleeper
 	var/inject_amount = 10
-	required_type = /obj/mecha/medical
 	salvageable = 0
+
+	can_attach(obj/mecha/medical/M)
+		if(..())
+			if(istype(M))
+				return 1
+		return 0
 
 	New()
 		..()
@@ -238,14 +242,19 @@
 	var/datum/event/event
 	var/turf/old_turf
 	var/obj/structure/cable/last_piece
-	var/obj/item/stack/cable_coil/cable
+	var/obj/item/weapon/cable_coil/cable
 	var/max_cable = 1000
-	required_type = /obj/mecha/working
 
 	New()
 		cable = new(src)
 		cable.amount = 0
 		..()
+
+	can_attach(obj/mecha/working/M)
+		if(..())
+			if(istype(M))
+				return 1
+		return 0
 
 	attach()
 		..()
@@ -260,7 +269,7 @@
 		chassis.events.clearEvent("onMove",event)
 		return ..()
 
-	action(var/obj/item/stack/cable_coil/target)
+	action(var/obj/item/weapon/cable_coil/target)
 		if(!action_checks(target))
 			return
 		var/result = load_cable(target)
@@ -288,7 +297,7 @@
 				m = min(m, cable.amount)
 				if(m)
 					use_cable(m)
-					var/obj/item/stack/cable_coil/CC = new (get_turf(chassis))
+					var/obj/item/weapon/cable_coil/CC = new (get_turf(chassis))
 					CC.amount = m
 			else
 				occupant_message("There's no more cable on the reel.")
@@ -300,7 +309,7 @@
 			return "[output] \[Cable: [cable ? cable.amount : 0] m\][(cable && cable.amount) ? "- <a href='?src=\ref[src];toggle=1'>[!equip_ready?"Dea":"A"]ctivate</a>|<a href='?src=\ref[src];cut=1'>Cut</a>" : null]"
 		return
 
-	proc/load_cable(var/obj/item/stack/cable_coil/CC)
+	proc/load_cable(var/obj/item/weapon/cable_coil/CC)
 		if(istype(CC) && CC.amount)
 			var/cur_amount = cable? cable.amount : 0
 			var/to_load = max(max_cable - cur_amount,0)
@@ -337,7 +346,7 @@
 			var/turf/simulated/floor/T = new_turf
 			if(!T.is_plating())
 				if(!T.broken && !T.burnt)
-					new T.floor_type(T)
+					new T.floor_tile.type(T)
 				T.make_plating()
 		return !new_turf.intact
 
@@ -365,7 +374,8 @@
 
 		if(!PN)
 			PN = new()
-		PN.add_cable(NC)
+		NC.powernet = PN
+		PN.cables += NC
 		NC.mergeConnectedNetworks(NC.d2)
 
 		//NC.mergeConnectedNetworksOnTurf()
@@ -373,7 +383,7 @@
 		return 1
 
 /obj/item/mecha_parts/mecha_equipment/tool/syringe_gun
-	name = "syringe gun"
+	name = "Syringe Gun"
 	desc = "Exosuit-mounted chem synthesizer with syringe gun. Reagents inside are held in stasis, so no reactions will occur. (Can be attached to: Medical Exosuits)"
 	icon = 'icons/obj/gun.dmi'
 	icon_state = "syringegun"
@@ -389,15 +399,12 @@
 	range = MELEE|RANGED
 	equip_cooldown = 10
 	origin_tech = "materials=3;biotech=4;magnets=4;programming=3"
-	construction_time = 200
-	construction_cost = list("metal"=3000,"glass"=2000)
-	required_type = /obj/mecha/medical
 
 	New()
 		..()
 		flags |= NOREACT
 		syringes = new
-		known_reagents = list("inaprovaline"="Inaprovaline","anti_toxin"="Dylovene")
+		known_reagents = list("inaprovaline"="Inaprovaline","anti_toxin"="Anti-Toxin (Dylovene)")
 		processed_reagents = new
 		create_reagents(max_volume)
 		synth = new (list(src),0)
@@ -410,6 +417,12 @@
 		..()
 		flags &= ~NOREACT
 		return
+
+	can_attach(obj/mecha/medical/M)
+		if(..())
+			if(istype(M))
+				return 1
+		return 0
 
 	get_equip_info()
 		var/output = ..()
@@ -547,9 +560,13 @@
 		var/r_list = get_reagents_list()
 		var/inputs
 		if(r_list)
-			inputs += "<input type=\"hidden\" name=\"src\" value=\"\ref[src]\">"
-			inputs += "<input type=\"hidden\" name=\"select_reagents\" value=\"1\">"
-			inputs += "<input id=\"submit\" type=\"submit\" value=\"Apply settings\">"
+
+			// AUTOFIXED BY fix_string_idiocy.py
+			// C:\Users\Rob\Documents\Projects\vgstation13\code\game\mecha\equipment\tools\medical_tools.dm:567: inputs += "<input type=\"hidden\" name=\"src\" value=\"\ref[src]\">"
+			inputs += {"<input type=\"hidden\" name=\"src\" value=\"\ref[src]\">
+				<input type=\"hidden\" name=\"select_reagents\" value=\"1\">
+				<input id=\"submit\" type=\"submit\" value=\"Apply settings\">"}
+			// END AUTOFIX
 		var/output = {"<form action="byond://" method="get">
 							[r_list || "No known reagents"]
 							[inputs]

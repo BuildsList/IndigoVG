@@ -4,7 +4,7 @@
 	icon = 'icons/obj/computer.dmi'
 	icon_state = "arcade"
 	circuit = "/obj/item/weapon/circuitboard/arcade"
-	var/enemy_name = "Space Villian"
+	var/enemy_name = "Space Villain"
 	var/temp = "Winners Don't Use Spacedrugs" //Temporary message, for attack messages, etc
 	var/player_hp = 30 //Player health/attack points
 	var/player_mp = 10
@@ -12,7 +12,14 @@
 	var/enemy_mp = 20
 	var/gameover = 0
 	var/blocked = 0 //Player cannot attack/heal while set
+
+	machine_flags = EMAGGABLE | SCREWTOGGLE | CROWDESTROY | WRENCHMOVE | FIXED2WORK
+	emag_cost = 0 // because fun
+
+	l_color = "#00FF00"
+
 	var/list/prizes = list(	/obj/item/weapon/storage/box/snappops			= 2,
+							/obj/item/toy/cards								= 2,
 							/obj/item/toy/blink								= 2,
 							/obj/item/clothing/under/syndicate/tacticool	= 2,
 							/obj/item/toy/sword								= 2,
@@ -21,6 +28,8 @@
 							/obj/item/clothing/suit/syndicatefake			= 2,
 							/obj/item/weapon/storage/fancy/crayons			= 2,
 							/obj/item/toy/spinningtoy						= 2,
+							/obj/item/toy/minimeteor					= 2,
+							/obj/item/device/whisperphone					= 2,
 							/obj/item/toy/prize/ripley						= 1,
 							/obj/item/toy/prize/fireripley					= 1,
 							/obj/item/toy/prize/deathripley					= 1,
@@ -31,11 +40,7 @@
 							/obj/item/toy/prize/seraph						= 1,
 							/obj/item/toy/prize/mauler						= 1,
 							/obj/item/toy/prize/odysseus					= 1,
-							/obj/item/toy/prize/phazon						= 1,
-							/obj/item/toy/waterflower						= 1,
-							/obj/random/action_figure								= 1,
-							/obj/random/plushie								= 1,
-							/obj/item/toy/cultsword							= 1
+							/obj/item/toy/prize/phazon						= 1
 							)
 
 /obj/machinery/computer/arcade
@@ -57,6 +62,10 @@
 
 
 /obj/machinery/computer/arcade/attack_ai(mob/user as mob)
+	src.add_hiddenprint(user)
+	return src.attack_hand(user)
+
+/obj/machinery/computer/arcade/attack_paw(mob/user as mob)
 	return src.attack_hand(user)
 
 /obj/machinery/computer/arcade/attack_hand(mob/user as mob)
@@ -64,17 +73,23 @@
 		return
 	user.set_machine(src)
 	var/dat = "<a href='byond://?src=\ref[src];close=1'>Close</a>"
-	dat += "<center><h4>[src.enemy_name]</h4></center>"
 
-	dat += "<br><center><h3>[src.temp]</h3></center>"
-	dat += "<br><center>Health: [src.player_hp] | Magic: [src.player_mp] | Enemy Health: [src.enemy_hp]</center>"
-
+	// AUTOFIXED BY fix_string_idiocy.py
+	// C:\Users\Rob\Documents\Projects\vgstation13\code\game\machinery\computer\arcade.dm:67: dat += "<center><h4>[src.enemy_name]</h4></center>"
+	dat += {"<center><h4>[src.enemy_name]</h4></center>
+		<br><center><h3>[src.temp]</h3></center>
+		<br><center>Health: [src.player_hp] | Magic: [src.player_mp] | Enemy Health: [src.enemy_hp]</center>"}
+	// END AUTOFIX
 	if (src.gameover)
 		dat += "<center><b><a href='byond://?src=\ref[src];newgame=1'>New Game</a>"
 	else
-		dat += "<center><b><a href='byond://?src=\ref[src];attack=1'>Attack</a> | "
-		dat += "<a href='byond://?src=\ref[src];heal=1'>Heal</a> | "
-		dat += "<a href='byond://?src=\ref[src];charge=1'>Recharge Power</a>"
+
+		// AUTOFIXED BY fix_string_idiocy.py
+		// C:\Users\Rob\Documents\Projects\vgstation13\code\game\machinery\computer\arcade.dm:75: dat += "<center><b><a href='byond://?src=\ref[src];attack=1'>Attack</a> | "
+		dat += {"<center><b><a href='byond://?src=\ref[src];attack=1'>Attack</a> |
+			<a href='byond://?src=\ref[src];heal=1'>Heal</a> |
+			<a href='byond://?src=\ref[src];charge=1'>Recharge Power</a>"}
+	// END AUTOFIX
 
 	dat += "</b></center>"
 
@@ -84,7 +99,7 @@
 
 /obj/machinery/computer/arcade/Topic(href, href_list)
 	if(..())
-		return 1
+		return
 
 	if (!src.blocked && !src.gameover)
 		if (href_list["attack"])
@@ -157,6 +172,8 @@
 				feedback_inc("arcade_win_emagged")
 				new /obj/effect/spawner/newbomb/timer/syndicate(src.loc)
 				new /obj/item/clothing/head/collectable/petehat(src.loc)
+				new /obj/item/device/maracas(src.loc)
+				new /obj/item/device/maracas(src.loc)
 				message_admins("[key_name_admin(usr)] has outbombed Cuban Pete and been awarded a bomb.")
 				log_game("[key_name_admin(usr)] has outbombed Cuban Pete and been awarded a bomb.")
 				src.New()
@@ -220,27 +237,21 @@
 	src.blocked = 0
 	return
 
+/obj/machinery/computer/arcade/emag(mob/user as mob)
+	temp = "If you die in the game, you die for real!"
+	player_hp = 30
+	player_mp = 10
+	enemy_hp = 45
+	enemy_mp = 20
+	gameover = 0
+	blocked = 0
 
-/obj/machinery/computer/arcade/attackby(I as obj, user as mob)
-	if(istype(I, /obj/item/weapon/card/emag) && !emagged)
-		temp = "If you die in the game, you die for real!"
-		player_hp = 30
-		player_mp = 10
-		enemy_hp = 45
-		enemy_mp = 20
-		gameover = 0
-		blocked = 0
+	emagged = 1
 
-		emagged = 1
+	enemy_name = "Cuban Pete"
+	name = "Outbomb Cuban Pete"
 
-		enemy_name = "Cuban Pete"
-		name = "Outbomb Cuban Pete"
-
-
-		src.updateUsrDialog()
-	else
-		..()
-
+	src.updateUsrDialog()
 
 /obj/machinery/computer/arcade/emp_act(severity)
 	if(stat & (NOPOWER|BROKEN))

@@ -1,6 +1,6 @@
 /mob/living/silicon/robot/Life()
 	set invisibility = 0
-	set background = 1
+	//set background = 1
 
 	if (src.monkeyizing)
 		return
@@ -18,8 +18,11 @@
 		use_power()
 		process_killswitch()
 		process_locks()
-		process_queued_alarms()
+		if(module)
+			module.recharge_consumable(src)
 	update_canmove()
+	handle_fire()
+	handle_beams()
 
 /mob/living/silicon/robot/proc/clamp_values()
 
@@ -33,37 +36,36 @@
 	adjustFireLoss(0)
 
 /mob/living/silicon/robot/proc/use_power()
-	// Debug only
-	// world << "DEBUG: life.dm line 35: cyborg use_power() called at tick [controller_iteration]"
-	used_power_this_tick = 0
-	for(var/V in components)
-		var/datum/robot_component/C = components[V]
-		C.update_power_state()
 
-	if ( cell && is_component_functioning("power cell") && src.cell.charge > 0 )
-		if(src.module_state_1)
-			cell_use_power(50) // 50W load for every enabled tool TODO: tool-specific loads
-		if(src.module_state_2)
-			cell_use_power(50)
-		if(src.module_state_3)
-			cell_use_power(50)
+	if (is_component_functioning("power cell") && cell)
+		if(src.cell.charge <= 0)
+			uneq_all()
+			src.stat = 1
+		else
+			if(src.module_state_1)
+				src.cell.use(3)
+			if(src.module_state_2)
+				src.cell.use(3)
+			if(src.module_state_3)
+				src.cell.use(3)
 
-		if(lights_on)
-			cell_use_power(30) 	// 30W light. Normal lights would use ~15W, but increased for balance reasons.
+			for(var/V in components)
+				var/datum/robot_component/C = components[V]
+				C.consume_power()
 
-		src.has_power = 1
+			if(!is_component_functioning("actuator"))
+				Paralyse(3)
+
+			src.stat = 0
 	else
-		if (src.has_power)
-			src << "\red You are now running on emergency backup power."
-		src.has_power = 0
-		if(lights_on) // Light is on but there is no power!
-			lights_on = 0
-			SetLuminosity(0)
+		uneq_all()
+		src.stat = 1
+
 
 /mob/living/silicon/robot/proc/handle_regular_status_updates()
 
 	if(src.camera && !scrambledcodes)
-		if(src.stat == 2 || wires.IsIndexCut(BORG_WIRE_CAMERA))
+		if(src.stat == 2 || wires.IsCameraCut())
 			src.camera.status = 0
 		else
 			src.camera.status = 1
@@ -77,11 +79,11 @@
 	if(src.resting)
 		Weaken(5)
 
-	if(health < config.health_threshold_dead && src.stat != 2) //die only once
+	if(health <= 0 && src.stat != 2) //die only once
 		death()
 
 	if (src.stat != 2) //Alive.
-		if (src.paralysis || src.stunned || src.weakened || !src.has_power) //Stunned etc.
+		if (src.paralysis || src.stunned || src.weakened) //Stunned etc.
 			src.stat = 1
 			if (src.stunned > 0)
 				AdjustStunned(-1)
@@ -126,37 +128,33 @@
 		src.druggy--
 		src.druggy = max(0, src.druggy)
 
-	//update the state of modules and components here
-	if (src.stat != 0)
-		uneq_all()
-
-	if(radio)
-		if(!is_component_functioning("radio"))
-			radio.on = 0
-		else
-			radio.on = 1
+	if(!is_component_functioning("radio"))
+		radio.on = 0
+	else
+		radio.on = 1
 
 	if(is_component_functioning("camera"))
 		src.blinded = 0
 	else
 		src.blinded = 1
 
+
 	return 1
 
 /mob/living/silicon/robot/proc/handle_regular_hud_updates()
 
-	if (src.stat == 2 || XRAY in mutations || src.sight_mode & BORGXRAY)
+	if (src.stat == 2 || M_XRAY in mutations || src.sight_mode & BORGXRAY)
 		src.sight |= SEE_TURFS
 		src.sight |= SEE_MOBS
 		src.sight |= SEE_OBJS
 		src.see_in_dark = 8
 		src.see_invisible = SEE_INVISIBLE_MINIMUM
-	else if (src.sight_mode & BORGMESON && src.sight_mode & BORGTHERM)
+	else if ((src.sight_mode & BORGMESON  || sensor_mode == MESON_VISION) && src.sight_mode & BORGTHERM)
 		src.sight |= SEE_TURFS
 		src.sight |= SEE_MOBS
 		src.see_in_dark = 8
 		see_invisible = SEE_INVISIBLE_MINIMUM
-	else if (src.sight_mode & BORGMESON)
+	else if (src.sight_mode & BORGMESON  || sensor_mode == MESON_VISION)
 		src.sight |= SEE_TURFS
 		src.see_in_dark = 8
 		see_invisible = SEE_INVISIBLE_MINIMUM
@@ -168,56 +166,34 @@
 		src.sight &= ~SEE_MOBS
 		src.sight &= ~SEE_TURFS
 		src.sight &= ~SEE_OBJS
-		src.see_in_dark = 8 			 // see_in_dark means you can FAINTLY see in the dark, humans have a range of 3 or so, tajaran have it at 8
-		src.see_invisible = SEE_INVISIBLE_LIVING // This is normal vision (25), setting it lower for normal vision means you don't "see" things like darkness since darkness
-							 // has a "invisible" value of 15
+		src.see_in_dark = 8
+		src.see_invisible = SEE_INVISIBLE_LEVEL_TWO
 
-	regular_hud_updates()
+	regular_hud_updates() //Handles MED/SEC HUDs for borgs.
 
-	var/obj/item/borg/sight/hud/hud = (locate(/obj/item/borg/sight/hud) in src)
-	if(hud && hud.hud)
-		hud.hud.process_hud(src)
-	else
-		switch(src.sensor_mode)
-			if (SEC_HUD)
-				process_sec_hud(src,0)
-			if (MED_HUD)
-				process_med_hud(src,0)
+	switch(sensor_mode)
+		if (SEC_HUD)
+			process_sec_hud(src, 1)
+		if (MED_HUD)
+			process_med_hud(src)
 
 	if (src.healths)
 		if (src.stat != 2)
-			if(istype(src,/mob/living/silicon/robot/drone))
-				switch(health)
-					if(35 to INFINITY)
-						src.healths.icon_state = "health0"
-					if(25 to 34)
-						src.healths.icon_state = "health1"
-					if(15 to 24)
-						src.healths.icon_state = "health2"
-					if(5 to 14)
-						src.healths.icon_state = "health3"
-					if(0 to 4)
-						src.healths.icon_state = "health4"
-					if(-35 to 0)
-						src.healths.icon_state = "health5"
-					else
-						src.healths.icon_state = "health6"
-			else
-				switch(health)
-					if(200 to INFINITY)
-						src.healths.icon_state = "health0"
-					if(150 to 200)
-						src.healths.icon_state = "health1"
-					if(100 to 150)
-						src.healths.icon_state = "health2"
-					if(50 to 100)
-						src.healths.icon_state = "health3"
-					if(0 to 50)
-						src.healths.icon_state = "health4"
-					if(config.health_threshold_dead to 0)
-						src.healths.icon_state = "health5"
-					else
-						src.healths.icon_state = "health6"
+			switch(health)
+				if(200 to INFINITY)
+					src.healths.icon_state = "health0"
+				if(150 to 200)
+					src.healths.icon_state = "health1"
+				if(100 to 150)
+					src.healths.icon_state = "health2"
+				if(50 to 100)
+					src.healths.icon_state = "health3"
+				if(0 to 50)
+					src.healths.icon_state = "health4"
+				if(config.health_threshold_dead to 0)
+					src.healths.icon_state = "health5"
+				else
+					src.healths.icon_state = "health6"
 		else
 			src.healths.icon_state = "health7"
 
@@ -227,7 +203,9 @@
 				if(tra.current)
 					var/I = image('icons/mob/mob.dmi', loc = tra.current, icon_state = "traitor")
 					src.client.images += I
-		src.disconnect_from_ai()
+		if(src.connected_ai)
+			src.connected_ai.connected_robots -= src
+			src.connected_ai = null
 		if(src.mind)
 			if(!src.mind.special_role)
 				src.mind.special_role = "traitor"
@@ -263,6 +241,8 @@
 			else
 				src.bodytemp.icon_state = "temp-2"
 
+
+	if(src.pullin)	src.pullin.icon_state = "pull[src.pulling ? 1 : 0]"
 //Oxygen and fire does nothing yet!!
 //	if (src.oxygen) src.oxygen.icon_state = "oxy[src.oxygen_alert ? 1 : 0]"
 //	if (src.fire) src.fire.icon_state = "fire[src.fire_alert ? 1 : 0]"
@@ -327,7 +307,27 @@
 			weapon_lock = 0
 			weaponlock_time = 120
 
+//Robots on fire
+/mob/living/silicon/robot/handle_fire()
+	if(..())
+		return
+	adjustFireLoss(3)
+	return
+
+/mob/living/silicon/robot/update_fire()
+	overlays -= image("icon"='icons/mob/OnFire.dmi', "icon_state"="Standing")
+	if(on_fire)
+		overlays += image("icon"='icons/mob/OnFire.dmi', "icon_state"="Standing")
+	update_icons()
+	return
+
+/mob/living/silicon/robot/fire_act(datum/gas_mixture/air, exposed_temperature, exposed_volume)
+	if(!on_fire) //Silicons don't gain stacks from hotspots, but hotspots can ignite them
+		IgniteMob()
+
+//Robots on fire
+
 /mob/living/silicon/robot/update_canmove()
-	if(paralysis || stunned || weakened || buckled || lockcharge || !is_component_functioning("actuator")) canmove = 0
+	if(paralysis || stunned || weakened || buckled || lockcharge) canmove = 0
 	else canmove = 1
 	return canmove

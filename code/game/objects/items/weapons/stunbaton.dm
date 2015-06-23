@@ -1,26 +1,24 @@
-//replaces our stun baton code with /tg/station's code
 /obj/item/weapon/melee/baton
-	name = "stunbaton"
+	name = "stun baton"
 	desc = "A stun baton for incapacitating people with."
-	icon_state = "stunbaton"
+	icon_state = "stun baton"
 	item_state = "baton"
+	flags = FPRINT
 	slot_flags = SLOT_BELT
-	force = 15
-	sharp = 0
-	edge = 0
+	force = 10
 	throwforce = 7
 	w_class = 3
 	origin_tech = "combat=2"
 	attack_verb = list("beaten")
-	var/stunforce = 0
-	var/agonyforce = 60
-	var/status = 0		//whether the thing is on or not
+	var/stunforce = 10
+	var/status = 0
 	var/obj/item/weapon/cell/bcell = null
-	var/hitcost = 1000	//oh god why do power cells carry so much charge? We probably need to make a distinction between "industrial" sized power cells for APCs and power cells for everything else.
+	var/hitcost = 100 // 10 hits on crap cell
+	var/mob/foundmob = "" //Used in throwing proc.
 
-/obj/item/weapon/melee/baton/suicide_act(mob/user)
-	user.visible_message("<span class='suicide'>[user] is putting the live [name] in \his mouth! It looks like \he's trying to commit suicide.</span>")
-	return (FIRELOSS)
+	suicide_act(mob/user)
+		viewers(user) << "<span class='danger'>[user] is putting the live [src.name] in \his mouth! It looks like \he's trying to commit suicide.</span>"
+		return (FIRELOSS)
 
 /obj/item/weapon/melee/baton/New()
 	..()
@@ -29,19 +27,22 @@
 
 /obj/item/weapon/melee/baton/loaded/New() //this one starts with a cell pre-installed.
 	..()
-	bcell = new/obj/item/weapon/cell/high(src)
+	bcell = new(src)
+	bcell.charge=bcell.maxcharge // Charge this shit
 	update_icon()
 	return
 
 /obj/item/weapon/melee/baton/proc/deductcharge(var/chrgdeductamt)
 	if(bcell)
-		if(bcell.checked_use(chrgdeductamt))
+		if(bcell.use(chrgdeductamt))
+			if(bcell.charge < hitcost)
+				status = 0
+				update_icon()
 			return 1
 		else
 			status = 0
 			update_icon()
 			return 0
-	return null
 
 /obj/item/weapon/melee/baton/update_icon()
 	if(status)
@@ -52,11 +53,9 @@
 		icon_state = "[initial(name)]"
 
 /obj/item/weapon/melee/baton/examine(mob/user)
-	if(!..(user, 1))
-		return
-	
+	..()
 	if(bcell)
-		user <<"<span class='notice'>The baton is [round(bcell.percent())]% charged.</span>"
+		user <<"<span class='info'>The baton is [round(bcell.percent())]% charged.</span>"
 	if(!bcell)
 		user <<"<span class='warning'>The baton does not have a power source installed.</span>"
 
@@ -84,7 +83,12 @@
 	return
 
 /obj/item/weapon/melee/baton/attack_self(mob/user)
-	if(bcell && bcell.charge > hitcost)
+	if(status && (M_CLUMSY in user.mutations) && prob(50))
+		user << "<span class='warning'>You grab the [src] on the wrong side.</span>"
+		user.Weaken(stunforce*3)
+		deductcharge(hitcost)
+		return
+	if(bcell && bcell.charge >= hitcost)
 		status = !status
 		user << "<span class='notice'>[src] is now [status ? "on" : "off"].</span>"
 		playsound(loc, "sparks", 75, 1, -1)
@@ -97,86 +101,104 @@
 			user << "<span class='warning'>[src] is out of charge.</span>"
 	add_fingerprint(user)
 
-
 /obj/item/weapon/melee/baton/attack(mob/M, mob/user)
-	if(status && (CLUMSY in user.mutations) && prob(50))
-		user << "span class='danger'>You accidentally hit yourself with the [src]!</span>"
-		user.Weaken(30)
+	if(status && (M_CLUMSY in user.mutations) && prob(50))
+		user << "<span class='danger'>You accidentally hit yourself with [src]!</span>"
+		user.Weaken(stunforce*3)
 		deductcharge(hitcost)
 		return
 
 	if(isrobot(M))
 		..()
 		return
+	if(!isliving(M))
+		return
 
-	var/agony = agonyforce
-	var/stun = stunforce
 	var/mob/living/L = M
 
-	var/target_zone = check_zone(user.zone_sel.selecting)
 	if(user.a_intent == "hurt")
-		if (!..())	//item/attack() does it's own messaging and logs
-			return 0	// item/attack() will return 1 if they hit, 0 if they missed.
-		agony *= 0.5	//whacking someone causes a much poorer contact than prodding them.
-		stun *= 0.5
-		//we can't really extract the actual hit zone from ..(), unfortunately. Just act like they attacked the area they intended to.
-	else
-		//copied from human_defense.dm - human defence code should really be refactored some time.
-		if (ishuman(L))
-			user.lastattacked = L	//are these used at all, if we have logs?
-			L.lastattacker = user
+		..()
+		playsound(loc, "swing_hit", 50, 1, -1)
 
-			if (user != L) // Attacking yourself can't miss
-				target_zone = get_zone_with_miss_chance(user.zone_sel.selecting, L)
+	else if(!status)
+		L.visible_message("<span class='attack'>[L] has been prodded with the [src] by [user]. Luckily it was off.</span>")
+		return
 
-			if(!target_zone)
-				L.visible_message("\red <B>[user] misses [L] with \the [src]!")
-				return 0
+	if(status)
+		user.lastattacked = L
+		L.lastattacker = user
 
-			var/mob/living/carbon/human/H = L
-			var/datum/organ/external/affecting = H.get_organ(target_zone)
-			if (affecting)
-				if(!status)
-					L.visible_message("<span class='warning'>[L] has been prodded in the [affecting.display_name] with [src] by [user]. Luckily it was off.</span>")
-					return 1
-				else
-					H.visible_message("<span class='danger'>[L] has been prodded in the [affecting.display_name] with [src] by [user]!</span>")
+		L.Stun(stunforce)
+		L.Weaken(stunforce)
+		L.apply_effect(STUTTER, stunforce)
+
+		L.visible_message("<span class='danger'>[L] has been stunned with [src] by [user]!</span>")
+		playsound(loc, 'sound/weapons/Egloves.ogg', 50, 1, -1)
+
+		if(isrobot(loc))
+			var/mob/living/silicon/robot/R = loc
+			if(R && R.cell)
+				R.cell.use(hitcost)
 		else
-			if(!status)
-				L.visible_message("<span class='warning'>[L] has been prodded with [src] by [user]. Luckily it was off.</span>")
-				return 1
-			else
-				L.visible_message("<span class='danger'>[L] has been prodded with [src] by [user]!</span>")
+			deductcharge(hitcost)
 
-	//stun effects
-	L.stun_effect_act(stun, agony, target_zone, src)
+		if(ishuman(L))
+			var/mob/living/carbon/human/H = L
+			H.forcesay(hit_appends)
 
-	playsound(loc, 'sound/weapons/Egloves.ogg', 50, 1, -1)
-	msg_admin_attack("[key_name(user)] stunned [key_name(L)] with the [src].")
+		user.attack_log += "\[[time_stamp()]\]<font color='red'> Stunned [L.name] ([L.ckey]) with [name]</font>"
+		L.attack_log += "\[[time_stamp()]\]<font color='orange'> Stunned by [user.name] ([user.ckey]) with [name]</font>"
+		log_attack("<font color='red'>[user.name] ([user.ckey]) stunned [L.name] ([L.ckey]) with [name]</font>" )
+		if(!iscarbon(user))
+			M.LAssailant = null
+		else
+			M.LAssailant = user
 
-	deductcharge(hitcost)
+/obj/item/weapon/melee/baton/throw_impact(atom/hit_atom)
+	foundmob = directory[ckey(fingerprintslast)]
+	if (prob(50))
+		if(istype(hit_atom, /mob/living))
+			var/mob/living/L = hit_atom
+			if(status)
+				if(foundmob)
+					foundmob.lastattacked = L
+					L.lastattacker = foundmob
 
-	if(ishuman(L))
-		var/mob/living/carbon/human/H = L
-		H.forcesay(hit_appends)
+				L.Stun(stunforce)
+				L.Weaken(stunforce)
+				L.apply_effect(STUTTER, stunforce)
 
-	return 1
+				L.visible_message("<span class='danger'>[L] has been stunned with [src] by [foundmob ? foundmob : "Unknown"]!</span>")
+				playsound(loc, 'sound/weapons/Egloves.ogg', 50, 1, -1)
+
+				if(isrobot(loc))
+					var/mob/living/silicon/robot/R = loc
+					if(R && R.cell)
+						R.cell.use(hitcost)
+				else
+					deductcharge(hitcost)
+
+				if(ishuman(L))
+					var/mob/living/carbon/human/H = L
+					H.forcesay(hit_appends)
+
+				foundmob.attack_log += "\[[time_stamp()]\]<font color='red'> Stunned [L.name] ([L.ckey]) with [name]</font>"
+				L.attack_log += "\[[time_stamp()]\]<font color='orange'> Stunned by thrown [src] by [istype(foundmob) ? foundmob.name : ""] ([istype(foundmob) ? foundmob.ckey : ""])</font>"
+				log_attack("<font color='red'>Flying [src.name], thrown by [istype(foundmob) ? foundmob.name : ""] ([istype(foundmob) ? foundmob.ckey : ""]) stunned [L.name] ([L.ckey])</font>" )
+				if(!iscarbon(foundmob))
+					L.LAssailant = null
+				else
+					L.LAssailant = foundmob
+
+				return
+	return ..()
 
 /obj/item/weapon/melee/baton/emp_act(severity)
 	if(bcell)
-		bcell.emp_act(severity)	//let's not duplicate code everywhere if we don't have to please.
+		deductcharge(1000 / severity)
+		if(bcell.reliability != 100 && prob(50/severity))
+			bcell.reliability -= 10 / severity
 	..()
-
-//secborg stun baton module
-/obj/item/weapon/melee/baton/robot/attack_self(mob/user)
-	//try to find our power cell
-	var/mob/living/silicon/robot/R = loc
-	if (istype(R))
-		bcell = R.cell
-	return ..()
-
-/obj/item/weapon/melee/baton/robot/attackby(obj/item/weapon/W, mob/user)
-	return
 
 //Makeshift stun baton. Replacement for stun gloves.
 /obj/item/weapon/melee/baton/cattleprod
@@ -186,8 +208,6 @@
 	item_state = "prod"
 	force = 3
 	throwforce = 5
-	stunforce = 0
-	agonyforce = 60	//same force as a stunbaton, but uses way more charge.
+	stunforce = 5
 	hitcost = 2500
-	attack_verb = list("poked")
 	slot_flags = null

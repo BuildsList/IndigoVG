@@ -8,8 +8,9 @@
 	icon_state = null
 	item_state = "pill"
 	possible_transfer_amounts = null
-	w_class = 1
-	volume = 60
+	volume = 50
+	m_amt = 5
+	w_type = RECYK_METAL
 
 	New()
 		..()
@@ -20,28 +21,18 @@
 		return
 	attack(mob/M as mob, mob/user as mob, def_zone)
 		if(M == user)
-
-			if(istype(M, /mob/living/carbon/human))
-				var/mob/living/carbon/human/H = M
-				if(H.species.flags & IS_SYNTHETIC)
-					H << "\red You have a monitor for a head, where do you think you're going to put that?"
-					return
-
 			M << "\blue You swallow [src]."
 			M.drop_from_inventory(src) //icon update
 			if(reagents.total_volume)
-				reagents.trans_to_ingest(M, reagents.total_volume)
-				del(src)
+				reagents.reaction(M, INGEST)
+				spawn(5)
+					reagents.trans_to(M, reagents.total_volume)
+					del(src)
 			else
 				del(src)
 			return 1
 
 		else if(istype(M, /mob/living/carbon/human) )
-
-			var/mob/living/carbon/human/H = M
-			if(H.species.flags & IS_SYNTHETIC)
-				H << "\red They have a monitor for a head, where do you think you're going to put that?"
-				return
 
 			for(var/mob/O in viewers(world.view, user))
 				O.show_message("\red [user] attempts to force [M] to swallow [src].", 1)
@@ -55,10 +46,16 @@
 			M.attack_log += text("\[[time_stamp()]\] <font color='orange'>Has been fed [src.name] by [user.name] ([user.ckey]) Reagents: [reagentlist(src)]</font>")
 			user.attack_log += text("\[[time_stamp()]\] <font color='red'>Fed [M.name] by [M.name] ([M.ckey]) Reagents: [reagentlist(src)]</font>")
 			msg_admin_attack("[user.name] ([user.ckey]) fed [M.name] ([M.ckey]) with [src.name] Reagents: [reagentlist(src)] (INTENT: [uppertext(user.a_intent)]) (<A HREF='?_src_=holder;adminplayerobservecoodjump=1;X=[user.x];Y=[user.y];Z=[user.z]'>JMP</a>)")
+			if(!iscarbon(user))
+				M.LAssailant = null
+			else
+				M.LAssailant = user
 
 			if(reagents.total_volume)
-				reagents.trans_to_ingest(M, reagents.total_volume)
-				del(src)
+				reagents.reaction(M, INGEST)
+				spawn(5)
+					reagents.trans_to(M, reagents.total_volume)
+					del(src)
 			else
 				del(src)
 
@@ -66,24 +63,41 @@
 
 		return 0
 
-	afterattack(obj/target, mob/user, proximity)
-		if(!proximity) return
+	afterattack(obj/target, mob/user , flag)
 
 		if(target.is_open_container() != 0 && target.reagents)
-			if(!target.reagents.total_volume)
-				user << "\red [target] is empty. Cant dissolve pill."
-				return
-			user << "\blue You dissolve the pill in [target]"
+			var/hadContents = target.reagents.total_volume
+			var/trans = reagents.trans_to(target, reagents.total_volume)
 
-			user.attack_log += text("\[[time_stamp()]\] <font color='red'>Spiked \a [target] with a pill. Reagents: [reagentlist(src)]</font>")
-			msg_admin_attack("[user.name] ([user.ckey]) spiked \a [target] with a pill. Reagents: [reagentlist(src)] (INTENT: [uppertext(user.a_intent)]) (<A HREF='?_src_=holder;adminplayerobservecoodjump=1;X=[user.x];Y=[user.y];Z=[user.z]'>JMP</a>)")
+			// /vg/: Logging transfers of bad things
+			if(istype(target.reagents_to_log) && target.reagents_to_log.len)
+				var/list/badshit=list()
+				for(var/bad_reagent in target.reagents_to_log)
+					if(reagents.has_reagent(bad_reagent))
+						badshit += reagents_to_log[bad_reagent]
+				if(badshit.len)
+					var/hl="\red <b>([english_list(badshit)])</b> \black"
+					message_admins("[user.name] ([user.ckey]) added [trans]U to \a [target] with [src].[hl] (<A HREF='?_src_=holder;adminplayerobservecoodjump=1;X=[user.x];Y=[user.y];Z=[user.z]'>JMP</a>)")
+					log_game("[user.name] ([user.ckey]) added [trans]U to \a [target] with [src].")
 
-			reagents.trans_to(target, reagents.total_volume)
-			for(var/mob/O in viewers(2, user))
-				O.show_message("\red [user] puts something in \the [target].", 1)
-
-			spawn(5)
-				del(src)
+			if(trans)
+				if(reagents.total_volume == 0)//Total transfer case
+					if(hadContents)
+						user << "<span class='notice'>You dissolve the pill into [target]</span>"
+					else
+						user << "<span class='notice'>You crush the pill into [target]</span>"
+					spawn(1)
+						qdel(src)
+				else//Partial transfer case
+					if(hadContents)
+						user << "<span class='notice'>You partially dissolve the pill into [target], filling it</span>"
+					else
+						user << "<span class='notice'>You crush part of the pill into [target], filling it</span>"
+				for(var/mob/O in viewers(2, user))
+					if(O!=user)
+						O.show_message("<span class='attack'>[user] puts something in [target].</span>", 1)
+			else//No transfer case
+				user << "<span class='notice'>[target] is full!</span>"
 
 		return
 
@@ -92,6 +106,14 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 //Pills
+/obj/item/weapon/reagent_containers/pill/creatine
+	name = "Creatine Suicide Pill (50 units)"
+	desc = "WILL ALSO KILL YOU VIOLENTLY."
+	icon_state = "pill5"
+	New()
+		..()
+		reagents.add_reagent("creatine", 50)
+
 /obj/item/weapon/reagent_containers/pill/antitox
 	name = "Anti-toxins pill"
 	desc = "Neutralizes many common toxins."
@@ -130,7 +152,7 @@
 	icon_state = "pill8"
 	New()
 		..()
-		reagents.add_reagent("stoxin", 15)
+		reagents.add_reagent("stoxin", 30)
 
 /obj/item/weapon/reagent_containers/pill/kelotane
 	name = "Kelotane pill"
@@ -138,15 +160,7 @@
 	icon_state = "pill11"
 	New()
 		..()
-		reagents.add_reagent("kelotane", 15)
-
-/obj/item/weapon/reagent_containers/pill/paracetamol
-	name = "Paracetamol pill"
-	desc = "Tylenol! A painkiller for the ages. Chewables!"
-	icon_state = "pill8"
-	New()
-		..()
-		reagents.add_reagent("paracetamol", 15)
+		reagents.add_reagent("kelotane", 30)
 
 /obj/item/weapon/reagent_containers/pill/tramadol
 	name = "Tramadol pill"
@@ -188,39 +202,7 @@
 	icon_state = "pill16"
 	New()
 		..()
-		reagents.add_reagent("dexalin", 15)
-
-/obj/item/weapon/reagent_containers/pill/dexalin_plus
-	name = "Dexalin Plus pill"
-	desc = "Used to treat extreme oxygen deprivation."
-	icon_state = "pill8"
-	New()
-		..()
-		reagents.add_reagent("dexalinp", 15)
-
-/obj/item/weapon/reagent_containers/pill/dermaline
-	name = "Dermaline pill"
-	desc = "Used to treat burn wounds."
-	icon_state = "pill12"
-	New()
-		..()
-		reagents.add_reagent("dermaline", 15)
-
-/obj/item/weapon/reagent_containers/pill/dylovene
-	name = "Dylovene pill"
-	desc = "A broad-spectrum anti-toxin."
-	icon_state = "pill13"
-	New()
-		..()
-		reagents.add_reagent("anti_toxin", 15)
-
-/obj/item/weapon/reagent_containers/pill/inaprovaline
-	name = "Inaprovaline pill"
-	desc = "Used to stabilize patients."
-	icon_state = "pill20"
-	New()
-		..()
-		reagents.add_reagent("inaprovaline", 30)
+		reagents.add_reagent("dexalin", 30)
 
 /obj/item/weapon/reagent_containers/pill/bicaridine
 	name = "Bicaridine pill"
@@ -228,7 +210,7 @@
 	icon_state = "pill18"
 	New()
 		..()
-		reagents.add_reagent("bicaridine", 20)
+		reagents.add_reagent("bicaridine", 30)
 
 /obj/item/weapon/reagent_containers/pill/happy
 	name = "Happy pill"
@@ -248,11 +230,3 @@
 		reagents.add_reagent("impedrezene", 10)
 		reagents.add_reagent("synaptizine", 5)
 		reagents.add_reagent("hyperzine", 5)
-
-/obj/item/weapon/reagent_containers/pill/spaceacillin
-	name = "Spaceacillin pill"
-	desc = "Contains antiviral agents."
-	icon_state = "pill19"
-	New()
-		..()
-		reagents.add_reagent("spaceacillin", 15)

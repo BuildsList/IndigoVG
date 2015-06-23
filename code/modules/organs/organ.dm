@@ -56,17 +56,27 @@
 /mob/living/carbon/human/var/list/organs_by_name = list() // map organ names to organs
 /mob/living/carbon/human/var/list/internal_organs_by_name = list() // so internal organs have less ickiness too
 
+/mob/living/carbon/human/proc/can_use_active_hand()
+	if (hasorgans(src))
+		var/datum/organ/external/temp = src.organs_by_name[(hand ? "l_hand" : "r_hand")]
+		if(temp && !temp.is_usable())
+			return
+		else if (!temp)
+			return
+	return 1
+
 // Takes care of organ related updates, such as broken and missing limbs
 /mob/living/carbon/human/proc/handle_organs()
 
 	number_wounds = 0
+	var/leg_tally = 2
 	var/force_process = 0
 	var/damage_this_tick = getBruteLoss() + getFireLoss() + getToxLoss()
 	if(damage_this_tick > last_dam)
 		force_process = 1
 	last_dam = damage_this_tick
 	if(force_process)
-		bad_external_organs.Cut()
+		bad_external_organs.len = 0
 		for(var/datum/organ/external/Ex in organs)
 			bad_external_organs += Ex
 
@@ -74,8 +84,18 @@
 	for(var/datum/organ/internal/I in internal_organs)
 		I.process()
 
-	//losing a limb stops it from processing, so this has to be done separately
-	handle_stance()
+	// Also handles some internal organ processing when the organs are missing completely.
+	// Only handles missing liver and kidneys for now.
+    // This is a bit harsh, but really if you're missing an entire bodily organ you're in deep shit.
+	if(species.has_organ["liver"])
+		var/datum/organ/internal/liver = internal_organs_by_name["liver"]
+		if(!liver || liver.status & ORGAN_CUT_AWAY)
+			reagents.add_reagent("toxin", rand(1,3))
+
+	if(species.has_organ["kidneys"])
+		var/datum/organ/internal/kidney = internal_organs_by_name["kidneys"]
+		if(!kidney || kidney.status & ORGAN_CUT_AWAY)
+			reagents.add_reagent("toxin", rand(1,3))
 
 	if(!force_process && !bad_external_organs.len)
 		return
@@ -90,50 +110,98 @@
 			E.process()
 			number_wounds += E.number_wounds
 
-			if (!lying && world.time - l_move_time < 15)
+			//Robotic limb malfunctions
+			var/malfunction = 0
+			if (E.status & ORGAN_ROBOT && prob(E.brute_dam + E.burn_dam))
+				malfunction = 1
+
+			//Broken limbs hurt too
+			var/broken = 0
+			if(E.status & ORGAN_BROKEN && !(E.status & ORGAN_SPLINTED) )
+				broken = 1
+
 			//Moving around with fractured ribs won't do you any good
-				if (E.is_broken() && E.internal_organs && prob(15))
+			if (broken && E.internal_organs && prob(15))
+				if (!lying && world.timeofday - l_move_time < 15)
 					var/datum/organ/internal/I = pick(E.internal_organs)
 					custom_pain("You feel broken bones moving in your [E.display_name]!", 1)
 					I.take_damage(rand(3,5))
 
-				//Moving makes open wounds get infected much faster
-				if (E.wounds.len)
-					for(var/datum/wound/W in E.wounds)
-						if (W.infection_check())
-							W.germ_level += 1
+			//Special effects for limbs.
+			if(E.name in list("l_hand","l_arm","r_hand","r_arm") && (broken||malfunction))
+				var/obj/item/c_hand		//Getting what's in this hand
+				if(E.name == "l_hand" || E.name == "l_arm")
+					c_hand = l_hand
+				if(E.name == "r_hand" || E.name == "r_arm")
+					c_hand = r_hand
 
-/mob/living/carbon/human/proc/handle_stance()
-	// Don't need to process any of this if they aren't standing anyways
-	// unless their stance is damaged, and we want to check if they should stay down
-	if (!stance_damage && (lying || resting) && (life_tick % 4) == 0)
-		return 
-	
-	stance_damage = 0
-	
-	// Buckled to a bed/chair. Stance damage is forced to 0 since they're sitting on something solid
-	if (istype(buckled, /obj/structure/bed))
-		return
-	
-	for (var/organ in list("l_leg","l_foot","r_leg","r_foot"))
-		var/datum/organ/external/E = organs_by_name[organ]
-		if (E.status & ORGAN_DESTROYED)
-			stance_damage += 2 // let it fail even if just foot&leg
-		else if (E.is_malfunctioning() || (E.is_broken() && !(E.status & ORGAN_SPLINTED)) || !E.is_usable())
-			stance_damage += 1
+				if (c_hand)
+					u_equip(c_hand)
 
-	// Canes and crutches help you stand (if the latter is ever added)
-	// One cane mitigates a broken leg+foot, or a missing foot.
-	// Two canes are needed for a lost leg. If you are missing both legs, canes aren't gonna help you.
-	if (istype(l_hand, /obj/item/weapon/cane))
-		stance_damage -= 2
-	if (istype(l_hand, /obj/item/weapon/cane))
-		stance_damage -= 2
+					if(broken)
+						emote("me", 1, "[(species && species.flags & NO_PAIN) ? "" : "screams in pain and"] drops what they were holding in their [E.display_name?"[E.display_name]":"[E]"]!")
+					if(malfunction)
+						emote("me", 1, "drops what they were holding, their [E.display_name?"[E.display_name]":"[E]"] malfunctioning!")
+						var/datum/effect/effect/system/spark_spread/spark_system = new /datum/effect/effect/system/spark_spread()
+						spark_system.set_up(5, 0, src)
+						spark_system.attach(src)
+						spark_system.start()
+						spawn(10)
+							del(spark_system)
+					if(!isturf(c_hand.loc) || !istype(c_hand.loc, /obj/structure/closet))
+						c_hand.loc = get_turf(c_hand)
+
+			else if(E.name in list("l_leg","l_foot","r_leg","r_foot") && !lying)
+				if (!E.is_usable() || malfunction || (broken && !(E.status & ORGAN_SPLINTED)))
+					leg_tally--			// let it fail even if just foot&leg
 
 	// standing is poor
-	if(stance_damage >= 4 || (stance_damage >= 2 && prob(5)))
-		if(!(lying || resting))
-			if(species && !(species.flags & NO_PAIN))
-				emote("scream")
-			custom_emote(1, "collapses!")
-		Weaken(5) //can't emote while weakened, apparently.
+	if(leg_tally <= 0 && !paralysis && !(lying || resting) && prob(5))
+		if(species && species.flags & NO_PAIN)
+			emote("scream",,, 1)
+		emote("collapse")
+		paralysis = 10
+
+	//Check arms and legs for existence
+	//can_stand = 2 //can stand on both legs
+	var/canstand_l = 1
+	var/canstand_r = 1
+	var/legispeg_l=0
+	var/legispeg_r=0
+	var/hasleg_l = 1 //Have left leg
+	var/hasleg_r = 1 //Have right leg
+	var/hasarm_l = 1 //Have left arm
+	var/hasarm_r = 1 //Have right arm
+	//var/datum/organ/external/E = organs_by_name["l_foot"]
+	var/datum/organ/external/E
+	E = organs_by_name["l_leg"]
+	if(E.status & ORGAN_DESTROYED && !(E.status & ORGAN_SPLINTED))
+		canstand_l = 0
+		hasleg_l = 0
+	legispeg_l=E.status & ORGAN_PEG
+
+	E = organs_by_name["r_leg"]
+	if(E.status & ORGAN_DESTROYED && !(E.status & ORGAN_SPLINTED))
+		canstand_r = 0
+		hasleg_r = 0
+	legispeg_r=E.status & ORGAN_PEG
+
+
+	// We CAN stand if we're on a peg.
+	E = organs_by_name["l_foot"]
+	if(E.status & ORGAN_DESTROYED && !(E.status & ORGAN_SPLINTED) && !legispeg_l)
+		canstand_l = 0
+	E = organs_by_name["r_foot"]
+	if(E.status & ORGAN_DESTROYED && !(E.status & ORGAN_SPLINTED) && !legispeg_r)
+		canstand_r = 0
+	E = organs_by_name["l_arm"]
+	if(E.status & ORGAN_DESTROYED && !(E.status & ORGAN_SPLINTED))
+		hasarm_l = 0
+	E = organs_by_name["r_arm"]
+	if(E.status & ORGAN_DESTROYED && !(E.status & ORGAN_SPLINTED))
+		hasarm_r = 0
+
+	// Can stand if have at least one full leg (with leg and foot parts present, or an entire pegleg)
+	// Has limbs to move around if at least one arm or leg is at least partially there
+	can_stand = canstand_l||canstand_r
+	has_limbs = hasleg_l||hasleg_r||hasarm_l||hasarm_r

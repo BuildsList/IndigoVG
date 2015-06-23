@@ -5,73 +5,91 @@
 /mob/living/silicon/robot/get_active_hand()
 	return module_active
 
-/*-------TODOOOOOOOOOO--------*/
+/mob/living/silicon/robot/proc/uneq_module(const/obj/item/module)
+	if(!istype(module))
+		return 0
+
+	if(istype(module, /obj/item/borg/sight))
+		sight_mode &= ~module:sight_mode
+
+	if(client)
+		client.screen -= module
+
+	contents -= module
+	if(module)
+		module.loc = src.module
+	hud_used.update_robot_modules_display()
+	return 1
 
 /mob/living/silicon/robot/proc/uneq_active()
 	if(isnull(module_active))
 		return
+
 	if(module_state_1 == module_active)
-		if(istype(module_state_1,/obj/item/borg/sight))
-			sight_mode &= ~module_state_1:sight_mode
-		if (client)
-			client.screen -= module_state_1
-		contents -= module_state_1
-		module_active = null
-		module_state_1:loc = module //So it can be used again later
+		uneq_module(module_state_1)
 		module_state_1 = null
 		inv1.icon_state = "inv1"
 	else if(module_state_2 == module_active)
-		if(istype(module_state_2,/obj/item/borg/sight))
-			sight_mode &= ~module_state_2:sight_mode
-		if (client)
-			client.screen -= module_state_2
-		contents -= module_state_2
-		module_active = null
-		module_state_2:loc = module
+		uneq_module(module_state_2)
 		module_state_2 = null
 		inv2.icon_state = "inv2"
 	else if(module_state_3 == module_active)
-		if(istype(module_state_3,/obj/item/borg/sight))
-			sight_mode &= ~module_state_3:sight_mode
-		if (client)
-			client.screen -= module_state_3
-		contents -= module_state_3
-		module_active = null
-		module_state_3:loc = module
+		uneq_module(module_state_3)
 		module_state_3 = null
 		inv3.icon_state = "inv3"
+
+	module_active = null
 	updateicon()
+	hud_used.update_robot_modules_display()
+
+/mob/living/silicon/robot/proc/activate_module(var/obj/item/O)
+	if(!(locate(O) in src.module.modules) && O != src.module.emag)
+		return
+	if(activated(O))
+		src << "<span class='notice'>Already activated</span>"
+		return
+	if(!module_state_1)
+		module_state_1 = O
+		O.layer = 20
+		O.screen_loc = inv1.screen_loc
+		contents += O
+		if(istype(module_state_1,/obj/item/borg/sight))
+			sight_mode |= module_state_1:sight_mode
+	else if(!module_state_2)
+		module_state_2 = O
+		O.layer = 20
+		O.screen_loc = inv2.screen_loc
+		contents += O
+		if(istype(module_state_2,/obj/item/borg/sight))
+			sight_mode |= module_state_2:sight_mode
+	else if(!module_state_3)
+		module_state_3 = O
+		O.layer = 20
+		O.screen_loc = inv3.screen_loc
+		contents += O
+		if(istype(module_state_3,/obj/item/borg/sight))
+			sight_mode |= module_state_3:sight_mode
+	else
+		src << "<span class='notice'>You need to disable a module first!</span>"
 
 /mob/living/silicon/robot/proc/uneq_all()
 	module_active = null
 
 	if(module_state_1)
-		if(istype(module_state_1,/obj/item/borg/sight))
-			sight_mode &= ~module_state_1:sight_mode
-		if (client)
-			client.screen -= module_state_1
-		contents -= module_state_1
-		module_state_1:loc = module
+		uneq_module(module_state_1)
 		module_state_1 = null
 		inv1.icon_state = "inv1"
+
 	if(module_state_2)
-		if(istype(module_state_2,/obj/item/borg/sight))
-			sight_mode &= ~module_state_2:sight_mode
-		if (client)
-			client.screen -= module_state_2
-		contents -= module_state_2
-		module_state_2:loc = module
+		uneq_module(module_state_2)
 		module_state_2 = null
 		inv2.icon_state = "inv2"
+
 	if(module_state_3)
-		if(istype(module_state_3,/obj/item/borg/sight))
-			sight_mode &= ~module_state_3:sight_mode
-		if (client)
-			client.screen -= module_state_3
-		contents -= module_state_3
-		module_state_3:loc = module
+		uneq_module(module_state_3)
 		module_state_3 = null
 		inv3.icon_state = "inv3"
+
 	updateicon()
 
 /mob/living/silicon/robot/proc/activated(obj/item/O)
@@ -204,37 +222,3 @@
 		if(slot_num > 3) slot_num = 1 //Wrap around.
 
 	return
-
-/mob/living/silicon/robot/proc/activate_module(var/obj/item/O)
-	if(!(locate(O) in src.module.modules) && O != src.module.emag)
-		return
-	if(activated(O))
-		src << "<span class='notice'>Already activated</span>"
-		return
-	if(!module_state_1)
-		module_state_1 = O
-		O.layer = 20
-		O.screen_loc = inv1.screen_loc
-		contents += O
-		if(istype(module_state_1,/obj/item/borg/sight))
-			sight_mode |= module_state_1:sight_mode
-	else if(!module_state_2)
-		module_state_2 = O
-		O.layer = 20
-		O.screen_loc = inv2.screen_loc
-		contents += O
-		if(istype(module_state_2,/obj/item/borg/sight))
-			sight_mode |= module_state_2:sight_mode
-	else if(!module_state_3)
-		module_state_3 = O
-		O.layer = 20
-		O.screen_loc = inv3.screen_loc
-		contents += O
-		if(istype(module_state_3,/obj/item/borg/sight))
-			sight_mode |= module_state_3:sight_mode
-	else
-		src << "<span class='notice'>You need to disable a module first!</span>"
-
-/mob/living/silicon/robot/put_in_hands(var/obj/item/W) // No hands.
-	W.loc = get_turf(src)
-	return 1

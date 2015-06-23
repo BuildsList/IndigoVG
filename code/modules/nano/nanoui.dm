@@ -6,6 +6,10 @@ nanoui class (or whatever Byond calls classes)
 nanoui is used to open and update nano browser uis
 **********************************************************/
 
+
+#define STATUS_INTERACTIVE 2 // GREEN Visability
+#define STATUS_UPDATE 1 // ORANGE Visability
+#define STATUS_DISABLED 0 // RED Visability
 /datum/nanoui
 	// the user who opened this ui
 	var/mob/user
@@ -52,12 +56,8 @@ nanoui is used to open and update nano browser uis
 	// the current status/visibility of the ui
 	var/status = STATUS_INTERACTIVE
 
-	// Relationship between a master interface and its children. Used in update_status
-	var/datum/nanoui/master_ui
-	var/list/datum/nanoui/children = list()
-	var/datum/topic_state/custom_state = null
-
-	var/cached_data = null
+	// Only allow users with a certain user.stat to get updates. Defaults to 0 (concious)
+	var/allowed_user_stat = 0 // -1 = ignore, 0 = alive, 1 = unconcious or alive, 2 = dead concious or alive
 
  /**
   * Create a new nanoui instance.
@@ -73,22 +73,17 @@ nanoui is used to open and update nano browser uis
   *
   * @return /nanoui new nanoui object
   */
-/datum/nanoui/New(nuser, nsrc_object, nui_key, ntemplate_filename, ntitle = 0, nwidth = 0, nheight = 0, var/atom/nref = null, var/datum/nanoui/master_ui = null, var/datum/topic_state/custom_state = null)
+/datum/nanoui/New(nuser, nsrc_object, nui_key, ntemplate_filename, ntitle = 0, nwidth = 0, nheight = 0, var/atom/nref = null)
 	user = nuser
 	src_object = nsrc_object
 	ui_key = nui_key
 	window_id = "[ui_key]\ref[src_object]"
 
-	src.master_ui = master_ui
-	if(master_ui)
-		master_ui.children += src
-	src.custom_state = custom_state ? custom_state : new/datum/topic_state()
-
 	// add the passed template filename as the "main" template, this is required
 	add_template("main", ntemplate_filename)
 
 	if (ntitle)
-		title = sanitize(ntitle)
+		title = ntitle
 	if (nwidth)
 		width = nwidth
 	if (nheight)
@@ -142,14 +137,34 @@ nanoui is used to open and update nano browser uis
   * @return nothing
   */
 /datum/nanoui/proc/update_status(var/push_update = 0)
-	var/atom/movable/host = src_object.nano_host()
-	var/new_status = host.CanUseTopic(user, list(), custom_state)
-	if(master_ui)
-		new_status = min(new_status, master_ui.status)
-	if(new_status == STATUS_CLOSE)
-		close()
+	if (istype(user, /mob/living/silicon/ai))
+		set_status(STATUS_INTERACTIVE, push_update) // interactive (green visibility)
+	else if (istype(user, /mob/living/silicon/robot))
+		if (src_object in view(7, user)) // robots can see and interact with things they can see within 7 tiles
+			set_status(STATUS_INTERACTIVE, push_update) // interactive (green visibility)
+		else
+			set_status(STATUS_DISABLED, push_update) // no updates, completely disabled (red visibility)
 	else
-		set_status(new_status, push_update)
+		var/dist = get_dist(src_object, user)
+
+		if (dist > 4)
+			close()
+			return
+
+		if ((allowed_user_stat > -1) && (user.stat > allowed_user_stat))
+			set_status(STATUS_DISABLED, push_update) // no updates, completely disabled (red visibility)
+		else if (user.restrained() || user.lying)
+			set_status(STATUS_UPDATE, push_update) // update only (orange visibility)
+		else if (istype(src_object, /obj/item/device/uplink/hidden)) // You know what if they have the uplink open let them use the UI
+			set_status(STATUS_INTERACTIVE, push_update)	     // Will build in distance checks on the topics for sanity.
+		else if (!(src_object in view(4, user))) // If the src object is not in visable, set status to 0
+			set_status(STATUS_DISABLED, push_update) // interactive (green visibility)
+		else if (dist <= 1)
+			set_status(STATUS_INTERACTIVE, push_update) // interactive (green visibility)
+		else if (dist <= 2)
+			set_status(STATUS_UPDATE, push_update) // update only (orange visibility)
+		else if (dist <= 4)
+			set_status(STATUS_DISABLED, push_update) // no updates, completely disabled (red visibility)
 
  /**
   * Set the ui to auto update (every master_controller tick)
@@ -186,7 +201,8 @@ nanoui is used to open and update nano browser uis
 			"autoUpdateContent" = auto_update_content,
 			"showMap" = show_map,
 			"mapZLevel" = map_z_level,
-			"user" = list("name" = user.name)
+			"user" = list("name" = user.name),
+			"map_dir" = map.map_dir // Map datum holds the folder for the nanoui station images.
 		)
 	return config_data
 
@@ -350,7 +366,7 @@ nanoui is used to open and update nano browser uis
 		template_data_json = list2json(templates)
 
 	var/list/send_data = get_send_data(initial_data)
-	var/initial_data_json = list2json(send_data, cached_data)
+	var/initial_data_json = list2json(send_data)
 
 	var/url_parameters_json = list2json(list("src" = "\ref[src]"))
 
@@ -392,8 +408,6 @@ nanoui is used to open and update nano browser uis
   * @return nothing
   */
 /datum/nanoui/proc/open()
-	if(!user.client)
-		return
 
 	var/window_size = ""
 	if (width && height)
@@ -414,8 +428,6 @@ nanoui is used to open and update nano browser uis
 	is_auto_updating = 0
 	nanomanager.ui_closed(src)
 	user << browse(null, "window=[window_id]")
-	for(var/datum/nanoui/child in children)
-		child.close()
 
  /**
   * Set the UI window to call the nanoclose verb when the window is closed
@@ -430,19 +442,6 @@ nanoui is used to open and update nano browser uis
 
 	winset(user, window_id, "on-close=\"nanoclose [params]\"")
 
-/**
- * Appends already processed json txt to the list2json proc when setting initial-data and data pushes
- * Used for data that is fucking huge like manifests and camera lists that doesn't change often.
- * And we only want to process them when they change.
- * Fuck javascript
- *
- * @return nothing
- */
-/datum/nanoui/proc/load_cached_data(var/data)
-	cached_data = data
-	return
-
-
  /**
   * Push data to an already open UI window
   *
@@ -456,7 +455,7 @@ nanoui is used to open and update nano browser uis
 	var/list/send_data = get_send_data(data)
 
 	//user << list2json(data) // used for debugging
-	user << output(list2params(list(list2json(send_data,cached_data))),"[window_id].browser:receiveUpdateData")
+	user << output(list2params(list(list2json(send_data))),"[window_id].browser:receiveUpdateData")
 
  /**
   * This Topic() proc is called whenever a user clicks on a link within a Nano UI
@@ -476,11 +475,18 @@ nanoui is used to open and update nano browser uis
 		set_show_map(text2num(href_list["showMap"]))
 		map_update = 1
 
-	if(href_list["mapZLevel"])
-		set_map_z_level(text2num(href_list["mapZLevel"]))
-		map_update = 1
+	if(href_list["zlevel"])
+		var/newz = input("Choose Z-Level to view.","Z-Levels",1) as null|anything in list(1,3,4,5,6)
+		if(!newz || isnull(newz))
+			return 0
+		if(newz < 1 || newz > 6 || newz == 2)
+			usr << "\red <b>Unable to establish a connection</b>"
+			return 0
+		if(newz != map_z_level)
+			set_map_z_level(newz)
+			map_update = 1
 
-	if ((src_object && src_object.Topic(href, href_list, 0, custom_state)) || map_update)
+	if ((src_object && src_object.Topic(href, href_list)) || map_update)
 		nanomanager.update_uis(src_object) // update all UIs attached to src_object
 
  /**
@@ -507,4 +513,5 @@ nanoui is used to open and update nano browser uis
   * @return nothing
   */
 /datum/nanoui/proc/update(var/force_open = 0)
-	src_object.ui_interact(user, ui_key, src, force_open, master_ui, custom_state)
+	src_object.ui_interact(user, ui_key, src, force_open)
+

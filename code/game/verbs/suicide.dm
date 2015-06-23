@@ -11,8 +11,11 @@
 		src << "You can't commit suicide before the game starts!"
 		return
 
+	if(istype(wear_mask, /obj/item/clothing/mask/happy))
+		src << "<span class='sinister'>BUT WHY? I'M SO HAPPY!</span>"
+		return
 
-	var/permitted = 0
+	var/permitted = 1
 	var/list/allowed = list("Syndicate","traitor","Wizard","Head Revolutionary","Cultist","Changeling")
 	for(var/T in allowed)
 		if(mind.special_role == T)
@@ -59,8 +62,7 @@
 
 				//Do 175 damage divided by the number of damage types applied.
 				if(damagetype & BRUTELOSS)
-					adjustBruteLoss(30/damage_mod)	//hack to prevent gibbing
-					adjustOxyLoss(145/damage_mod)
+					adjustBruteLoss(175/damage_mod)
 
 				if(damagetype & FIRELOSS)
 					adjustFireLoss(175/damage_mod)
@@ -175,6 +177,7 @@
 		viewers(src) << "\red <b>[src] is powering down. It looks like \he's trying to commit suicide.</b>"
 		//put em at -175
 		adjustOxyLoss(max(maxHealth * 2 - getToxLoss() - getFireLoss() - getBruteLoss() - getOxyLoss(), 0))
+		stat = DEAD //new robot shit doesnt care about oxyloss
 		updatehealth()
 
 /mob/living/silicon/pai/verb/suicide()
@@ -185,12 +188,33 @@
 	if(answer == "Yes")
 		var/obj/item/device/paicard/card = loc
 		card.removePersonality()
-		var/turf/T = get_turf_or_move(card.loc)
+		var/turf/T = get_turf(card.loc)
 		for (var/mob/M in viewers(T))
 			M.show_message("\blue [src] flashes a message across its screen, \"Wiping core files. Please acquire a new personality to continue using pAI device functions.\"", 3, "\blue [src] bleeps electronically.", 2)
 		death(0)
 	else
 		src << "Aborting suicide attempt."
+
+/mob/living/carbon/alien/humanoid/verb/suicide()
+	set hidden = 1
+
+	if (stat == 2)
+		src << "You're already dead!"
+		return
+
+	if (suiciding)
+		src << "You're already committing suicide! Be patient!"
+		return
+
+	var/confirm = alert("Are you sure you want to commit suicide?", "Confirm Suicide", "Yes", "No")
+
+	if(confirm == "Yes")
+		suiciding = 1
+		viewers(src) << "\red <b>[src] is thrashing wildly! It looks like \he's trying to commit suicide.</b>"
+		//put em at -175
+		adjustOxyLoss(max(175 - getFireLoss() - getBruteLoss() - getOxyLoss(), 0))
+		updatehealth()
+
 
 /mob/living/carbon/slime/verb/suicide()
 	set hidden = 1

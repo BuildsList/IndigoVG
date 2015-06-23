@@ -63,6 +63,10 @@
 			break
 	return foundgenerator
 
+
+/obj/machinery/computer/gravity_control_computer/attack_paw(mob/user as mob)
+	return attack_hand(user)
+
 /obj/machinery/computer/gravity_control_computer/attack_ai(mob/user as mob)
 	return attack_hand(user)
 
@@ -109,7 +113,7 @@
 
 
 /obj/machinery/computer/gravity_control_computer/Topic(href, href_list)
-	set background = 1
+	//set background = 1
 	..()
 
 	if ( (get_dist(src, usr) > 1 ))

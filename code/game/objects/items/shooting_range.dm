@@ -9,7 +9,7 @@
 	var/icon/virtualIcon
 	var/list/bulletholes = list()
 
-	Del()
+	Destroy()
 		// if a target is deleted and associated with a stake, force stake to forget
 		for(var/obj/structure/target_stake/T in view(3,src))
 			if(T.pinned_target == src)
@@ -36,7 +36,7 @@
 		if (istype(W, /obj/item/weapon/weldingtool))
 			var/obj/item/weapon/weldingtool/WT = W
 			if(WT.remove_fuel(0, user))
-				overlays.Cut()
+				overlays.len = 0
 				usr << "You slice off [src]'s uneven chunks of aluminum and scorch marks."
 				return
 
@@ -61,7 +61,7 @@
 						user.put_in_hands(src)
 						user << "You take the target out of the stake."
 				else
-					src.loc = get_turf(user)
+					src.loc = get_turf_loc(user)
 					user << "You take the target out of the stake."
 
 				stake.pinned_target = null
@@ -72,11 +72,11 @@
 
 	syndicate
 		icon_state = "target_s"
-		desc = "A shooting target that looks like a hostile agent."
+		desc = "A shooting target that looks like a syndicate scum."
 		hp = 2600 // i guess syndie targets are sturdier?
 	alien
 		icon_state = "target_q"
-		desc = "A shooting target with a threatening silhouette."
+		desc = "A shooting target that looks like a xenomorphic alien."
 		hp = 2350 // alium onest too kinda
 
 /obj/item/target/bullet_act(var/obj/item/projectile/Proj)
@@ -116,7 +116,7 @@
 
 			if(Proj.damage >= 20 || istype(Proj, /obj/item/projectile/beam/practice))
 				bmark.icon_state = "scorch"
-				bmark.set_dir(pick(NORTH,SOUTH,EAST,WEST)) // random scorch design
+				bmark.dir = pick(NORTH,SOUTH,EAST,WEST) // random scorch design
 
 
 			else

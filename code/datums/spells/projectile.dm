@@ -34,7 +34,7 @@
 				projectile:linked_spells += proj_type
 			projectile.icon = proj_icon
 			projectile.icon_state = proj_icon_state
-			projectile.set_dir(get_dir(target,projectile))
+			projectile.dir = get_dir(target,projectile)
 			projectile.name = proj_name
 
 			var/current_loc = usr.loc
@@ -47,18 +47,26 @@
 
 				if(proj_homing)
 					if(proj_insubstantial)
-						projectile.set_dir(get_dir(projectile,target))
+						projectile.dir = get_dir(projectile,target)
 						projectile.loc = get_step_to(projectile,target)
 					else
-						step_to(projectile,target)
+						var/turf/T = get_step_to(projectile,target)
+						var/obj/structure/stool/bed/chair/vehicle/JC = locate() in T
+						if(JC && istype(JC) && prob(75))
+							projectile.loc = T
+						else
+							step_to(projectile,target)
 				else
 					if(proj_insubstantial)
 						projectile.loc = get_step(projectile,dir)
 					else
 						step(projectile,dir)
 
-				if(!proj_lingering && projectile.loc == current_loc) //if it didn't move since last time
-					del(projectile)
+				if(!projectile) // step and step_to sleeps so we'll have to check again.
+					break
+
+				if(!target || (!proj_lingering && projectile.loc == current_loc)) //if it didn't move since last time
+					qdel(projectile)
 					break
 
 				if(proj_trail && projectile)
@@ -69,7 +77,10 @@
 							trail.icon_state = proj_trail_icon_state
 							trail.density = 0
 							spawn(proj_trail_lifespan)
-								del(trail)
+								trail.loc = null
+
+				if(!projectile)
+					break
 
 				if(projectile.loc in range(target.loc,proj_trigger_range))
 					projectile.perform(list(target))
@@ -80,4 +91,4 @@
 				sleep(proj_step_delay)
 
 			if(projectile)
-				del(projectile)
+				qdel(projectile)

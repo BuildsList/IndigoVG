@@ -1,5 +1,5 @@
 /obj/structure/lamarr
-	name = "lab cage"
+	name = "Lab Cage"
 	icon = 'icons/obj/stationobjs.dmi'
 	icon_state = "labcage1"
 	desc = "A glass lab container for storing interesting creatures."
@@ -13,9 +13,9 @@
 /obj/structure/lamarr/ex_act(severity)
 	switch(severity)
 		if (1)
-			new /obj/item/weapon/shard( src.loc )
+			getFromPool(/obj/item/weapon/shard, loc)
 			Break()
-			del(src)
+			qdel(src)
 		if (2)
 			if (prob(50))
 				src.health -= 15
@@ -35,15 +35,15 @@
 
 /obj/structure/lamarr/blob_act()
 	if (prob(75))
-		new /obj/item/weapon/shard( src.loc )
+		getFromPool(/obj/item/weapon/shard, loc)
 		Break()
-		del(src)
+		qdel(src)
 
 
 /obj/structure/lamarr/meteorhit(obj/O as obj)
-		new /obj/item/weapon/shard( src.loc )
+		getFromPool(/obj/item/weapon/shard, loc)
 		Break()
-		del(src)
+		qdel(src)
 
 
 /obj/structure/lamarr/proc/healthcheck()
@@ -51,11 +51,11 @@
 		if (!( src.destroyed ))
 			src.density = 0
 			src.destroyed = 1
-			new /obj/item/weapon/shard( src.loc )
+			getFromPool(/obj/item/weapon/shard, loc)
 			playsound(src, "shatter", 70, 1)
 			Break()
 	else
-		playsound(src.loc, 'sound/effects/Glasshit.ogg', 75, 1)
+		playsound(get_turf(src), 'sound/effects/Glasshit.ogg', 75, 1)
 	return
 
 /obj/structure/lamarr/update_icon()
@@ -71,6 +71,9 @@
 	src.healthcheck()
 	..()
 	return
+
+/obj/structure/lamarr/attack_paw(mob/user as mob)
+	return src.attack_hand(user)
 
 /obj/structure/lamarr/attack_hand(mob/user as mob)
 	if (src.destroyed)

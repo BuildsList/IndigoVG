@@ -28,10 +28,10 @@
 	if(!istype(L, /list)) return
 	if(isnum(pos))
 		if(!value)
-			if(L.len >= pos)
+			if(L.len >= pos && !(pos > L.len))
 				return L[pos]
 		else
-			if(L.len >= pos)
+			if(L.len >= pos && !(pos > L.len))
 				L[pos] = value
 	else if(istext(pos))
 		if(!value)
@@ -72,7 +72,7 @@
 			if(chosenlist)
 				chosenlist.Remove(e)
 
-// Clone of list.Cut()
+// Clone of list.len = 0
 /proc/n_listcut(var/list/L, var/start, var/end)
 	if(!istype(L, /list)) return
 	return L.Cut(start, end)
@@ -93,6 +93,10 @@
 // Clone of sleep()
 /proc/delay(var/time)
 	sleep(time)
+
+// Clone of rand()
+/proc/rand_chance(var/low = 0, var/high)
+	return rand(low, high)
 
 // Clone of prob()
 /proc/prob_chance(var/chance)
@@ -123,6 +127,7 @@
 	if(container)
 		if(istype(container, /list) || istext(container))
 			return length(container)
+	return 0
 
 // BY DONKIE~
 // String stuff
@@ -134,6 +139,12 @@
 	if(istext(string))
 		return uppertext(string)
 
+/proc/time()
+	return world.timeofday
+
+/proc/timestamp(var/format = "hh:mm:ss") // Get the game time in text
+	return time2text(world.time + 432000, format)
+
 /*
 //Makes a list where all indicies in a string is a seperate index in the list
 // JUST A HELPER DON'T ADD TO NTSCRIPT
@@ -141,7 +152,7 @@ proc/string_tolist(var/string)
 	var/list/L = new/list()
 
 	var/i
-	for(i=1, i<=lentext(string), i++)
+	for(i=1, i<=length(string), i++)
 		L.Add(copytext(string, i, i))
 
 	return L
@@ -154,19 +165,21 @@ proc/string_explode(var/string, var/separator)
 		var/lasti = 1
 		var/list/L = new/list()
 
-		for(i=1, i<=lentext(string)+1, i++)
+		for(i=1, i<=length(string)+1, i++)
 			if(copytext(string, i, i+1) == separator) // We found a separator
 				L.Add(copytext(string, lasti, i))
 				lasti = i+1
 
-		L.Add(copytext(string, lasti, lentext(string)+1)) // Adds the last segment
+		L.Add(copytext(string, lasti, length(string)+1)) // Adds the last segment
 
 		return L
 
 Just found out there was already a string explode function, did some benchmarking, and that function were a bit faster, sticking to that.
 */
-proc/string_explode(var/string, var/separator)
-	if(istext(string) && istext(separator))
+
+
+proc/string_explode(var/string, var/separator = "")
+	if(istext(string) && (istext(separator) || isnull(separator)))
 		return text2list(string, separator)
 
 proc/n_repeat(var/string, var/amount)
@@ -186,7 +199,7 @@ proc/n_reverse(var/string)
 	if(istext(string))
 		var/newstring = ""
 		var/i
-		for(i=lentext(string), i>0, i--)
+		for(i=length(string), i>0, i--)
 			if(i>=1000)
 				break
 			newstring = newstring + copytext(string, i, i+1)
@@ -247,17 +260,18 @@ proc/n_inrange(var/num, var/min=-1, var/max=1)
 
 // Non-recursive
 // Imported from Mono string.ReplaceUnchecked
+/*
 /proc/string_replacetext(var/haystack,var/a,var/b)
 	if(istext(haystack)&&istext(a)&&istext(b))
 		var/i = 1
-		var/lenh=lentext(haystack)
-		var/lena=lentext(a)
-		//var/lenb=lentext(b)
+		var/lenh=length(haystack)
+		var/lena=length(a)
+		//var/lenb=length(b)
 		var/count = 0
 		var/list/dat = list()
 		while (i < lenh)
 			var/found = findtext(haystack, a, i, 0)
-			//log_misc("findtext([haystack], [a], [i], 0)=[found]")
+			//diary << "findtext([haystack], [a], [i], 0)=[found]"
 			if (found == 0) // Not found
 				break
 			else
@@ -265,9 +279,9 @@ proc/n_inrange(var/num, var/min=-1, var/max=1)
 					dat+=found
 					count+=1
 				else
-					//log_misc("Script found [a] [count] times, aborted")
+					//diary << "Script found [a] [count] times, aborted"
 					break
-			//log_misc("Found [a] at [found]! Moving up...")
+			//diary << "Found [a] at [found]! Moving up..."
 			i = found + lena
 		if (count == 0)
 			return haystack
@@ -281,11 +295,33 @@ proc/n_inrange(var/num, var/min=-1, var/max=1)
 			//CharCopy (dest + targetIndex, src + sourceIndex, count);
 			//CharCopy (dest + curPos, source + lastReadPos, precopy);
 			buf+=copytext(haystack,lastReadPos,precopy)
-			log_misc("buf+=copytext([haystack],[lastReadPos],[precopy])")
-			log_misc("[buf]")
+			diary << "buf+=copytext([haystack],[lastReadPos],[precopy])"
+			diary<<"[buf]"
 			lastReadPos = dat[i] + lena
 			//CharCopy (dest + curPos, replace, newValue.length);
 			buf+=b
-			log_misc("[buf]")
+			diary<<"[buf]"
 		buf+=copytext(haystack,lastReadPos, 0)
 		return buf
+*/
+
+/proc/string_replacetext(text, find, replacement)
+	if(istext(text) && istext(find) && istext(replacement))
+		var/find_len = length(find)
+		if(find_len < 1)	return text
+		. = ""
+		var/last_found = 1
+		var/count = 0
+		while(1)
+			count += 1
+			if(count >  SCRIPT_MAX_REPLACEMENTS_ALLOWED)
+				break
+			var/found = findtext(text, find, last_found, 0)
+			. += copytext(text, last_found, found)
+			if(found)
+				. += replacement
+				last_found = found + find_len
+				continue
+			return
+
+#undef SCRIPT_MAX_REPLACEMENTS_ALLOWED

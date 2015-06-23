@@ -74,13 +74,12 @@ move an amendment</a> to the drawing.</p>
 
 
 /obj/item/blueprints/proc/get_area()
-	var/turf/T = get_turf(usr)
-	var/area/A = T.loc
-	A = A.master
+	var/turf/T = get_turf_loc(usr)
+	var/area/A = get_area_master(T)
 	return A
 
 /obj/item/blueprints/proc/get_area_type(var/area/A = get_area())
-	if(istype(A, /area/space))
+	if (A.name == "Space")
 		return AREA_SPACE
 	var/list/SPECIALS = list(
 		/area/shuttle,
@@ -101,7 +100,7 @@ move an amendment</a> to the drawing.</p>
 
 /obj/item/blueprints/proc/create_area()
 	//world << "DEBUG: create_area"
-	var/res = detect_room(get_turf(usr))
+	var/res = detect_room(get_turf_loc(usr))
 	if(!istype(res,/list))
 		switch(res)
 			if(ROOM_ERR_SPACE)
@@ -123,6 +122,8 @@ move an amendment</a> to the drawing.</p>
 	var/area/A = new
 	A.name = str
 	A.tagbase = "[A.type]_[md5(str)]" // without this dynamic light system ruin everithing
+	A.tag = "[A.type]/[md5(str)]"
+	A.master = A
 	//var/ma
 	//ma = A.master ? "[A.master]" : "(null)"
 	//world << "DEBUG: create_area: <br>A.name=[A.name]<br>A.tag=[A.tag]<br>A.master=[ma]"
@@ -130,7 +131,8 @@ move an amendment</a> to the drawing.</p>
 	A.power_light = 0
 	A.power_environ = 0
 	A.always_unpowered = 0
-	move_turfs_to_area(turfs, A)
+	A.SetDynamicLighting()
+	spawn() move_turfs_to_area(turfs, A)
 
 	A.always_unpowered = 0
 	for(var/turf/T in A.contents)
@@ -146,6 +148,9 @@ move an amendment</a> to the drawing.</p>
 
 /obj/item/blueprints/proc/move_turfs_to_area(var/list/turf/turfs, var/area/A)
 	A.contents.Add(turfs)
+	for(var/turf/T in turfs)
+		for(var/atom/movable/AM in T)
+			AM.areaMaster = get_area_master(T)
 		//oldarea.contents.Remove(usr.loc) // not needed
 		//T.loc = A //error: cannot change constant value
 
@@ -200,7 +205,7 @@ move an amendment</a> to the drawing.</p>
 	for (var/obj/structure/window/W in T2)
 		if(turn(dir,180) == W.dir)
 			return BORDER_BETWEEN
-		if (W.dir in list(NORTHEAST,SOUTHEAST,NORTHWEST,SOUTHWEST))
+		if (W.is_fulltile())
 			return BORDER_2NDTILE
 	for(var/obj/machinery/door/window/D in T2)
 		if(turn(dir,180) == D.dir)
@@ -225,7 +230,7 @@ move an amendment</a> to the drawing.</p>
 		for (var/dir in cardinal)
 			var/skip = 0
 			for (var/obj/structure/window/W in T)
-				if(dir == W.dir || (W.dir in list(NORTHEAST,SOUTHEAST,NORTHWEST,SOUTHWEST)))
+				if(dir == W.dir || (W.is_fulltile()))
 					skip = 1; break
 			if (skip) continue
 			for(var/obj/machinery/door/window/D in T)

@@ -1,26 +1,27 @@
-//base type for controllers of two-door systems
-/obj/machinery/embedded_controller/radio/airlock
-	// Setup parameters only
-	radio_filter = RADIO_AIRLOCK
-	var/tag_exterior_door
-	var/tag_interior_door
-	var/tag_airpump
-	var/tag_chamber_sensor
-	var/tag_exterior_sensor
-	var/tag_interior_sensor
-	var/tag_airlock_mech_sensor
-	var/tag_shuttle_mech_sensor
-	var/tag_secure = 0
-
-/obj/machinery/embedded_controller/radio/airlock/initialize()
-	..()
-	program = new/datum/computer/file/embedded_program/airlock(src)
-
 //Advanced airlock controller for when you want a more versatile airlock controller - useful for turning simple access control rooms into airlocks
-/obj/machinery/embedded_controller/radio/airlock/advanced_airlock_controller
+/obj/machinery/embedded_controller/radio/advanced_airlock_controller
 	name = "Advanced Airlock Controller"
 
-/obj/machinery/embedded_controller/radio/airlock/advanced_airlock_controller/ui_interact(mob/user, ui_key = "main", var/datum/nanoui/ui = null, var/force_open = 1)
+	multitool_menu(var/mob/user, var/obj/item/device/multitool/P)
+		return {"
+		<ul>
+		<li><b>Frequency:</b> <a href="?src=\ref[src];set_freq=-1">[format_frequency(frequency)] GHz</a> (<a href="?src=\ref[src];set_freq=[1449]">Reset</a>)</li>
+		<li>[format_tag("ID Tag","id_tag")]</li>
+		<li>[format_tag("Pump ID","tag_airpump")]</li>
+		</ul>
+		<b>Doors:</b>
+		<ul>
+		<li>[format_tag("Exterior","tag_exterior_door")]</li>
+		<li>[format_tag("Interior","tag_interior_door")]</li>
+		</ul>
+		<b>Sensors:</b>
+		<ul>
+		<li>[format_tag("Chamber","tag_chamber_sensor")]</li>
+		<li>[format_tag("Interior","tag_interior_sensor")]</li>
+		<li>[format_tag("Exterior","tag_exterior_sensor")]</li>
+		</ul>"}
+
+/obj/machinery/embedded_controller/radio/advanced_airlock_controller/ui_interact(mob/user, ui_key = "main", var/datum/nanoui/ui = null)
 	var/data[0]
 
 	data = list(
@@ -32,7 +33,7 @@
 		"secure" = program.memory["secure"]
 	)
 
-	ui = nanomanager.try_update_ui(user, src, ui_key, ui, data, force_open)
+	ui = nanomanager.try_update_ui(user, src, ui_key, ui, data)
 
 	if (!ui)
 		ui = new(user, src, ui_key, "advanced_airlock_console.tmpl", name, 470, 290)
@@ -43,13 +44,7 @@
 
 		ui.set_auto_update(1)
 
-/obj/machinery/embedded_controller/radio/airlock/advanced_airlock_controller/Topic(href, href_list)
-	if(..())
-		return
-
-	usr.set_machine(src)
-	src.add_fingerprint(usr)
-
+/obj/machinery/embedded_controller/radio/advanced_airlock_controller/Topic(href, href_list)
 	var/clean = 0
 	switch(href_list["command"])	//anti-HTML-hacking checks
 		if("cycle_ext")
@@ -74,11 +69,28 @@
 
 
 //Airlock controller for airlock control - most airlocks on the station use this
-/obj/machinery/embedded_controller/radio/airlock/airlock_controller
+/obj/machinery/embedded_controller/radio/airlock_controller
 	name = "Airlock Controller"
 	tag_secure = 1
 
-/obj/machinery/embedded_controller/radio/airlock/airlock_controller/ui_interact(mob/user, ui_key = "main", var/datum/nanoui/ui = null, var/force_open = 1)
+	multitool_menu(var/mob/user, var/obj/item/device/multitool/P)
+		return {"
+		<ul>
+		<li><b>Frequency:</b> <a href="?src=\ref[src];set_freq=-1">[format_frequency(frequency)] GHz</a> (<a href="?src=\ref[src];set_freq=[1449]">Reset</a>)</li>
+		<li>[format_tag("ID Tag","id_tag")]</li>
+		<li>[format_tag("Pump ID","tag_airpump")]</li>
+		</ul>
+		<b>Doors:</b>
+		<ul>
+		<li>[format_tag("Exterior","tag_exterior_door")]</li>
+		<li>[format_tag("Interior","tag_interior_door")]</li>
+		</ul>
+		<b>Sensors:</b>
+		<ul>
+		<li>[format_tag("Chamber","tag_chamber_sensor")]</li>
+		</ul>"}
+
+/obj/machinery/embedded_controller/radio/airlock_controller/ui_interact(mob/user, ui_key = "main", var/datum/nanoui/ui = null)
 	var/data[0]
 
 	data = list(
@@ -88,7 +100,7 @@
 		"processing" = program.memory["processing"],
 	)
 
-	ui = nanomanager.try_update_ui(user, src, ui_key, ui, data, force_open)
+	ui = nanomanager.try_update_ui(user, src, ui_key, ui, data)
 
 	if (!ui)
 		ui = new(user, src, ui_key, "simple_airlock_console.tmpl", name, 470, 290)
@@ -99,13 +111,7 @@
 
 		ui.set_auto_update(1)
 
-/obj/machinery/embedded_controller/radio/airlock/airlock_controller/Topic(href, href_list)
-	if(..())
-		return
-
-	usr.set_machine(src)
-	src.add_fingerprint(usr)
-
+/obj/machinery/embedded_controller/radio/airlock_controller/Topic(href, href_list)
 	var/clean = 0
 	switch(href_list["command"])	//anti-HTML-hacking checks
 		if("cycle_ext")
@@ -126,15 +132,27 @@
 
 
 //Access controller for door control - used in virology and the like
-/obj/machinery/embedded_controller/radio/airlock/access_controller
+/obj/machinery/embedded_controller/radio/access_controller
 	icon = 'icons/obj/airlock_machines.dmi'
 	icon_state = "access_control_standby"
 
 	name = "Access Controller"
 	tag_secure = 1
 
+	multitool_menu(var/mob/user, var/obj/item/device/multitool/P)
+		return {"
+		<ul>
+		<li><b>Frequency:</b> <a href="?src=\ref[src];set_freq=-1">[format_frequency(frequency)] GHz</a> (<a href="?src=\ref[src];set_freq=[1449]">Reset</a>)</li>
+		<li>[format_tag("ID Tag","id_tag")]</li>
+		</ul>
+		<b>Doors:</b>
+		<ul>
+		<li>[format_tag("Exterior","tag_exterior_door")]</a></li>
+		<li>[format_tag("Interior","tag_interior_door")]</a></li>
+		</ul>"}
 
-/obj/machinery/embedded_controller/radio/airlock/access_controller/update_icon()
+
+/obj/machinery/embedded_controller/radio/access_controller/update_icon()
 	if(on && program)
 		if(program.memory["processing"])
 			icon_state = "access_control_process"
@@ -143,7 +161,7 @@
 	else
 		icon_state = "access_control_off"
 
-/obj/machinery/embedded_controller/radio/airlock/access_controller/ui_interact(mob/user, ui_key = "main", var/datum/nanoui/ui = null, var/force_open = 1)
+/obj/machinery/embedded_controller/radio/access_controller/ui_interact(mob/user, ui_key = "main", var/datum/nanoui/ui = null)
 	var/data[0]
 
 	data = list(
@@ -152,7 +170,7 @@
 		"processing" = program.memory["processing"]
 	)
 
-	ui = nanomanager.try_update_ui(user, src, ui_key, ui, data, force_open)
+	ui = nanomanager.try_update_ui(user, src, ui_key, ui, data)
 
 	if (!ui)
 		ui = new(user, src, ui_key, "door_access_console.tmpl", name, 330, 220)
@@ -163,13 +181,7 @@
 
 		ui.set_auto_update(1)
 
-/obj/machinery/embedded_controller/radio/airlock/access_controller/Topic(href, href_list)
-	if(..())
-		return
-
-	usr.set_machine(src)
-	src.add_fingerprint(usr)
-
+/obj/machinery/embedded_controller/radio/access_controller/Topic(href, href_list)
 	var/clean = 0
 	switch(href_list["command"])	//anti-HTML-hacking checks
 		if("cycle_ext_door")

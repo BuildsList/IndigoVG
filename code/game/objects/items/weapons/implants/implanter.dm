@@ -32,10 +32,12 @@
 				for (var/mob/O in viewers(M, null))
 					O.show_message("\red [M] has been implanted by [user].", 1)
 
-				admin_attack_log(user, M, "Implanted using \the [src.name] ([src.imp.name])", "Implanted with \the [src.name] ([src.imp.name])", "used an implanter, [src.name] ([src.imp.name]), on")
+				M.attack_log += text("\[[time_stamp()]\] <font color='orange'> Implanted with [src.name] ([src.imp.name])  by [user.name] ([user.ckey])</font>")
+				user.attack_log += text("\[[time_stamp()]\] <font color='red'>Used the [src.name] ([src.imp.name]) to implant [M.name] ([M.ckey])</font>")
+				msg_admin_attack("[user.name] ([user.ckey]) implanted [M.name] ([M.ckey]) with [src.name] (INTENT: [uppertext(user.a_intent)]) (<A HREF='?_src_=holder;adminplayerobservecoodjump=1;X=[user.x];Y=[user.y];Z=[user.z]'>JMP</a>)")
 
 				user.show_message("\red You implanted the implant into [M].")
-				if(src.imp.implanted(M))
+				if(src.imp.implanted(M, user))
 					src.imp.loc = M
 					src.imp.imp_in = M
 					src.imp.implanted = 1
@@ -44,15 +46,21 @@
 						var/datum/organ/external/affected = H.get_organ(user.zone_sel.selecting)
 						affected.implants += src.imp
 						imp.part = affected
-
-						BITSET(H.hud_updateflag, IMPLOYAL_HUD)
-
+				M:implanting = 0
 				src.imp = null
 				update()
-
 	return
 
 
+/obj/item/weapon/implanter/traitor
+	name = "implanter-greytide"
+	desc = "Greytide Stationwide."
+
+	New()
+		src.imp = new /obj/item/weapon/implant/traitor(src)
+		..()
+		update()
+		return
 
 /obj/item/weapon/implanter/loyalty
 	name = "implanter-loyalty"
@@ -62,6 +70,8 @@
 	..()
 	update()
 	return
+
+
 
 /obj/item/weapon/implanter/explosive
 	name = "implanter (E)"
@@ -85,6 +95,10 @@
 	name = "implanter (C)"
 	icon_state = "cimplanter1"
 
+	var/list/forbidden_types=list(
+		// /obj/item/weapon/storage/bible // VG #11 - Recursion.
+	)
+
 /obj/item/weapon/implanter/compressed/New()
 	imp = new /obj/item/weapon/implant/compressed( src )
 	..()
@@ -103,6 +117,9 @@
 	return
 
 /obj/item/weapon/implanter/compressed/attack(mob/M as mob, mob/user as mob)
+	// Attacking things in your hands tends to make this fuck up.
+	if(!istype(M))
+		return
 	var/obj/item/weapon/implant/compressed/c = imp
 	if (!c)	return
 	if (c.scanned == null)
@@ -110,20 +127,21 @@
 		return
 	..()
 
-/obj/item/weapon/implanter/compressed/afterattack(atom/A, mob/user as mob, proximity)
-	if(!proximity)
+/obj/item/weapon/implanter/compressed/afterattack(var/obj/item/I, mob/user as mob)
+	if(is_type_in_list(I,forbidden_types))
+		user << "\red A red light flickers on the implanter."
 		return
-	if(istype(A,/obj/item) && imp)
+	if(istype(I) && imp)
 		var/obj/item/weapon/implant/compressed/c = imp
 		if (c.scanned)
+			if(istype(I,/obj/item/weapon/storage))
+				..()
+				return
 			user << "\red Something is already scanned inside the implant!"
 			return
-		c.scanned = A
-		if(istype(A.loc,/mob/living/carbon/human))
-			var/mob/living/carbon/human/H = A.loc
-			H.u_equip(A)
-		else if(istype(A.loc,/obj/item/weapon/storage))
-			var/obj/item/weapon/storage/S = A.loc
-			S.remove_from_storage(A)
-		A.loc.contents.Remove(A)
+		if(user)
+			user.u_equip(I)
+			user.update_icons()	//update our overlays
+		c.scanned = I
+		c.scanned.loc = c
 		update()
